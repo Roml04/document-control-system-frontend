@@ -1,3 +1,7 @@
 export default function Requests() {
-  return <div>This is the Requests Page</div>;
+  return (
+    <div className="px-4 py-2">
+      <h1>Requests</h1>
+    </div>
+  );
 }

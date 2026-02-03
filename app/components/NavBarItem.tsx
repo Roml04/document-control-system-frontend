@@ -8,7 +8,10 @@ export default function NavBarItem({ item }: NavBarItemProps) {
   const uri = item.toLowerCase();
   console.log("URI:", uri);
   return (
-    <NavLink to={`/${uri}`} className="w-1/4 px-4 border border-slate-400">
+    <NavLink
+      to={`/${uri}`}
+      className="w-full flex px-4 py-2 border justify-center border-slate-400 rounded-lg"
+    >
       {item}
     </NavLink>
   );

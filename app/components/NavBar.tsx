@@ -1,16 +1,14 @@
 import NavBarItem from "./NavBarItem";
 
 export default function NavBar() {
-  const navBaritems = ["Documents", "Forms", "Checklist", "Requests"];
+  const navBaritems = ["Documents", "Forms", "Checklist"];
 
   return (
-    <div className="flex w-full px-4 pt-2 border justify-center border-red-400">
-      <ul>
-        {navBaritems.map((item) => (
-          // throw an error if item does not exist in routes
-          <NavBarItem item={item} />
-        ))}
-      </ul>
-    </div>
+    <ul className="w-1/2 flex justify-center gap-2">
+      {navBaritems.map((item) => (
+        // throw an error if item does not exist in routes
+        <NavBarItem item={item} />
+      ))}
+    </ul>
   );
 }
