@@ -25,5 +25,6 @@ html {
   height: 100%;
 }
 body {
+  display: flex;
   min-height: 100%;
 }
