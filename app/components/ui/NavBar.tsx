@@ -1,4 +1,4 @@
-import NavBarItem from "./NavBarItem";
+import NavBarItem from "../ui/NavBarItem";
 
 export default function NavBar() {
   const navBaritems = ["Documents", "Forms", "Checklist"];

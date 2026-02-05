@@ -1,5 +1,6 @@
-import { useState, type ComponentProps } from "react";
-import PopUpModal from "~/components/Modals/PopUpModal";
+import { useState } from "react";
+import { PopUpModal } from "~/components";
+import { Icon } from "~/components";
 
 type DataBlockProps = {
   title: string;
@@ -29,7 +30,10 @@ export default function WasteManagement() {
     <>
       <div className="flex justify-center h-full mt-8">
         <div className="flex flex-col w-3/4 py-2 gap-2">
-          <h1>Waste Management Procedure</h1>
+          <div className="flex">
+            <Icon name="arrow-left" />
+            <h1>Waste Management Procedure</h1>
+          </div>
           <div className="flex flex-col w-full p-4 border rounded-lg">
             <h3>File</h3>
             <p className="underline">file.docx</p>

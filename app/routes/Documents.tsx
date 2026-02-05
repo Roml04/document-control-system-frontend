@@ -1,21 +1,22 @@
-import CardItem from "~/components/CardItem";
+import { Icons } from "~/assets/icons/icons";
+import CardItem from "~/components/ui/CardItem";
 
 export default function Documents() {
   const documentsItems = [
     {
       title: "Waste Management Procedure",
       uri: "/document/waste-management-procedure",
-      iconUrl: "app/assets/icons/trash.svg",
+      icon: Icons.Trash,
     },
     {
       title: "HR Procedure",
       uri: "/document/hr-procedure",
-      iconUrl: "app/assets/icons/person.svg",
+      icon: Icons.Person,
     },
     {
       title: "Document Control Procedure",
       uri: "/document/document-control-procedure",
-      iconUrl: "app/assets/icons/document.svg",
+      icon: Icons.Document,
     },
   ];
 
@@ -26,7 +27,7 @@ export default function Documents() {
           key={index}
           title={item.title}
           uri={item.uri}
-          iconUrl={item.iconUrl}
+          icon={item.icon}
         />
       ))}
     </div>
