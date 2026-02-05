@@ -5,9 +5,8 @@ export default function NavBar() {
 
   return (
     <ul className="w-1/2 flex justify-center gap-2">
-      {navBaritems.map((item) => (
-        // throw an error if item does not exist in routes
-        <NavBarItem item={item} />
+      {navBaritems.map((item, index) => (
+        <NavBarItem item={item} key={index} />
       ))}
     </ul>
   );

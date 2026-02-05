@@ -6,7 +6,6 @@ type NavBarItemProps = {
 
 export default function NavBarItem({ item }: NavBarItemProps) {
   const uri = item.toLowerCase();
-  console.log("URI:", uri);
   return (
     <NavLink
       to={`/${uri}`}

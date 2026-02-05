@@ -23,8 +23,14 @@
 
 html {
   height: 100%;
+  display: flex;
 }
 body {
-  display: flex;
+  flex-grow: 1;
   min-height: 100%;
+}
+
+.icons {
+  width: 4rem;
+  height: 4rem;
 }
