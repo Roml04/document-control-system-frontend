@@ -1,22 +1,23 @@
-import { Icons } from "~/assets/icons/icons";
+// import { Icons } from "~/assets/icons/icons";
+import type { IconName } from "~/assets/icons/icons";
 import CardItem from "~/components/ui/CardItem";
 
 export default function Documents() {
-  const documentsItems = [
+  const documentsItems: { title: string; uri: string; icon: IconName }[] = [
     {
       title: "Waste Management Procedure",
       uri: "/document/waste-management-procedure",
-      icon: Icons.Trash,
+      icon: "trash",
     },
     {
       title: "HR Procedure",
       uri: "/document/hr-procedure",
-      icon: Icons.Person,
+      icon: "person",
     },
     {
       title: "Document Control Procedure",
       uri: "/document/document-control-procedure",
-      icon: Icons.Document,
+      icon: "document",
     },
   ];
 

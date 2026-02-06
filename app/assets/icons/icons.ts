@@ -1,8 +1,13 @@
-export const Icons = {
-  ArrowLeft: "/icons/arrow-left.svg",
-  Document: "/icons/document.svg",
-  Person: "/icons/person.svg",
-  Trash: "/icons/trash.svg",
-} as const;
+import ArrowLeft from "./arrow-left.svg";
+import Document from "./document.svg";
+import Person from "./person.svg";
+import Trash from "./trash.svg";
 
-export type IconKey = keyof typeof Icons;
+export const Icons = {
+  arrowleft: ArrowLeft,
+  document: Document,
+  person: Person,
+  trash: Trash,
+};
+
+export type IconName = keyof typeof Icons;

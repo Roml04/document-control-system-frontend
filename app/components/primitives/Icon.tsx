@@ -1,7 +1,10 @@
+import { Icons, type IconName } from "~/assets/icons/icons";
+
 type IconProps = {
-  name: string;
+  name: IconName;
 };
 
 export default function Icon({ name }: IconProps) {
-  return <img src={`./app/assets/icons/${name}.svg`}></img>;
+  const IconSrc = Icons[name];
+  return <img src={IconSrc}></img>;
 }

@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router";
 import { PopUpModal } from "~/components";
 import { Icon } from "~/components";
+import PressableIcon from "~/components/primitives/PressableIcon";
 
 type DataBlockProps = {
   title: string;
@@ -9,6 +11,8 @@ type DataBlockProps = {
 };
 
 export default function WasteManagement() {
+  const navigate = useNavigate();
+
   function DataBlock({ title, value, styling }: DataBlockProps) {
     return (
       <div className={`flex w-full flex-col px-4 ${styling}`}>
@@ -29,16 +33,18 @@ export default function WasteManagement() {
   return (
     <>
       <div className="flex justify-center h-full mt-8">
-        <div className="flex flex-col w-3/4 py-2 gap-2">
-          <div className="flex">
-            <Icon name="arrow-left" />
+        <div className="flex flex-col w-3/4 px-4 py-4 gap-2 border rounded-lg h-fit">
+          <div className="flex items-center gap-2">
+            <PressableIcon iconName="arrowleft" onClick={() => navigate(-1)} />
             <h1>Waste Management Procedure</h1>
           </div>
-          <div className="flex flex-col w-full p-4 border rounded-lg">
+          <div className="flex flex-col w-full p-4 rounded-lg">
             <h3>File</h3>
-            <p className="underline">file.docx</p>
+            <a className="underline cursor-pointer" href="" target="_blank">
+              <p>file.docx</p>
+            </a>
           </div>
-          <div className="flex w-full justify-around py-4 border rounded-lg">
+          <div className="flex w-full justify-around py-4 rounded-lg">
             <DataBlock title="Originator" value="Originator Value" />
             <DataBlock
               title="Department"
@@ -46,7 +52,7 @@ export default function WasteManagement() {
               styling="border-l border-slate-400"
             />
           </div>
-          <div className="flex w-full justify-around py-4 border rounded-lg">
+          <div className="flex w-full justify-around py-4 rounded-lg">
             <DataBlock title="Revision Number" value="Revision Number Value" />
             <DataBlock
               title="Revision Details"
@@ -59,7 +65,7 @@ export default function WasteManagement() {
               styling="border-l border-slate-400"
             />
           </div>
-          <div className="flex w-full justify-around py-4 border rounded-lg">
+          <div className="flex w-full justify-around py-4 rounded-lg">
             <DataBlock title="Approver" value="Approver Value" />
             <DataBlock
               title="Date"

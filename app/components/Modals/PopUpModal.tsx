@@ -10,17 +10,13 @@ export default function PopUpModal({ onClose }: PopUpModalProps) {
     onClose();
   }
 
-  function handleCancel() {
-    onClose();
-  }
-
   const [textAreaValue, setTextAreaValue] = useState("");
 
   return (
     <>
       <div onClick={onClose} className="absolute inset-0 bg-black/10"></div>
       <div
-        className={`absolute flex flex-col justify-center w-2/3 px-6 py-4 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg gap-2`}
+        className={`absolute flex flex-col justify-center w-1/2 px-6 py-4 left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-lg gap-2`}
       >
         <h2>Reason</h2>
         <textarea
@@ -30,7 +26,7 @@ export default function PopUpModal({ onClose }: PopUpModalProps) {
         />
         <div className="flex w-full justify-between gap-2">
           <button
-            onClick={handleCancel}
+            onClick={onClose}
             className="px-4 py-2 border rounded-lg cursor-pointer"
           >
             Cancel

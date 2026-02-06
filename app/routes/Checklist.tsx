@@ -1,3 +1,3 @@
 export default function Checklist() {
-  return <div>This is the Checklist Page</div>;
+  return <div>Checklist Page</div>;
 }
