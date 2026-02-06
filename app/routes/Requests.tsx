@@ -67,8 +67,8 @@ export default function Requests() {
               <div>
                 <h1>Document Details</h1>
               </div>
-              <div className="flex justify-between">
-                <div className="flex flex-col w-fit px-4 rounded-lg">
+              <div className="flex justify-between border-b border-slate-400">
+                <div className="flex flex-col w-fit p-4 rounded-lg">
                   <h3>File</h3>
                   <a
                     className="underline cursor-pointer"
@@ -82,7 +82,7 @@ export default function Requests() {
                   <p className="w-fit cursor-pointer">Attach File</p>
                 </button>
               </div>
-              <div className="flex w-full justify-around py-4 rounded-lg">
+              <div className="grid grid-cols-2 w-full justify-around py-4 border-b border-slate-400">
                 <DataBlock
                   title="Originator"
                   value="Originator Value"
@@ -91,11 +91,10 @@ export default function Requests() {
                 <DataBlock
                   title="Department"
                   value="Department Value"
-                  styling="border-l border-slate-400"
                   isInteractable={isSubmitEnabled}
                 />
               </div>
-              <div className="flex w-full justify-around py-4 rounded-lg">
+              <div className="grid grid-cols-2 gap-y-4 w-full justify-around py-4 border-b border-slate-400">
                 <DataBlock
                   title="Revision Number"
                   value="Revision Number Value"
@@ -104,17 +103,15 @@ export default function Requests() {
                 <DataBlock
                   title="Revision Details"
                   value="Revision Details Value"
-                  styling="border-l border-slate-400"
                   isInteractable={isSubmitEnabled}
                 />
                 <DataBlock
                   title="Date"
                   value="Date Value"
-                  styling="border-l border-slate-400"
                   isInteractable={isSubmitEnabled}
                 />
               </div>
-              <div className="flex w-full justify-around py-4 rounded-lg">
+              <div className="grid grid-cols-2 w-full justify-around py-4">
                 <DataBlock
                   title="Approver"
                   value="Approver Value"
@@ -123,7 +120,6 @@ export default function Requests() {
                 <DataBlock
                   title="Date"
                   value="Date Value"
-                  styling="border-l border-slate-400"
                   isInteractable={isSubmitEnabled}
                 />
               </div>
