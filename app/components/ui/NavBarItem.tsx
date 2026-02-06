@@ -6,10 +6,16 @@ type NavBarItemProps = {
 
 export default function NavBarItem({ item }: NavBarItemProps) {
   const uri = item.toLowerCase();
+
   return (
     <NavLink
       to={`/${uri}`}
-      className="w-full flex px-4 py-2 border justify-center border-slate-400 rounded-lg"
+      className={({ isActive }) =>
+        `
+        px-5 py-2 rounded-t-lg font-medium transition-all duration-200
+        ${isActive ? "bg-white text-black" : "text-slate-500 bg-slate-200"}
+        `
+      }
     >
       {item}
     </NavLink>

@@ -1,10 +1,10 @@
 import NavBarItem from "../ui/NavBarItem";
 
 export default function NavBar() {
-  const navBaritems = ["Documents", "Forms", "Checklist"];
+  const navBaritems = ["Documents", "Forms", "Checklist", "Requests"];
 
   return (
-    <ul className="w-1/2 flex justify-center gap-2">
+    <ul className="flex h-fit justify-center rounded-xl px-2">
       {navBaritems.map((item, index) => (
         <NavBarItem item={item} key={index} />
       ))}
