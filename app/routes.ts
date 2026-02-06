@@ -12,7 +12,6 @@ export default [
     route("/forms", "./routes/Forms.tsx"),
     route("/checklist", "./routes/Checklist.tsx"),
     route("/requests", "./routes/Requests.tsx"),
-    route("/documents/update", "./routes/documents/UpdateDocument.tsx"),
   ]),
 
   layout("./routes/documents/layout.tsx", [

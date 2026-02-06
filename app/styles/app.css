@@ -9,26 +9,40 @@
 @layer base {
   h1 {
     font-size: 1.5rem;
+    font-weight: 700;
   }
   h2 {
     font-size: 1.25rem;
+    font-weight: 600;
   }
   h3 {
     font-size: 1.125rem;
+    font-weight: 500;
   }
   p {
     font-size: 1rem;
   }
 }
 
-html {
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+/* html {
   height: 100%;
   display: flex;
 }
 body {
-  flex-grow: 1;
   min-height: 100%;
-}
+  flex-grow: 1;
+  margin: 0;
+} */
 
 .icons-bs {
   width: 1.5rem;

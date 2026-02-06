@@ -21,7 +21,7 @@ export default function Documents() {
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="grid grid-cols-5 gap-2 auto-rows-[16rem]">
       {documentsItems.map((item, index) => (
         <CardItem
           key={index}
