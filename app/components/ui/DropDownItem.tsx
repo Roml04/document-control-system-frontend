@@ -49,11 +49,14 @@ export default function DropDownItem({
           <div className="flex w-full justify-end gap-2">
             <button
               onClick={handleApprove}
-              className="group px-4 py-2 rounded-lg hover:bg-black"
+              className="group px-4 py-2 rounded-lg hover:bg-black cursor-pointer"
             >
               <p className="text-black group-hover:text-white">Approve</p>
             </button>
-            <button onClick={handleDeny} className="group px-4 py-2 rounded-lg">
+            <button
+              onClick={handleDeny}
+              className="group px-4 py-2 rounded-lg cursor-pointer"
+            >
               <p className="text-red-400 group-hover:text-red-600 ">Deny</p>
             </button>
           </div>

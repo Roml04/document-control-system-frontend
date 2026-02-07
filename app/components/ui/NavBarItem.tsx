@@ -13,7 +13,7 @@ export default function NavBarItem({ item }: NavBarItemProps) {
       className={({ isActive }) =>
         `
         px-5 py-2 rounded-t-lg font-medium transition-all duration-200
-        ${isActive ? "bg-white text-black" : "text-slate-500 bg-slate-200"}
+        ${isActive ? "bg-white text-black" : "text-blue-200"}
         `
       }
     >

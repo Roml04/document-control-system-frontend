@@ -1,78 +1,69 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer } from "react";
 
-type DataBlockProps = {
-  title: string;
-  value: string;
-  styling?: string;
-  isInteractable?: boolean;
-};
-
-enum ACTIONS {
+enum ACTION {
   SETINTERACTABLEENABLED = "SETINTERACTABLEENABLED",
   SETINTERACTABLEDISABLED = "SETINTERACTABLEDISABLED",
   CANCELUPDATE = "CANCELUPDATE",
   UPDATEDETAIL = "UPDATEDETAIL",
 }
 
+type DataBlockProps = {
+  title: string;
+  value: string;
+  isInteractable?: boolean;
+};
+
 type StateTypes = {
   isInteractable: boolean;
-  isValueEnabled: boolean;
   documentDetail: string | undefined;
 };
 
 type ActionTypes = {
-  type: ACTIONS;
+  type: ACTION;
   payload?: string;
 };
 
 export default function DataBlock({
   title,
   value,
-  styling,
   isInteractable,
 }: DataBlockProps) {
   const initialState: StateTypes = {
     isInteractable: false,
-    isValueEnabled: false,
-    documentDetail: "Unknown",
+    documentDetail: value,
   };
 
-  const [inputValue, setInputValue] = useState(value);
   const [state, dispatch] = useReducer(dataBlockReducer, initialState);
 
   useEffect(() => {
-    isInteractable
-      ? dispatch({ type: ACTIONS.SETINTERACTABLEENABLED })
-      : dispatch({ type: ACTIONS.SETINTERACTABLEDISABLED });
+    dispatch({ type: ACTION.UPDATEDETAIL, payload: value });
+  }, [value]);
 
-    dispatch({ type: ACTIONS.UPDATEDETAIL, payload: value });
-  }, []);
+  useEffect(() => {
+    isInteractable
+      ? dispatch({ type: ACTION.SETINTERACTABLEENABLED })
+      : dispatch({ type: ACTION.SETINTERACTABLEDISABLED });
+  }, [isInteractable]);
 
   function dataBlockReducer(state: StateTypes, action: ActionTypes) {
     switch (action.type) {
-      case ACTIONS.SETINTERACTABLEENABLED:
+      case ACTION.SETINTERACTABLEENABLED:
+        console.log("enabled payload:", action.payload);
         return {
           ...state,
           isInteractable: true,
-          isValueEnabled: true,
         };
 
-      case ACTIONS.SETINTERACTABLEDISABLED:
+      case ACTION.SETINTERACTABLEDISABLED:
         return {
           ...state,
           isInteractable: false,
-          isValueEnabled: false,
         };
 
-      case ACTIONS.CANCELUPDATE:
-        return state;
-
-      case ACTIONS.UPDATEDETAIL:
-        const actionPayLoad = !action.payload ? action.payload : "Unknown";
-
+      case ACTION.UPDATEDETAIL:
         return {
           ...state,
-          documentDetail: actionPayLoad,
+          documentDetail: action.payload ?? state.documentDetail,
         };
 
       default:
@@ -81,19 +72,19 @@ export default function DataBlock({
   }
 
   return (
-    <div className={`flex w-full flex-col px-4 outline-none ${styling}`}>
+    <div className={`flex w-full flex-col px-4 outline-none`}>
       <h3>{title}</h3>
-      {isInteractable ? (
+      {state.isInteractable ? (
         <input
-          className="outline-none text-gray-400"
+          className="px-1 outline-none border border-black rounded-lg text-black"
           type="text"
           value={state.documentDetail}
           onChange={(e) =>
-            dispatch({ type: ACTIONS.UPDATEDETAIL, payload: e.target.value })
+            dispatch({ type: ACTION.UPDATEDETAIL, payload: e.target.value })
           }
         />
       ) : (
-        <p className="text-gray-400">{inputValue}</p>
+        <p className="px-1 text-gray-400">{state.documentDetail}</p>
       )}
     </div>
   );
