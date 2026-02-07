@@ -1,8 +1,27 @@
-import { useState } from "react";
+import { useReducer, useState } from "react";
 import { useNavigate } from "react-router";
 import { PopUpModal } from "~/components";
 import DataBlock from "~/components/ui/DataBlock";
 import DropDownItem from "~/components/ui/DropDownItem";
+
+enum ACTION {
+  ENABLESUBMIT = "ENABLESUBMIT",
+  DISABLESUBMIT = "DISABLESUBMIT",
+}
+
+type InitialStateTypes = {
+  isSubmitEnabled: boolean;
+  isInteractable: boolean;
+};
+
+type StateTypes = {
+  isSubmitEnabled: boolean;
+  isInteractable: boolean;
+};
+
+type ActionTypes = {
+  type: ACTION;
+};
 
 export default function Requests() {
   const testData: { title: string; reason: string }[] = [
@@ -26,20 +45,42 @@ export default function Requests() {
     },
   ];
 
-  const [isVisible, setIsVisible] = useState(false);
+  const initialState: InitialStateTypes = {
+    isSubmitEnabled: false,
+    isInteractable: false,
+  };
+
+  const [state, dispatch] = useReducer(requestsReducer, initialState);
+
   const [textAreaValue, setTextAreaValue] = useState("");
-  const [isSubmitEnabled, setSubmitEnabled] = useState(false);
-  const navigate = useNavigate();
+  const [isPopUpVisible, setisPopUpVisible] = useState(false);
+
+  function requestsReducer(state: StateTypes, action: ActionTypes) {
+    switch (action.type) {
+      case ACTION.ENABLESUBMIT:
+        return {
+          ...state,
+          isSubmitEnabled: true,
+          isInteractable: true,
+        };
+
+      case ACTION.DISABLESUBMIT:
+        return {
+          ...state,
+          isSubmitEnabled: false,
+          isInteractable: false,
+        };
+      default:
+        return state;
+    }
+  }
 
   function handleCancel() {
     setTextAreaValue("");
-    setIsVisible(false);
+    setisPopUpVisible(false);
   }
 
   function handleSubmit() {}
-  function handleApprove() {
-    setSubmitEnabled(true);
-  }
 
   return (
     <div className="flex w-full h-full">
@@ -54,13 +95,12 @@ export default function Requests() {
                   key={index}
                   title={item.title}
                   description={item.reason}
-                  handleApprove={handleApprove}
-                  handleDeny={() => setIsVisible(true)}
+                  handleApprove={() => dispatch({ type: ACTION.ENABLESUBMIT })}
+                  handleDeny={() => setisPopUpVisible(true)}
                 />
               ))}
             </ul>
           </div>
-
           {/* Document Details Panel */}
           <div className="flex flex-col justify-between w-full px-4 border-l border-slate-300">
             <div className="w-full">
@@ -86,51 +126,51 @@ export default function Requests() {
                 <DataBlock
                   title="Originator"
                   value="Originator Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Department"
                   value="Department Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
               </div>
               <div className="grid grid-cols-2 gap-y-4 w-full justify-around py-4 border-b border-slate-400">
                 <DataBlock
                   title="Revision Number"
                   value="Revision Number Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Revision Details"
                   value="Revision Details Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Date"
                   value="Date Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
               </div>
               <div className="grid grid-cols-2 w-full justify-around py-4">
                 <DataBlock
                   title="Approver"
                   value="Approver Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Date"
                   value="Date Value"
-                  isInteractable={isSubmitEnabled}
+                  isInteractable={state.isInteractable}
                 />
               </div>
             </div>
-
+            {/*  */}
             <div className="flex w-full justify-end gap-2">
-              {isSubmitEnabled && (
+              {state.isInteractable && (
                 <button
-                  onClick={() => setSubmitEnabled(false)}
+                  onClick={() => dispatch({ type: ACTION.DISABLESUBMIT })}
                   className={
-                    isSubmitEnabled
+                    state.isInteractable
                       ? "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-gray-400 hover:text-black"
                       : "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-gray-300"
                   }
@@ -141,11 +181,11 @@ export default function Requests() {
               <button
                 onClick={() => {}}
                 className={
-                  isSubmitEnabled
+                  state.isInteractable
                     ? "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-black hover:text-white hover:bg-black"
                     : "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-gray-300"
                 }
-                disabled={!isSubmitEnabled}
+                disabled={!state.isInteractable}
               >
                 Submit
               </button>
@@ -153,7 +193,7 @@ export default function Requests() {
           </div>
         </div>
       </div>
-      {isVisible && (
+      {isPopUpVisible && (
         <PopUpModal onClose={() => {}}>
           <h2>Comment</h2>
           <textarea
