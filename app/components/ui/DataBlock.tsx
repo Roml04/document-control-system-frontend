@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, type ComponentPropsWithoutRef } from "react";
 
 enum ACTION {
   SETINTERACTABLEENABLED = "SETINTERACTABLEENABLED",
@@ -11,6 +11,7 @@ type DataBlockProps = {
   title: string;
   value: string;
   isInteractable?: boolean;
+  styling?: string;
 };
 
 type StateTypes = {
@@ -27,6 +28,7 @@ export default function DataBlock({
   title,
   value,
   isInteractable,
+  styling,
 }: DataBlockProps) {
   const initialState: StateTypes = {
     isInteractable: false,
@@ -72,11 +74,11 @@ export default function DataBlock({
   }
 
   return (
-    <div className={`flex w-full flex-col px-4 outline-none`}>
+    <div className={`flex w-full flex-col px-4 outline-none ${styling}`}>
       <h3>{title}</h3>
       {state.isInteractable ? (
         <input
-          className="px-1 outline-none border border-black rounded-lg text-black"
+          className="px-1 outline-none border border-slate-400 rounded-sm text-black"
           type="text"
           value={state.documentDetail}
           onChange={(e) =>

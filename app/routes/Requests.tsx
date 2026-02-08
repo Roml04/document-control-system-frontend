@@ -193,14 +193,15 @@ export default function Requests() {
                   isInteractable={state.isInteractable}
                 />
                 <DataBlock
-                  title="Revision Details"
-                  value={state.documentDetails.revisionDetails}
-                  isInteractable={state.isInteractable}
-                />
-                <DataBlock
                   title="Date"
                   value={state.documentDetails.dateCreated}
                   isInteractable={state.isInteractable}
+                />
+                <DataBlock
+                  title="Revision Details"
+                  value={state.documentDetails.revisionDetails}
+                  isInteractable={state.isInteractable}
+                  styling="col-span-2"
                 />
               </div>
               <div className="grid grid-cols-2 w-full justify-around py-4">
