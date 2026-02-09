@@ -1,8 +1,10 @@
 import { useEffect, useReducer, useState } from "react";
-import { Icon, PopUpModal } from "~/components";
-import PressableIcon from "~/components/primitives/PressableIcon";
-import DataBlock from "~/components/ui/DataBlock";
-import DropDownItem from "~/components/ui/DropDownItem";
+import {
+  PressableIcon,
+  DataBlock,
+  DropDownItem,
+  PopUpModal,
+} from "~/components";
 
 enum ACTION {
   ENABLESUBMIT = "ENABLESUBMIT",

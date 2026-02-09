@@ -1,4 +1,4 @@
-import { Outlet, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import PressableIcon from "../primitives/PressableIcon";
 import type { ReactNode } from "react";
 

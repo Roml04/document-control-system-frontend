@@ -60,6 +60,7 @@ export default function Home() {
         <button
           type="submit"
           className="px-4 py-2 border border-gray-400 rounded-lg cursor-pointer"
+          onClick={handleLogin}
         >
           Login
           {/* <p className="px-4 py-2 border border-gray-400 rounded-lg">Login</p> */}

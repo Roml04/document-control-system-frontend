@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PopUpModal } from "~/components";
-import DocumentsPageLayout from "~/components/layout.tsx/DocumentsPageLayout";
+import { DocumentsPageLayout } from "~/components";
 import DataBlock from "~/components/ui/DataBlock";
 
 export default function WasteManagement() {

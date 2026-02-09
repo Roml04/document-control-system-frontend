@@ -1,5 +1,5 @@
 import type { IconName } from "~/assets/icons/icons";
-import CardItem from "~/components/ui/CardItem";
+import { CardItem } from "~/components";
 
 export default function Documents() {
   const documentsItems: { title: string; uri: string; icon: IconName }[] = [

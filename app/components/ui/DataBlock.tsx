@@ -1,4 +1,4 @@
-import { useEffect, useReducer, type ComponentPropsWithoutRef } from "react";
+import { useEffect, useReducer } from "react";
 
 enum ACTION {
   SETINTERACTABLEENABLED = "SETINTERACTABLEENABLED",

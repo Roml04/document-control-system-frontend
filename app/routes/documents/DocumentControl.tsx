@@ -1,4 +1,4 @@
-import DocumentsPageLayout from "~/components/layout.tsx/DocumentsPageLayout";
+import { DocumentsPageLayout } from "~/components";
 
 export default function DocumentControl() {
   return (
