@@ -104,106 +104,130 @@ export default function Register() {
   }
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-4 py-2">
+    <div className="flex h-full min-h-screen flex-col items-center justify-center bg-gray-50 px-4 py-6">
       <form
-        className="flex flex-col justify-center items-end border border-gray-400 rounded-lg p-4 gap-4"
+        className="flex flex-col w-full max-w-lg bg-white border border-gray-200 rounded-xl shadow-lg p-6 gap-6"
         onSubmit={(e) => {
           e.preventDefault();
           handleRegister();
         }}
       >
-        <div className="flex flex-col items-start">
-          <h1>Register</h1>
-          <div className="flex gap-2">
-            <div className="flex flex-col">
-              <label htmlFor="email">First Name</label>
-              <input
-                value={state.firstName}
-                onChange={(e) =>
-                  dispatch({
-                    type: ACTION.SETFIRSTNAME,
-                    payload: e.target.value,
-                  })
-                }
-                className="border border-gray-400 rounded-md outline-none px-2 py-1"
-                type="text"
-              />
+        <div className="flex flex-col gap-6">
+          <h1 className="text-2xl font-bold text-gray-800 text-center">
+            Register
+          </h1>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <div className="flex flex-col flex-1">
+                <label
+                  htmlFor="firstName"
+                  className="mb-1 font-medium text-gray-700"
+                >
+                  First Name
+                </label>
+                <input
+                  value={state.firstName}
+                  onChange={(e) =>
+                    dispatch({
+                      type: ACTION.SETFIRSTNAME,
+                      payload: e.target.value,
+                    })
+                  }
+                  className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
+                  type="text"
+                />
+              </div>
+
+              <div className="flex flex-col flex-1">
+                <label
+                  htmlFor="lastName"
+                  className="mb-1 font-medium text-gray-700"
+                >
+                  Last Name
+                </label>
+                <input
+                  value={state.lastName}
+                  onChange={(e) =>
+                    dispatch({
+                      type: ACTION.SETLASTNAME,
+                      payload: e.target.value,
+                    })
+                  }
+                  className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
+                  type="text"
+                />
+              </div>
             </div>
+
+            <div className="flex gap-4">
+              <div className="flex flex-col flex-1">
+                <label
+                  htmlFor="email"
+                  className="mb-1 font-medium text-gray-700"
+                >
+                  Email
+                </label>
+                <input
+                  value={state.email}
+                  onChange={(e) =>
+                    dispatch({ type: ACTION.SETEMAIL, payload: e.target.value })
+                  }
+                  className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
+                  type="email"
+                />
+              </div>
+
+              <div className="flex flex-col flex-1">
+                <label
+                  htmlFor="password"
+                  className="mb-1 font-medium text-gray-700"
+                >
+                  Password
+                </label>
+                <input
+                  value={state.password}
+                  onChange={(e) =>
+                    dispatch({
+                      type: ACTION.SETPASSWORD,
+                      payload: e.target.value,
+                    })
+                  }
+                  className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
+                  type="password"
+                />
+              </div>
+            </div>
+
             <div className="flex flex-col">
-              <label htmlFor="email">Last Name</label>
-              <input
-                value={state.lastName}
+              <label htmlFor="role" className="mb-1 font-medium text-gray-700">
+                Role
+              </label>
+              <select
+                value={state.role}
                 onChange={(e) =>
-                  dispatch({
-                    type: ACTION.SETLASTNAME,
-                    payload: e.target.value,
-                  })
+                  dispatch({ type: ACTION.SETROLE, payload: e.target.value })
                 }
-                className="border border-gray-400 rounded-md outline-none px-2 py-1"
-                type="text"
-              />
+                name="role"
+                id="role"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
+              >
+                <option value="">Select a Role</option>
+                <option value="user">User</option>
+                <option value="originator">Originator</option>
+                <option value="coordinator">Coordinator (DCC)</option>
+                <option value="superior">Superior</option>
+              </select>
             </div>
           </div>
-          <div className="flex gap-2">
-            <div className="flex flex-col">
-              <label htmlFor="email">Email</label>
-              <input
-                value={state.email}
-                onChange={(e) =>
-                  dispatch({
-                    type: ACTION.SETEMAIL,
-                    payload: e.target.value,
-                  })
-                }
-                className="border border-gray-400 rounded-md outline-none px-2 py-1"
-                type="email"
-              />
-            </div>
-            <div className="flex flex-col">
-              <label htmlFor="password">Password</label>
-              <input
-                value={state.password}
-                onChange={(e) =>
-                  dispatch({
-                    type: ACTION.SETPASSWORD,
-                    payload: e.target.value,
-                  })
-                }
-                className="border border-gray-400 rounded-md outline-none px-2 py-1"
-                type="password"
-              />
-            </div>
-          </div>
-          <div className="flex flex-col">
-            <label htmlFor="password">Role</label>
-            <select
-              value={state.role}
-              onChange={(e) =>
-                dispatch({
-                  type: ACTION.SETROLE,
-                  payload: e.target.value,
-                })
-              }
-              name="role"
-              id="role"
-              className="w-full border border-gray-400 rounded-md outline-none px-2 py-1"
-            >
-              <option value="">Select a Role</option>
-              <option value="user">User</option>
-              <option value="originator">Originator</option>
-              <option value="coordinator">Coordinator (DCC)</option>
-              <option value="superior">Superior</option>
-            </select>
-          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 transition"
+          >
+            Register
+          </button>
         </div>
-        <button
-          type="submit"
-          className="px-4 py-2 border border-gray-400 rounded-lg cursor-pointer"
-          // onClick={handleRegister}
-        >
-          Register
-          {/* <p className="px-4 py-2 border border-gray-400 rounded-lg">Login</p> */}
-        </button>
       </form>
     </div>
   );
