@@ -1,6 +1,21 @@
 import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
-import { useState } from "react";
+import { useReducer, useState } from "react";
+
+enum ACTION {
+  SETEMAILVALUE = "SETEMAILVALUE",
+  SETPASSWORDVALUE = "SETPASSWORDVALUE",
+}
+
+type StateType = {
+  email: string;
+  password: string;
+};
+
+type ActionType = {
+  type: ACTION;
+  payload: string;
+};
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -11,20 +26,62 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const navigate = useNavigate();
+  const initialState: StateType = {
+    email: "",
+    password: "",
+  };
 
   // use the reducer hook
-  const [emailValue, setEmailValue] = useState("");
-  const [passwordValue, setPasswordValue] = useState("");
+  const [state, dispatch] = useReducer(loginReducer, initialState);
 
-  const isValid = true;
+  function loginReducer(state: StateType, action: ActionType) {
+    switch (action.type) {
+      case ACTION.SETEMAILVALUE:
+        return {
+          ...state,
+          email: action.payload,
+        };
 
-  function handleLogin() {
-    console.log("email:", emailValue);
-    console.log("password:", passwordValue);
+      case ACTION.SETPASSWORDVALUE:
+        return {
+          ...state,
+          password: action.payload,
+        };
 
-    if (!isValid) throw Error("Invalid auth details");
+      default:
+        return state;
+    }
+  }
 
-    navigate("/documents");
+  async function handleLogin() {
+    try {
+      const response = await fetch(`http://127.0.0.1:80/api/user`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          // "Authorization": "Bearer LARAVEL_SANCTUM_TOKEN"
+        },
+        body: JSON.stringify({
+          email: state.email,
+          password: state.password,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        console.error(result.message);
+
+        return;
+      }
+
+      console.log(result);
+      console.log(result.message);
+      navigate("/documents");
+    } catch (error) {
+      throw error;
+    }
   }
 
   return (
@@ -41,8 +98,13 @@ export default function Home() {
           <div className="flex flex-col">
             <label htmlFor="email">Email</label>
             <input
-              value={emailValue}
-              onChange={(e) => setEmailValue(e.target.value)}
+              value={state.email}
+              onChange={(e) =>
+                dispatch({
+                  type: ACTION.SETEMAILVALUE,
+                  payload: e.target.value,
+                })
+              }
               className="border border-gray-400 rounded-md outline-none px-2 py-1"
               type="email"
             />
@@ -50,8 +112,13 @@ export default function Home() {
           <div className="flex flex-col">
             <label htmlFor="password">Password</label>
             <input
-              value={passwordValue}
-              onChange={(e) => setPasswordValue(e.target.value)}
+              value={state.password}
+              onChange={(e) =>
+                dispatch({
+                  type: ACTION.SETPASSWORDVALUE,
+                  payload: e.target.value,
+                })
+              }
               className="border border-gray-400 rounded-md outline-none px-2 py-1"
               type="password"
             />
@@ -60,7 +127,6 @@ export default function Home() {
         <button
           type="submit"
           className="px-4 py-2 border border-gray-400 rounded-lg cursor-pointer"
-          onClick={handleLogin}
         >
           Login
           {/* <p className="px-4 py-2 border border-gray-400 rounded-lg">Login</p> */}
