@@ -97,7 +97,7 @@ export default function Register() {
       }
 
       console.log(result.message);
-      navigate("/documents");
+      navigate("/");
     } catch (error) {
       throw error;
     }

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
-import { useReducer, useState } from "react";
+import { useReducer } from "react";
 
 enum ACTION {
   SETEMAILVALUE = "SETEMAILVALUE",
@@ -55,12 +55,15 @@ export default function Home() {
 
   async function handleLogin() {
     try {
-      const response = await fetch(`http://127.0.0.1:80/api/user`, {
+      const token = localStorage.getItem("apiToken");
+
+      const response = await fetch(`http://127.0.0.1/api/user`, {
         method: "POST",
+        credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          // "Authorization": "Bearer LARAVEL_SANCTUM_TOKEN"
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           email: state.email,
@@ -69,15 +72,18 @@ export default function Home() {
       });
 
       const result = await response.json();
+      console.error("RESPONSE:", response);
 
       if (!response.ok) {
+        console.error("FAILED:", result);
         console.error(result.message);
 
         return;
       }
 
-      console.log(result);
+      console.log("SUCCESS", result);
       console.log(result.message);
+
       navigate("/documents");
     } catch (error) {
       throw error;

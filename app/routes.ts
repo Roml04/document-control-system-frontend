@@ -2,6 +2,7 @@ import {
   type RouteConfig,
   index,
   layout,
+  prefix,
   route,
 } from "@react-router/dev/routes";
 
@@ -25,5 +26,11 @@ export default [
       "/document/document-control-procedure",
       "./routes/documents/DocumentControl.tsx",
     ),
+  ]),
+
+  // apply layout to these routes
+  ...prefix("/error", [
+    route("/401", "./routes/error/401.tsx"),
+    route("/500", "./routes/error/RequestFailed.tsx"),
   ]),
 ] satisfies RouteConfig;
