@@ -55,15 +55,13 @@ export default function Home() {
 
   async function handleLogin() {
     try {
-      const token = localStorage.getItem("apiToken");
-
       const response = await fetch(`http://127.0.0.1/api/user`, {
         method: "POST",
         credentials: "include",
         headers: {
           "Content-Type": "application/json",
           Accept: "application/json",
-          Authorization: `Bearer ${token}`,
+          // Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           email: state.email,
@@ -72,7 +70,7 @@ export default function Home() {
       });
 
       const result = await response.json();
-      console.error("RESPONSE:", response);
+      console.log("RESPONSE:", response);
 
       if (!response.ok) {
         console.error("FAILED:", result);
@@ -83,6 +81,10 @@ export default function Home() {
 
       console.log("SUCCESS", result);
       console.log(result.message);
+
+      const data = result.data;
+
+      localStorage.setItem("apiToken", data.token);
 
       navigate("/documents");
     } catch (error) {

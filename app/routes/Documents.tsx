@@ -3,7 +3,13 @@ import { CardItem } from "~/components";
 import { requireAuth } from "~/utils/requireAuth";
 
 export async function clientLoader({ request }: { request: Request }) {
-  return requireAuth(request, ["coordinator"]);
+  return requireAuth(request, [
+    "user",
+    "originator",
+    "coordinator",
+    "superior",
+    "admin",
+  ]);
 }
 
 export default function Documents() {
