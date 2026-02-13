@@ -1,16 +1,5 @@
 import type { IconName } from "~/assets/icons/icons";
 import { CardItem } from "~/components";
-import { requireAuth } from "~/utils/requireAuth";
-
-export async function clientLoader({ request }: { request: Request }) {
-  return requireAuth(request, [
-    "user",
-    "originator",
-    "coordinator",
-    "superior",
-    "admin",
-  ]);
-}
 
 export default function Documents() {
   const documentsItems: { title: string; uri: string; icon: IconName }[] = [
