@@ -1,15 +1,5 @@
 import { Outlet } from "react-router";
 import { NavBar } from "~/components";
-import { requireAuth } from "~/utils/requireAuth";
-
-export async function clientLoader({ request }: { request: Request }) {
-  return requireAuth(request, [
-    "originator",
-    "superior",
-    "admin",
-    "coordinator",
-  ]);
-}
 
 export default function layout() {
   return (

@@ -80,11 +80,12 @@ export default function Home() {
       }
 
       console.log("SUCCESS", result);
-      console.log(result.message);
 
       const data = result.data;
+      console.log(data.role);
 
       localStorage.setItem("apiToken", data.token);
+      localStorage.setItem("role", data.role);
 
       navigate("/documents");
     } catch (error) {
