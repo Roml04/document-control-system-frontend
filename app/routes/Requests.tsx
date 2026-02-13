@@ -5,6 +5,7 @@ import {
   DropDownItem,
   PopUpModal,
 } from "~/components";
+import { requireAuth } from "~/utils/requireAuth";
 
 enum ACTION {
   ENABLESUBMIT = "ENABLESUBMIT",
@@ -37,6 +38,15 @@ type DocumentDataTypes = {
   approver: string;
   dateApproved: string;
 };
+
+export async function clientLoader({ request }: { request: Request }) {
+  return requireAuth(request, [
+    "originator",
+    "superior",
+    "admin",
+    "coordinator",
+  ]);
+}
 
 export default function Requests() {
   const testData: { title: string; reason: string }[] = [
