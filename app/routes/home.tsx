@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
 import { useReducer } from "react";
+import { useSessionStore } from "stores/sessionStore";
 
 enum ACTION {
   SETEMAILVALUE = "SETEMAILVALUE",
@@ -31,8 +32,10 @@ export default function Home() {
     password: "",
   };
 
-  // use the reducer hook
   const [state, dispatch] = useReducer(loginReducer, initialState);
+  const updateFirstName = useSessionStore((state) => state.updateFirstName);
+  const updateLastName = useSessionStore((state) => state.updateLastName);
+  const updateRole = useSessionStore((state) => state.updateRole);
 
   function loginReducer(state: StateType, action: ActionType) {
     switch (action.type) {
@@ -83,6 +86,10 @@ export default function Home() {
 
       const data = result.data;
       console.log(data.role);
+
+      updateFirstName(data.first_name);
+      updateLastName(data.last_name);
+      updateRole(data.role);
 
       localStorage.setItem("apiToken", data.token);
       localStorage.setItem("role", data.role);
