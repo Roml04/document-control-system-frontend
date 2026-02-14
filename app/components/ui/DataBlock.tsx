@@ -75,7 +75,6 @@ export default function DataBlock({
 
   return (
     <div className={`flex w-full flex-col px-4 outline-none ${styling}`}>
-      <h3>{title}</h3>
       {state.isInteractable ? (
         <input
           className="px-1 outline-none border border-slate-400 rounded-sm text-black"
@@ -86,8 +85,24 @@ export default function DataBlock({
           }
         />
       ) : (
-        <p className="px-1 text-gray-400">{state.documentDetail}</p>
+        <h3>{state.documentDetail}</h3>
       )}
+      <p className="text-gray-400">{title}</p>
     </div>
+    // <div className={`flex w-full flex-col px-4 outline-none ${styling}`}>
+    //   <h3>{title}</h3>
+    //   {state.isInteractable ? (
+    //     <input
+    //       className="px-1 outline-none border border-slate-400 rounded-sm text-black"
+    //       type="text"
+    //       value={state.documentDetail}
+    //       onChange={(e) =>
+    //         dispatch({ type: ACTION.UPDATEDETAIL, payload: e.target.value })
+    //       }
+    //     />
+    //   ) : (
+    //     <p className="px-1 text-gray-400">{state.documentDetail}</p>
+    //   )}
+    // </div>
   );
 }
