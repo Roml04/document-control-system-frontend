@@ -38,6 +38,10 @@ type DocumentDataTypes = {
   dateApproved: string;
 };
 
+export async function clientLoader() {
+  return;
+}
+
 export default function Requests() {
   const testData: { title: string; reason: string }[] = [
     {

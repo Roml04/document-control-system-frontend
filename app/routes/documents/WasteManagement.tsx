@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { PopUpModal } from "~/components";
-import { DocumentsPageLayout } from "~/components";
+import { useSessionStore } from "stores/sessionStore";
+import { PopUpModal, DocumentsPageLayout } from "~/components";
 import DataBlock from "~/components/ui/DataBlock";
+import { isRoleAllowed } from "~/utils/isRoleAllowed";
 
 export default function WasteManagement() {
   const [isVisible, setIsVisible] = useState(false);
   const [textAreaValue, setTextAreaValue] = useState("");
+  const role = useSessionStore((state) => state.role);
+
+  const btnsVisible = isRoleAllowed(["originator", "coordinator"], role);
 
   function handleRevisionClick() {
     setIsVisible(true);
@@ -58,20 +62,22 @@ export default function WasteManagement() {
             styling="border-l border-slate-400"
           />
         </div>
-        <div className="flex w-full justify-end gap-2">
-          <button
-            onClick={handleRevisionClick}
-            className="border w-1/5 px-4 py-2 rounded-lg "
-          >
-            Revision
-          </button>
-          <button
-            onClick={handleObsoleteClick}
-            className="border w-1/5 px-4 py-2 rounded-lg"
-          >
-            Obsolete
-          </button>
-        </div>
+        {btnsVisible && (
+          <div className="flex w-full justify-end gap-2">
+            <button
+              onClick={handleRevisionClick}
+              className="border w-1/5 px-4 py-2 rounded-lg cursor-pointer"
+            >
+              Revision
+            </button>
+            <button
+              onClick={handleObsoleteClick}
+              className="border w-1/5 px-4 py-2 rounded-lg cursor-pointer"
+            >
+              Obsolete
+            </button>
+          </div>
+        )}
       </DocumentsPageLayout>
       {isVisible && (
         <PopUpModal onClose={() => {}}>
