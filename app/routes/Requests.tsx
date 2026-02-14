@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
+import { useSessionStore } from "stores/sessionStore";
 import {
   PressableIcon,
   DataBlock,
@@ -43,49 +44,17 @@ export async function clientLoader() {
 }
 
 export default function Requests() {
-  const testData: { title: string; reason: string }[] = [
-    {
-      title: "For Approval - Revision of Waste Management",
-      reason:
-        "Updated guidelines required to comply with new environmental regulations.",
-    },
-    {
-      title: "For Review - Employee Code of Conduct",
-      reason:
-        "Periodic review to ensure policies remain aligned with company values.",
-    },
-    {
-      title: "For Approval - IT Security Policy Update",
-      reason: "Necessary changes due to recent cybersecurity audit findings.",
-    },
-    {
-      title: "For Approval - Revision",
-      reason: "Reason",
-    },
-  ];
-
-  const documentData: DocumentDataTypes = {
-    originator: "Maria Santos",
-    department: "Human Resources",
-    revisionNumber: "Rev-03",
-    revisionDetails:
-      "Updated employee leave policy to include remote work options",
-    dateCreated: "2026-02-07",
-    approver: "Juan Dela Cruz",
-    dateApproved: "2026-02-08",
-  };
-
   const initialState: StateTypes = {
     isSubmitEnabled: false,
     isInteractable: false,
     documentDetails: {
-      originator: "Unknown",
-      department: "Unknown",
-      revisionNumber: "Unknown",
+      originator: "None",
+      department: "None",
+      revisionNumber: "None",
       revisionDetails: "None",
-      dateCreated: "0000-00-00",
-      approver: "Unknown",
-      dateApproved: "0000-00-00",
+      dateCreated: "None",
+      approver: "None",
+      dateApproved: "None",
     },
     previousDocumentDetails: null,
   };
@@ -94,6 +63,7 @@ export default function Requests() {
 
   const [textAreaValue, setTextAreaValue] = useState("");
   const [isPopUpVisible, setisPopUpVisible] = useState(false);
+  const token = useSessionStore((state) => state.role);
 
   useEffect(() => {
     console.log("Document Details Changed:", state.documentDetails);
@@ -125,6 +95,19 @@ export default function Requests() {
     }
   }
 
+  async function fetchRevisions() {
+    const response = await fetch("", {
+      method: "get",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    return await response.json();
+  }
+
   function handleCancel() {
     setTextAreaValue("");
     setisPopUpVisible(false);
@@ -140,7 +123,7 @@ export default function Requests() {
           <div className="flex flex-col w-3/4 gap-2 h-full">
             <h1>Requests</h1>
             <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
-              {testData.map((item, index) => (
+              {[{ title: "title", reason: "reason" }].map((item, index) => (
                 <DropDownItem
                   key={index}
                   title={item.title}
@@ -148,7 +131,15 @@ export default function Requests() {
                   handleApprove={() => {
                     dispatch({
                       type: ACTION.ENABLESUBMIT,
-                      payload: documentData,
+                      payload: {
+                        originator: "Juan Dela Cruz",
+                        department: "HR Department",
+                        revisionNumber: "Rev-002",
+                        revisionDetails: "None",
+                        dateCreated: "2026-02-02",
+                        approver: "John Doe",
+                        dateApproved: "2026-02-12",
+                      },
                     });
                   }}
                   handleDeny={() => setisPopUpVisible(true)}

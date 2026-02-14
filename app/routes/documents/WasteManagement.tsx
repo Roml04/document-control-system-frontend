@@ -13,6 +13,8 @@ enum ACTION {
   SETAPPROVER = "SETAPPROVER",
   SETAPPROVEDDATE = "SETAPPROVEDDATE",
   FETCHDOCUDETAILS = "FETCHDOCUDETAILS",
+  SETREVISIONREASON = "SETREVISIONREASON",
+  SETREVISIONTITLE = "SETREVISIONTITLE",
 }
 
 type StateType = {
@@ -23,6 +25,8 @@ type StateType = {
   revisionDate: string;
   approver: string;
   approvedDate: string;
+  revisionTitle: string;
+  revisionReason: string;
 };
 
 type ActionType = {
@@ -39,6 +43,8 @@ export default function WasteManagement() {
     revisionDate: "None",
     approver: "None",
     approvedDate: "None",
+    revisionTitle: "",
+    revisionReason: "",
   };
   const [isVisible, setIsVisible] = useState(false);
   const [token, setToken] = useState("");
@@ -110,6 +116,11 @@ export default function WasteManagement() {
           return {
             ...state,
             approvedDate: payload,
+          };
+
+        case ACTION.SETREVISIONTITLE:
+          return {
+            ...state,
           };
 
         default:
@@ -190,7 +201,7 @@ export default function WasteManagement() {
             />
             <DataBlock
               title="Revision Number"
-              value="Revision Number Value"
+              value={state.revisionNumber}
               styling="col-span-2"
             />
             <DataBlock title="Date" value={state.revisionDate} styling="" />
@@ -234,14 +245,26 @@ export default function WasteManagement() {
           <div className="flex flex-col gap-2">
             <input
               type="text"
+              value={state.revisionTitle}
               placeholder="Title"
               className="rounded-lg resize-y outline-none text-xl font-bold"
+              onChange={(e) =>
+                dispatch({
+                  type: ACTION.SETREVISIONTITLE,
+                  payload: e.target.value,
+                })
+              }
             />
             <textarea
               className="rounded-lg resize-y min-h-32 outline-none"
-              value={textAreaValue}
+              value={state.revisionReason}
               placeholder="Reason for revision..."
-              onChange={(e) => setTextAreaValue(e.target.value)}
+              onChange={(e) =>
+                dispatch({
+                  type: ACTION.SETREVISIONREASON,
+                  payload: e.target.value,
+                })
+              }
             />
           </div>
           <div className="flex w-full justify-between gap-2">
