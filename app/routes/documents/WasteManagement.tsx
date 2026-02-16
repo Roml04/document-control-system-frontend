@@ -13,6 +13,7 @@ enum ACTION {
   SETAPPROVER = "SETAPPROVER",
   SETAPPROVEDDATE = "SETAPPROVEDDATE",
   FETCHDOCUDETAILS = "FETCHDOCUDETAILS",
+  SETUSERID = "SETUSERID",
   SETREVISIONREASON = "SETREVISIONREASON",
   SETREVISIONTITLE = "SETREVISIONTITLE",
 }
@@ -25,6 +26,7 @@ type StateType = {
   revisionDate: string;
   approver: string;
   approvedDate: string;
+  userId: number | null;
   revisionTitle: string;
   revisionReason: string;
 };
@@ -43,14 +45,17 @@ export default function WasteManagement() {
     revisionDate: "None",
     approver: "None",
     approvedDate: "None",
+    userId: null,
     revisionTitle: "",
     revisionReason: "",
   };
+
   const [isVisible, setIsVisible] = useState(false);
   const [token, setToken] = useState("");
   const [textAreaValue, setTextAreaValue] = useState("");
-  const role = useSessionStore((state) => state.role);
   const [state, dispatch] = useReducer(documentDetailsReducer, initialState);
+  const role = useSessionStore((state) => state.role);
+  const userId = useSessionStore((state) => state.userId);
 
   useEffect(() => {
     fetchDocumentDetails();
@@ -62,7 +67,7 @@ export default function WasteManagement() {
     const storedToken = localStorage.getItem("apiToken");
     setToken(storedToken ? storedToken : "");
 
-    const response = await fetch("http://localhost/api/waste-management", {
+    const response = await fetch("http://127.0.0.1/api/waste-management", {
       method: "get",
       headers: {
         Accept: "application/json",
@@ -85,13 +90,11 @@ export default function WasteManagement() {
             ...state,
             originator: payload,
           };
-
         case ACTION.SETDEPARTMENT:
           return {
             ...state,
             department: payload,
           };
-
         case ACTION.SETREVISIONNUM:
           return {
             ...state,
@@ -117,12 +120,21 @@ export default function WasteManagement() {
             ...state,
             approvedDate: payload,
           };
-
+        case ACTION.SETUSERID:
+          return {
+            ...state,
+            uesrId: payload,
+          };
         case ACTION.SETREVISIONTITLE:
           return {
             ...state,
+            revisionTitle: payload,
           };
-
+        case ACTION.SETREVISIONREASON:
+          return {
+            ...state,
+            revisionReason: payload,
+          };
         default:
           return state;
       }
@@ -151,18 +163,42 @@ export default function WasteManagement() {
   function handleObsoleteClick() {}
 
   function handleCancel() {
-    setTextAreaValue("");
+    dispatch({ type: ACTION.SETREVISIONTITLE, payload: "" });
+    dispatch({ type: ACTION.SETREVISIONREASON, payload: "" });
     setIsVisible(false);
   }
 
   async function handleSubmit() {
-    await fetch("", {
+    console.log("TITLE:", state.revisionTitle);
+    console.log("REASON:", state.revisionReason);
+
+    const response = await fetch("http://127.0.0.1/api/revision", {
       method: "post",
       headers: {
+        "Content-Type": "application/json",
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
       },
+      body: JSON.stringify({
+        title: state.revisionTitle,
+        reason: state.revisionReason,
+        user_id: userId,
+        document_id: 1,
+      }),
     });
+
+    console.log("RESPONSE IS OK:", response.ok);
+
+    if (!response.ok) {
+      console.error("FAILED");
+      console.error(response);
+      return;
+    }
+
+    console.log("SUCCESS");
+    const data = await response.json();
+    console.log(data);
+    setIsVisible(false);
   }
 
   return (
@@ -247,7 +283,7 @@ export default function WasteManagement() {
               type="text"
               value={state.revisionTitle}
               placeholder="Title"
-              className="rounded-lg resize-y outline-none text-xl font-bold"
+              className="resize-y outline-none text-xl font-bold"
               onChange={(e) =>
                 dispatch({
                   type: ACTION.SETREVISIONTITLE,
@@ -256,7 +292,7 @@ export default function WasteManagement() {
               }
             />
             <textarea
-              className="rounded-lg resize-y min-h-32 outline-none"
+              className="resize-y min-h-32 outline-none"
               value={state.revisionReason}
               placeholder="Reason for revision..."
               onChange={(e) =>

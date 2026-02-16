@@ -36,6 +36,7 @@ export default function Home() {
   const updateFirstName = useSessionStore((state) => state.updateFirstName);
   const updateLastName = useSessionStore((state) => state.updateLastName);
   const updateRole = useSessionStore((state) => state.updateRole);
+  const updateUserId = useSessionStore((state) => state.updateUserId);
 
   function loginReducer(state: StateType, action: ActionType) {
     switch (action.type) {
@@ -82,11 +83,13 @@ export default function Home() {
         return;
       }
 
-      console.log("SUCCESS", result);
+      console.log("SUCCESS");
 
       const data = result.data;
-      console.log(data.role);
 
+      console.log("home.tsx | userId:", data.user_id);
+
+      updateUserId(data.user_id);
       updateFirstName(data.first_name);
       updateLastName(data.last_name);
       updateRole(data.role);

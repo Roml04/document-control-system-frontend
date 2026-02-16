@@ -1,29 +1,34 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-type StateType = {
+export type SessionStateType = {
+  userId: number | null;
   firstName: string;
   lastName: string;
   role: string;
 };
 
 type ActionType = {
-  updateFirstName: (firstName: StateType["firstName"]) => void;
-  updateLastName: (lastName: StateType["lastName"]) => void;
-  updateRole: (role: StateType["role"]) => void;
+  updateUserId: (userId: SessionStateType["userId"]) => void;
+  updateFirstName: (firstName: SessionStateType["firstName"]) => void;
+  updateLastName: (lastName: SessionStateType["lastName"]) => void;
+  updateRole: (role: SessionStateType["role"]) => void;
 };
 
-export const useSessionStore = create<StateType & ActionType>()(
+export const useSessionStore = create<SessionStateType & ActionType>()(
   persist(
     (set) => ({
+      userId: null,
       firstName: "",
       lastName: "",
       role: "user",
-      updateFirstName: (firstName: StateType["firstName"]) =>
+      updateUserId: (userId: SessionStateType["userId"]) =>
+        set(() => ({ userId: userId })),
+      updateFirstName: (firstName: SessionStateType["firstName"]) =>
         set(() => ({ firstName: firstName })),
-      updateLastName: (lastName: StateType["lastName"]) =>
+      updateLastName: (lastName: SessionStateType["lastName"]) =>
         set(() => ({ lastName: lastName })),
-      updateRole: (role: StateType["role"]) =>
+      updateRole: (role: SessionStateType["role"]) =>
         set(() => ({
           role: role,
         })),

@@ -39,6 +39,14 @@ type DocumentDataTypes = {
   dateApproved: string;
 };
 
+type RevisionsTypes = {
+  id: number;
+  title: string;
+  reason: string;
+  user_id: number;
+  document_id: number;
+}[];
+
 export async function clientLoader() {
   return;
 }
@@ -59,17 +67,18 @@ export default function Requests() {
     previousDocumentDetails: null,
   };
 
-  const [state, dispatch] = useReducer(requestsReducer, initialState);
+  const [state, dispatch] = useReducer(revisionsReducer, initialState);
 
   const [textAreaValue, setTextAreaValue] = useState("");
   const [isPopUpVisible, setisPopUpVisible] = useState(false);
+  const [revisions, setRevisions] = useState<RevisionsTypes>([]);
   const token = useSessionStore((state) => state.role);
 
   useEffect(() => {
-    console.log("Document Details Changed:", state.documentDetails);
-  }, [state.documentDetails]);
+    fetchRevisions();
+  }, []);
 
-  function requestsReducer(state: StateTypes, action: ActionTypes) {
+  function revisionsReducer(state: StateTypes, action: ActionTypes) {
     switch (action.type) {
       case ACTION.ENABLESUBMIT:
         return {
@@ -96,7 +105,7 @@ export default function Requests() {
   }
 
   async function fetchRevisions() {
-    const response = await fetch("", {
+    const response = await fetch("http://127.0.0.1/api/revision", {
       method: "get",
       headers: {
         "Content-Type": "application/json",
@@ -105,7 +114,10 @@ export default function Requests() {
       },
     });
 
-    return await response.json();
+    const data: RevisionsTypes = await response.json();
+    console.log("DATA:", data);
+
+    setRevisions(data);
   }
 
   function handleCancel() {
@@ -119,13 +131,13 @@ export default function Requests() {
     <div className="flex w-full h-full">
       <div className="flex flex-col w-full h-full px-4 py-4 gap-2">
         <div className="flex gap-8 h-full ">
-          {/* Requests Panel */}
+          {/* Revisions Panel */}
           <div className="flex flex-col w-3/4 gap-2 h-full">
             <h1>Requests</h1>
             <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
-              {[{ title: "title", reason: "reason" }].map((item, index) => (
+              {revisions.map((item) => (
                 <DropDownItem
-                  key={index}
+                  key={item.id}
                   title={item.title}
                   description={item.reason}
                   handleApprove={() => {
