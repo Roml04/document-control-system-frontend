@@ -74,35 +74,52 @@ export default function DataBlock({
   }
 
   return (
-    <div className={`flex w-full flex-col px-4 outline-none ${styling}`}>
+    <div
+      className={`w-full px-5 py-4 bg-white rounded-xl transition-all duration-200 ${styling}`}
+    >
+      <p className="mb-1 text-sm text-gray-500 tracking-wide">{title}</p>
       {state.isInteractable ? (
         <input
-          className="px-1 outline-none border border-slate-400 rounded-sm text-black"
           type="text"
           value={state.documentDetail}
           onChange={(e) =>
             dispatch({ type: ACTION.UPDATEDETAIL, payload: e.target.value })
           }
+          className="
+            w-full
+            text-base font-medium text-gray-800
+            bg-slate-50
+            border border-gray-300
+            rounded-lg
+            px-3 py-2
+            outline-none
+            transition
+            focus:bg-white
+            focus:ring-2
+            focus:ring-blue-500
+            focus:border-blue-500
+            text-lg
+          "
         />
       ) : (
-        <h3>{state.documentDetail}</h3>
+        <p
+          className="w-full
+            text-base font-medium text-gray-800
+            bg-slate-50
+            border border-gray-300
+            rounded-lg
+            px-3 py-2
+            outline-none
+            transition
+            focus:bg-white
+            focus:ring-2
+            focus:ring-blue-500
+            focus:border-blue-500
+            text-lg"
+        >
+          {state.documentDetail}
+        </p>
       )}
-      <p className="text-gray-400">{title}</p>
     </div>
-    // <div className={`flex w-full flex-col px-4 outline-none ${styling}`}>
-    //   <h3>{title}</h3>
-    //   {state.isInteractable ? (
-    //     <input
-    //       className="px-1 outline-none border border-slate-400 rounded-sm text-black"
-    //       type="text"
-    //       value={state.documentDetail}
-    //       onChange={(e) =>
-    //         dispatch({ type: ACTION.UPDATEDETAIL, payload: e.target.value })
-    //       }
-    //     />
-    //   ) : (
-    //     <p className="px-1 text-gray-400">{state.documentDetail}</p>
-    //   )}
-    // </div>
   );
 }

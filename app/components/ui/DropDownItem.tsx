@@ -20,7 +20,7 @@ export default function DropDownItem({
   const role = useSessionStore((state) => state.role);
 
   return (
-    <li className="border border-slate-300 px-4 py-2 rounded-lg transition-all duration-200">
+    <li className="border border-slate-300 bg-slate-50 px-4 py-2 rounded-lg transition-all duration-200">
       <div
         className="flex w-full py-1 cursor-pointer"
         onClick={() => setIsShown((prev) => !prev)}

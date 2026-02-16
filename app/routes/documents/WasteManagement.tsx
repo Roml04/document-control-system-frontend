@@ -52,7 +52,6 @@ export default function WasteManagement() {
 
   const [isVisible, setIsVisible] = useState(false);
   const [token, setToken] = useState("");
-  const [textAreaValue, setTextAreaValue] = useState("");
   const [state, dispatch] = useReducer(documentDetailsReducer, initialState);
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);

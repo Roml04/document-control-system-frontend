@@ -132,8 +132,8 @@ export default function Requests() {
       <div className="flex flex-col w-full h-full px-4 py-4 gap-2">
         <div className="flex gap-8 h-full ">
           {/* Revisions Panel */}
-          <div className="flex flex-col w-3/4 gap-2 h-full">
-            <h1>Requests</h1>
+          <div className="flex flex-col w-3/4 h-full">
+            <h1 className="mb-2">Requests</h1>
             <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
               {revisions.map((item) => (
                 <DropDownItem
@@ -162,25 +162,25 @@ export default function Requests() {
           {/* Document Details Panel */}
           <div className="flex flex-col justify-between w-full px-4 border-l border-slate-300">
             <div className="w-full">
-              <div>
+              <div className="mb-2">
                 <h1>Document Details</h1>
               </div>
-              <div className="flex justify-between border-b border-slate-300">
-                <div className="flex flex-col w-full p-4 rounded-lg gap-2">
-                  <h3>File</h3>
-                  <div className="flex justify-between items-center px-4 py-2 border border-slate-300 rounded-lg">
-                    <a
-                      className="underline cursor-pointer"
-                      href=""
-                      target="_blank"
-                    >
-                      <p>file.docx</p>
-                    </a>
-                    <PressableIcon
-                      iconName="close"
-                      onClick={() => console.log("Removed attachment")}
-                    />
+              <div className="flex px-4">
+                <div className="flex items-center justify-between w-full p-4 rounded-lg border border-slate-300 bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-md bg-slate-200 text-slate-600"></div>
+                    <div className="flex flex-col">
+                      <span className="text-sm text-slate-500">File</span>
+                      <span className="font-medium">waste-management.docx</span>
+                    </div>
                   </div>
+                  <a
+                    className="px-4 py-2 text-sm rounded-md border border-slate-400 hover:bg-black hover:text-white transition"
+                    href=""
+                    target="_blank"
+                  >
+                    Open
+                  </a>
                 </div>
               </div>
               <div className="grid grid-cols-2 w-full justify-around py-4 border-b border-slate-300">
@@ -195,7 +195,7 @@ export default function Requests() {
                   isInteractable={state.isInteractable}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-y-4 w-full justify-around py-4 border-b border-slate-300">
+              <div className="grid grid-cols-2 w-full justify-around py-4 border-b border-slate-300">
                 <DataBlock
                   title="Revision Number"
                   value={state.documentDetails.revisionNumber}
