@@ -12,7 +12,7 @@ export async function requireAuth(allowedRoles?: string[]) {
 
   if (!response.ok) {
     // throw redirect("/error/500");
-    return;
+    return false;
   }
 
   const user = await response.json();
@@ -22,5 +22,5 @@ export async function requireAuth(allowedRoles?: string[]) {
   }
   console.log("SUCCESS:", response);
 
-  return user;
+  return true;
 }

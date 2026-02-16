@@ -19,7 +19,7 @@ export default function DropDownItem({
   return (
     <li className="border border-slate-300 px-4 py-2 rounded-lg transition-all duration-200">
       <div
-        className="flex w-fullpx-4 py-1 cursor-pointer"
+        className="flex w-full px-4 py-1 cursor-pointer"
         onClick={() => setIsShown((prev) => !prev)}
       >
         <div className="flex w-full">
