@@ -50,7 +50,7 @@ export default function WasteManagement() {
     revisionReason: "",
   };
 
-  const [isVisible, setIsVisible] = useState(false);
+  const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [token, setToken] = useState("");
   const [state, dispatch] = useReducer(documentDetailsReducer, initialState);
   const role = useSessionStore((state) => state.role);
@@ -66,7 +66,7 @@ export default function WasteManagement() {
     const storedToken = localStorage.getItem("apiToken");
     setToken(storedToken ? storedToken : "");
 
-    const response = await fetch("http://127.0.0.1/api/waste-management", {
+    const response = await fetch("http://127.0.0.1/api/document/1", {
       method: "get",
       headers: {
         Accept: "application/json",
@@ -156,7 +156,7 @@ export default function WasteManagement() {
   }
 
   function handleRevisionClick() {
-    setIsVisible(true);
+    setPopUpVisible(true);
   }
 
   function handleObsoleteClick() {}
@@ -164,7 +164,7 @@ export default function WasteManagement() {
   function handleCancel() {
     dispatch({ type: ACTION.SETREVISIONTITLE, payload: "" });
     dispatch({ type: ACTION.SETREVISIONREASON, payload: "" });
-    setIsVisible(false);
+    setPopUpVisible(false);
   }
 
   async function handleSubmit() {
@@ -197,11 +197,13 @@ export default function WasteManagement() {
     console.log("SUCCESS");
     const data = await response.json();
     console.log(data);
-    setIsVisible(false);
+    dispatch({ type: ACTION.SETREVISIONTITLE, payload: "" });
+    dispatch({ type: ACTION.SETREVISIONREASON, payload: "" });
+    setPopUpVisible(false);
   }
 
   return (
-    <>
+    <div>
       <DocumentsPageLayout pagetitle="Waste Management Procedure">
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
@@ -274,7 +276,7 @@ export default function WasteManagement() {
           </div>
         )}
       </DocumentsPageLayout>
-      {isVisible && (
+      {isPopUpVisible && (
         <PopUpModal onClose={() => {}}>
           {/* <h2>Reason for Revision</h2> */}
           <div className="flex flex-col gap-2">
@@ -318,6 +320,6 @@ export default function WasteManagement() {
           </div>
         </PopUpModal>
       )}
-    </>
+    </div>
   );
 }
