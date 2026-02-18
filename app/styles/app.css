@@ -33,15 +33,12 @@ body,
 body {
   margin: 0;
 }
-
-/* html {
-  height: 100%;
-  display: flex;
+/* 
+html {
+  min-height: 100%;
 }
 body {
   min-height: 100%;
-  flex-grow: 1;
-  margin: 0;
 } */
 
 .icons-bs {

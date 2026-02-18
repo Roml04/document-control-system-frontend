@@ -75,9 +75,9 @@ export default function DataBlock({
 
   return (
     <div
-      className={`w-full px-5 py-4 bg-white rounded-xl transition-all duration-200 ${styling}`}
+      className={`w-full px-5 py-2 bg-white rounded-xl transition-all duration-200 ${styling}`}
     >
-      <p className="mb-1 text-sm text-gray-500 tracking-wide">{title}</p>
+      <p className="text-sm text-gray-500 tracking-wide">{title}</p>
       {state.isInteractable ? (
         <input
           type="text"

@@ -183,7 +183,7 @@ export default function Requests() {
                   </a>
                 </div>
               </div>
-              <div className="grid grid-cols-2 w-full justify-around py-4 border-b border-slate-300">
+              <div className="grid grid-cols-2 w-full justify-around py-4">
                 <DataBlock
                   title="Originator"
                   value={state.documentDetails.originator}
@@ -195,7 +195,7 @@ export default function Requests() {
                   isInteractable={state.isInteractable}
                 />
               </div>
-              <div className="grid grid-cols-2 w-full justify-around py-4 border-b border-slate-300">
+              <div className="grid grid-cols-2 w-full justify-around py-4">
                 <DataBlock
                   title="Revision Number"
                   value={state.documentDetails.revisionNumber}
