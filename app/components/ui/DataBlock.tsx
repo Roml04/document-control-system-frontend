@@ -50,7 +50,6 @@ export default function DataBlock({
   function dataBlockReducer(state: StateTypes, action: ActionTypes) {
     switch (action.type) {
       case ACTION.SETINTERACTABLEENABLED:
-        console.log("enabled payload:", action.payload);
         return {
           ...state,
           isInteractable: true,
@@ -85,9 +84,8 @@ export default function DataBlock({
           onChange={(e) =>
             dispatch({ type: ACTION.UPDATEDETAIL, payload: e.target.value })
           }
-          className="
-            w-full
-            text-base font-medium text-gray-800
+          className={`w-full
+            font-medium
             bg-slate-50
             border border-gray-300
             rounded-lg
@@ -98,13 +96,12 @@ export default function DataBlock({
             focus:ring-2
             focus:ring-blue-500
             focus:border-blue-500
-            text-lg
-          "
+            text-lg`}
         />
       ) : (
         <p
-          className="w-full
-            text-base font-medium text-gray-800
+          className={`w-full
+            font-medium
             bg-slate-50
             border border-gray-300
             rounded-lg
@@ -115,7 +112,7 @@ export default function DataBlock({
             focus:ring-2
             focus:ring-blue-500
             focus:border-blue-500
-            text-lg"
+            text-lg ${state.documentDetail === "None" ? "text-gray-400" : "text-gray-800"}`}
         >
           {state.documentDetail}
         </p>

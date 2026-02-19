@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Icon } from "../primitives";
 import { useSessionStore } from "stores/sessionStore";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";

@@ -1,11 +1,6 @@
 import { useEffect, useReducer, useState } from "react";
 import { useSessionStore } from "stores/sessionStore";
-import {
-  PressableIcon,
-  DataBlock,
-  DropDownItem,
-  PopUpModal,
-} from "~/components";
+import { DataBlock, DropDownItem, PopUpModal } from "~/components";
 
 enum ACTION {
   ENABLESUBMIT = "ENABLESUBMIT",
@@ -34,7 +29,7 @@ type DocumentDataTypes = {
   department: string;
   revisionNumber: string;
   revisionDetails: string;
-  dateCreated: string;
+  dateRevised: string;
   approver: string;
   dateApproved: string;
 };
@@ -60,7 +55,7 @@ export default function Requests() {
       department: "None",
       revisionNumber: "None",
       revisionDetails: "None",
-      dateCreated: "None",
+      dateRevised: "None",
       approver: "None",
       dateApproved: "None",
     },
@@ -92,8 +87,7 @@ export default function Requests() {
       case ACTION.CANCELUPDATE:
         return {
           ...state,
-          documentDetails:
-            state.previousDocumentDetails ?? state.documentDetails,
+          documentDetails: initialState.documentDetails,
           previousDocumentDetails: null,
           isSubmitEnabled: false,
           isInteractable: false,
@@ -127,6 +121,43 @@ export default function Requests() {
 
   function handleSubmit() {}
 
+  async function handleApprove(document_id: number) {
+    console.log("DOCUMENT_ID:", document_id);
+    const response = await fetch("http://127.0.0.1/api/version/latest", {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        document_id: document_id,
+      }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.log("FAILED", data.message);
+      return;
+    }
+
+    console.log("RESPONSE:", data);
+
+    dispatch({
+      type: ACTION.ENABLESUBMIT,
+      payload: {
+        originator: data.originator,
+        department: data.department,
+        revisionNumber: data.revisionNumber,
+        revisionDetails: data.revisionDetails,
+        dateRevised: data.revisionDate,
+        approver: data.approver,
+        dateApproved: data.approvedDate,
+      },
+    });
+  }
+
   return (
     <div className="flex w-full h-full">
       <div className="flex flex-col w-full h-full px-4 py-4 gap-2">
@@ -141,18 +172,7 @@ export default function Requests() {
                   title={item.title}
                   description={item.reason}
                   handleApprove={() => {
-                    dispatch({
-                      type: ACTION.ENABLESUBMIT,
-                      payload: {
-                        originator: "Juan Dela Cruz",
-                        department: "HR Department",
-                        revisionNumber: "Rev-002",
-                        revisionDetails: "None",
-                        dateCreated: "2026-02-02",
-                        approver: "John Doe",
-                        dateApproved: "2026-02-12",
-                      },
-                    });
+                    handleApprove(item.document_id);
                   }}
                   handleDeny={() => setisPopUpVisible(true)}
                 />
@@ -203,7 +223,7 @@ export default function Requests() {
                 />
                 <DataBlock
                   title="Date"
-                  value={state.documentDetails.dateCreated}
+                  value={state.documentDetails.dateRevised}
                   isInteractable={state.isInteractable}
                 />
                 <DataBlock
