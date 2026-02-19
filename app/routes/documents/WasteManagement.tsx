@@ -311,7 +311,7 @@ export default function WasteManagement() {
               onClick={handleCancel}
               className="hover:bg-black hover:text-white w-1/5 px-4 py-2 rounded-lg cursor-pointer"
             >
-              Cancel
+              CANCEL
             </button>
             <button
               onClick={handleSubmit}

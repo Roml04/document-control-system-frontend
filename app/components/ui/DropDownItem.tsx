@@ -6,29 +6,31 @@ import { isRoleAllowed } from "~/utils/isRoleAllowed";
 type DropDownItemProps = {
   title: string;
   description?: string;
-  handleApprove: () => void;
+  handleOnClick: () => void;
   handleDeny: () => void;
 };
 
 export default function DropDownItem({
   title,
   description = "...",
-  handleApprove,
-  handleDeny,
+  handleOnClick,
 }: DropDownItemProps) {
   const [isShown, setIsShown] = useState(false);
   const role = useSessionStore((state) => state.role);
 
   return (
-    <li className="border border-slate-300 bg-slate-50 px-4 py-2 rounded-lg transition-all duration-200">
-      <div
-        className="flex w-full py-1 cursor-pointer"
-        onClick={() => setIsShown((prev) => !prev)}
-      >
+    <li
+      className="border border-slate-300 bg-slate-50 px-4 py-2 rounded-lg transition-all duration-200 active:bg-slate-200 cursor-pointer"
+      onClick={() => {
+        if (isRoleAllowed(["coordinator", "superior", "admin"], role))
+          handleOnClick();
+      }}
+    >
+      <div className="flex w-full py-1 cursor-pointer">
         <div className="flex w-full">
           <h3>{title}</h3>
         </div>
-        <div className="flex">
+        <div className="flex" onClick={() => setIsShown((prev) => !prev)}>
           {isShown ? (
             <Icon name="arrowdropup" />
           ) : (
@@ -49,22 +51,6 @@ export default function DropDownItem({
             <h3 className="text-slate-400">Reason</h3>
             <p className="text-slate-400">{description}</p>
           </div>
-          {isRoleAllowed(["coordinator", "superior", "admin"], role) && (
-            <div className="flex w-full justify-end gap-2">
-              <button
-                onClick={handleApprove}
-                className="group px-4 py-2 rounded-lg hover:bg-black cursor-pointer"
-              >
-                <p className="text-black group-hover:text-white">Approve</p>
-              </button>
-              <button
-                onClick={handleDeny}
-                className="group px-4 py-2 rounded-lg cursor-pointer"
-              >
-                <p className="text-red-400 group-hover:text-red-600 ">Deny</p>
-              </button>
-            </div>
-          )}
         </div>
       </div>
     </li>

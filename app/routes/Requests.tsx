@@ -1,6 +1,6 @@
 import { useEffect, useReducer, useState } from "react";
-import { useSessionStore } from "stores/sessionStore";
-import { DataBlock, DropDownItem, PopUpModal } from "~/components";
+import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
+import { BUTTONTYPES } from "~/components/primitives/Button";
 
 enum ACTION {
   ENABLESUBMIT = "ENABLESUBMIT",
@@ -12,6 +12,7 @@ type StateTypes = {
   isSubmitEnabled: boolean;
   isInteractable: boolean;
   documentDetails: DocumentDataTypes;
+  revisions: RevisionsTypes[number];
   previousDocumentDetails: DocumentDataTypes | null;
 };
 
@@ -35,15 +36,17 @@ type DocumentDataTypes = {
 };
 
 type RevisionsTypes = {
-  id: number;
+  id: number | null;
   title: string;
   reason: string;
-  user_id: number;
-  document_id: number;
+  user_id: number | null;
+  document_id: number | null;
 }[];
 
 export async function clientLoader() {
-  return;
+  /*
+   * NOTE: Check user role if it's allowed.
+   */
 }
 
 export default function Requests() {
@@ -59,6 +62,13 @@ export default function Requests() {
       approver: "None",
       dateApproved: "None",
     },
+    revisions: {
+      id: null,
+      title: "None",
+      reason: "None",
+      user_id: null,
+      document_id: null,
+    },
     previousDocumentDetails: null,
   };
 
@@ -67,7 +77,6 @@ export default function Requests() {
   const [textAreaValue, setTextAreaValue] = useState("");
   const [isPopUpVisible, setisPopUpVisible] = useState(false);
   const [revisions, setRevisions] = useState<RevisionsTypes>([]);
-  const token = useSessionStore((state) => state.role);
 
   useEffect(() => {
     fetchRevisions();
@@ -104,7 +113,6 @@ export default function Requests() {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${token}`,
       },
     });
 
@@ -119,16 +127,36 @@ export default function Requests() {
     setisPopUpVisible(false);
   }
 
-  function handleSubmit() {}
+  /*
+   * Request denied
+   */
+  async function handleSubmit() {
+    const revision_id = state.revisions.id;
+    const response = await fetch(
+      `http://127.0.0.1/api/revision/${revision_id}`,
+      {
+        method: "patch",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          status: "denied",
+          comments: textAreaValue,
+        }),
+      },
+    );
 
-  async function handleApprove(document_id: number) {
+    console.log("/api/revision/");
+  }
+
+  async function handleRevisionOnClick(document_id: number) {
     console.log("DOCUMENT_ID:", document_id);
     const response = await fetch("http://127.0.0.1/api/version/latest", {
       method: "post",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         document_id: document_id,
@@ -163,7 +191,7 @@ export default function Requests() {
       <div className="flex flex-col w-full h-full px-4 py-4 gap-2">
         <div className="flex gap-8 h-full ">
           {/* Revisions Panel */}
-          <div className="flex flex-col w-3/4 h-full">
+          <div className="flex flex-col w-2/5 h-full">
             <h1 className="mb-2">Requests</h1>
             <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
               {revisions.map((item) => (
@@ -171,8 +199,9 @@ export default function Requests() {
                   key={item.id}
                   title={item.title}
                   description={item.reason}
-                  handleApprove={() => {
-                    handleApprove(item.document_id);
+                  handleOnClick={() => {
+                    if (item.document_id)
+                      handleRevisionOnClick(item.document_id);
                   }}
                   handleDeny={() => setisPopUpVisible(true)}
                 />
@@ -183,7 +212,13 @@ export default function Requests() {
           <div className="flex flex-col justify-between w-full px-4 border-l border-slate-300">
             <div className="w-full">
               <div className="mb-2">
-                <h1>Document Details</h1>
+                <h1>Request Details</h1>
+              </div>
+              <div className="flex flex-col px-4 pb-4">
+                <div className="flex flex-col p-4 bg-slate-50 border border-slate-300 rounded-lg">
+                  <h2 className="text-gray-500">Reason title</h2>
+                  <p className="text-gray-500">Reason description</p>
+                </div>
               </div>
               <div className="flex px-4">
                 <div className="flex items-center justify-between w-full p-4 rounded-lg border border-slate-300 bg-slate-50">
@@ -207,29 +242,24 @@ export default function Requests() {
                 <DataBlock
                   title="Originator"
                   value={state.documentDetails.originator}
-                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Department"
                   value={state.documentDetails.department}
-                  isInteractable={state.isInteractable}
                 />
               </div>
               <div className="grid grid-cols-2 w-full justify-around py-4">
                 <DataBlock
                   title="Revision Number"
                   value={state.documentDetails.revisionNumber}
-                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Date"
                   value={state.documentDetails.dateRevised}
-                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Revision Details"
                   value={state.documentDetails.revisionDetails}
-                  isInteractable={state.isInteractable}
                   styling="col-span-2"
                 />
               </div>
@@ -237,69 +267,82 @@ export default function Requests() {
                 <DataBlock
                   title="Approver"
                   value={state.documentDetails.approver}
-                  isInteractable={state.isInteractable}
                 />
                 <DataBlock
                   title="Date"
                   value={state.documentDetails.dateApproved}
-                  isInteractable={state.isInteractable}
                 />
               </div>
             </div>
-            {/*  */}
             <div className="flex w-full justify-end gap-2">
               {state.isInteractable && (
-                <button
-                  onClick={() => {
-                    dispatch({
-                      type: ACTION.CANCELUPDATE,
-                    });
-                  }}
-                  className={
-                    state.isInteractable
-                      ? "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-gray-400 hover:text-black"
-                      : "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-gray-300"
-                  }
-                >
-                  Cancel
-                </button>
+                <>
+                  <Button
+                    type={
+                      state.isInteractable
+                        ? BUTTONTYPES.CANCEL
+                        : BUTTONTYPES.DISABLED
+                    }
+                    text="Cancel"
+                    handleOnClick={() => {
+                      dispatch({
+                        type: ACTION.CANCELUPDATE,
+                      });
+                    }}
+                  />
+                  <Button
+                    type={
+                      state.isInteractable
+                        ? BUTTONTYPES.DANGER
+                        : BUTTONTYPES.DISABLED
+                    }
+                    text="Deny"
+                    handleOnClick={() => {
+                      setisPopUpVisible(true);
+                      dispatch({
+                        type: ACTION.CANCELUPDATE,
+                      });
+                    }}
+                  />
+                </>
               )}
-              <button
-                onClick={() => {}}
-                className={
+              <Button
+                type={
                   state.isInteractable
-                    ? "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-black hover:text-white hover:bg-black"
-                    : "w-1/5 px-4 py-2 rounded-lg cursor-pointer text-gray-300"
+                    ? BUTTONTYPES.CONFIRM
+                    : BUTTONTYPES.DISABLED
                 }
-                disabled={!state.isInteractable}
-              >
-                Submit
-              </button>
+                text="Approve"
+                handleOnClick={() => {}}
+              />
             </div>
           </div>
         </div>
       </div>
       {isPopUpVisible && (
         <PopUpModal onClose={() => {}}>
-          <h2>Comment</h2>
-          <textarea
-            className="px-4 py-2 border rounded-lg resize-y min-h-32 outline-none"
-            value={textAreaValue}
-            onChange={(e) => setTextAreaValue(e.target.value)}
-          />
+          <h2 className="text-gray-500">Comment</h2>
+          <div className="border border-l-slate-300 border-y-0 border-r-0">
+            <textarea
+              placeholder="Write a comment..."
+              className="w-full resize-y min-h-48 outline-none pl-4"
+              value={textAreaValue}
+              onChange={(e) => setTextAreaValue(e.target.value)}
+            />
+          </div>
           <div className="flex w-full justify-between gap-2">
-            <button
-              onClick={handleCancel}
-              className="px-4 py-2 border rounded-lg cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="px-4 py-2 border rounded-lg cursor-pointer"
-            >
-              Submit
-            </button>
+            <Button
+              type={BUTTONTYPES.CANCEL}
+              text="Cancel"
+              handleOnClick={handleCancel}
+              styling="w-full"
+            />
+            <Button
+              type={BUTTONTYPES.CONFIRM}
+              text="Submit"
+              handleOnClick={handleSubmit}
+              styling="w-full"
+            />
           </div>
         </PopUpModal>
       )}
