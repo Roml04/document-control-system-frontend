@@ -1,6 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import { useSessionStore } from "stores/sessionStore";
-import { PopUpModal, DocumentsPageLayout } from "~/components";
+import { PopUpModal, DocumentsPageLayout, Button } from "~/components";
+import { BUTTONTYPES } from "~/components/primitives/Button";
 import DataBlock from "~/components/ui/DataBlock";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 
@@ -190,15 +191,16 @@ export default function WasteManagement() {
 
     console.log("RESPONSE IS OK:", response.ok);
 
+    const revisionData = await response.json();
+
     if (!response.ok) {
       console.error("FAILED");
-      console.error(response);
+      console.error(revisionData.message);
       return;
     }
 
     console.log("SUCCESS");
-    const data = await response.json();
-    console.log(data);
+    console.log(revisionData);
     dispatch({ type: ACTION.SETREVISIONTITLE, payload: "" });
     dispatch({ type: ACTION.SETREVISIONREASON, payload: "" });
     setPopUpVisible(false);
@@ -307,18 +309,18 @@ export default function WasteManagement() {
             />
           </div>
           <div className="flex w-full justify-between gap-2">
-            <button
-              onClick={handleCancel}
-              className="hover:bg-black hover:text-white w-1/5 px-4 py-2 rounded-lg cursor-pointer"
-            >
-              CANCEL
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="hover:bg-black hover:text-white w-1/5 px-4 py-2 rounded-lg cursor-pointer"
-            >
-              Submit
-            </button>
+            <Button
+              type={BUTTONTYPES.CANCEL}
+              text="Cancel"
+              handleOnClick={handleCancel}
+              styling="w-full"
+            />
+            <Button
+              type={BUTTONTYPES.CONFIRM}
+              text="Submit"
+              handleOnClick={handleSubmit}
+              styling="w-full"
+            />
           </div>
         </PopUpModal>
       )}
