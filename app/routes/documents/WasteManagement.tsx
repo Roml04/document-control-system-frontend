@@ -67,8 +67,8 @@ export default function WasteManagement() {
     const storedToken = localStorage.getItem("apiToken");
     setToken(storedToken ? storedToken : "");
 
-    const response = await fetch("http://127.0.0.1/api/document/3", {
-      method: "get",
+    const response = await fetch("http://127.0.0.1/api/document/1", {
+      method: "GET",
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${token}`,
@@ -173,7 +173,7 @@ export default function WasteManagement() {
     console.log("REASON:", state.revisionReason);
 
     const response = await fetch("http://127.0.0.1/api/revision", {
-      method: "post",
+      method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
