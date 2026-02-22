@@ -9,10 +9,7 @@ type DocumentStateType = {
 };
 
 type DocumentActionType = {
-  updateDocumentId: (documentId: DocumentStateType["documentId"]) => void;
-  updateName: (name: DocumentStateType["name"]) => void;
-  updateType: (type: DocumentStateType["type"]) => void;
-  updateFilePath: (filePath: DocumentStateType["filePath"]) => void;
+  updateDocument: (document: Partial<DocumentStateType>) => void;
 };
 
 export const useDocumentStore = create<DocumentStateType & DocumentActionType>(
@@ -21,22 +18,10 @@ export const useDocumentStore = create<DocumentStateType & DocumentActionType>(
     name: "Unknown",
     type: null,
     filePath: null,
-    updateDocumentId: (documentId: DocumentStateType["documentId"]) =>
-      set(() => ({
-        documentId: documentId,
-      })),
-    updateName: (name: DocumentStateType["name"]) =>
-      set(() => ({
-        name: name,
-      })),
-
-    updateType: (type: DocumentStateType["type"]) =>
-      set(() => ({
-        type: type,
-      })),
-    updateFilePath: (filePath: DocumentStateType["filePath"]) =>
-      set(() => ({
-        filePath: filePath,
+    updateDocument: (document) =>
+      set((state) => ({
+        ...state,
+        ...document,
       })),
   }),
 );

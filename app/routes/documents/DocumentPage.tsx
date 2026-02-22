@@ -189,8 +189,7 @@ export default function DocumentPage({ params }: Route.ComponentProps) {
       body: JSON.stringify({
         title: state.revisionTitle,
         reason: state.revisionReason,
-        approval_stage: "coordinator_approval",
-        status: "pending",
+        status: "coordinator_approval",
         user_id: userId,
         document_id: 3,
       }),

@@ -18,23 +18,34 @@ export default function DropDownItem({
   status,
   handleOnClick,
 }: DropDownItemProps) {
-  const statusStyles: Record<REVISIONSTATUS, string> = {
-    [REVISIONSTATUS.PENDING]: "text-slate-300",
-    [REVISIONSTATUS.APPROVED]: "text-gray-500",
-    [REVISIONSTATUS.DENIED]: "text-red-600",
+  const statusInfo: Record<REVISIONSTATUS, Record<string, string>> = {
+    [REVISIONSTATUS.COORDINATOR]: {
+      style: "text-slate-400",
+      title: "Pending Coordinator Approval",
+    },
+    [REVISIONSTATUS.SUPERIOR]: {
+      style: "text-slate-400",
+      title: "Pending Superior Approval",
+    },
+    [REVISIONSTATUS.APPROVED]: { style: "text-green-500", title: "Approved" },
+    [REVISIONSTATUS.DENIED]: { style: "text-red-600", title: "Denied" },
   };
 
   const [isShown, setIsShown] = useState(false);
   const role = useSessionStore((state) => state.role);
 
   function RevisionStatus({ status }: { status: REVISIONSTATUS }) {
-    const capitalizedStatus = status
-      ? status.charAt(0).toUpperCase() + status.slice(1)
-      : "Unknown Status";
-
+    const { title, style } = statusInfo[status];
     return (
-      <p className={`px-4 h-full ${statusStyles[status]}`}>
-        {capitalizedStatus}
+      <p
+        className={`
+        flex-1
+        truncate
+        ${style}
+      `}
+        title={title}
+      >
+        {status ? title : "Unknown Status"}
       </p>
     );
   }
@@ -53,11 +64,14 @@ export default function DropDownItem({
       }}
     >
       <div className="flex w-full py-1 cursor-pointer">
-        <div className="flex w-full justify-between">
-          <h3>{title}</h3>
+        <div className="flex flex-col w-full min-w-0 overflow-hidden">
+          <h3 className="flex-1 text-nowrap">{title}</h3>
           <RevisionStatus status={status} />
         </div>
-        <div className="flex" onClick={() => setIsShown((prev) => !prev)}>
+        <div
+          className="flex items-center"
+          onClick={() => setIsShown((prev) => !prev)}
+        >
           {isShown ? (
             <Icon name="arrowdropup" />
           ) : (

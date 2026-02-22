@@ -7,10 +7,15 @@ import { apiFetch } from "~/utils/apiFetch";
 import { isRoleAllowed, USERROLES } from "~/utils/isRoleAllowed";
 
 enum ACTION {
+  CLICKREQUEST = "CLICKREQUEST",
+  APPROVEREQUEST = "APPROVEREQUEST",
+  DENYREQUEST = "DENYREQUEST",
+  CANCELUPDATE = "CANCELUPDATE",
+  DISABLEBUTTONS = "DIABLEBUTTONS",
+  ENABLEBUTTONS = "ENABLEBUTTONS",
+  // old ACTIONs
   ENABLEAPPROVE = "ENABLEAPPROVE",
   DISABLESUBMIT = "DISABLESUBMIT",
-  CANCELUPDATE = "CANCELUPDATE",
-  APPROVEREQUEST = "APPROVEREQUEST",
 }
 
 export enum DOCUMENTTYPES {
@@ -25,7 +30,8 @@ export enum APPROVALSTAGE {
 }
 
 export enum REVISIONSTATUS {
-  PENDING = "pending",
+  COORDINATOR = "coordinator_approval",
+  SUPERIOR = "superior_approval",
   APPROVED = "approved",
   DENIED = "denied",
 }
@@ -72,6 +78,7 @@ type RevisionsTypes = {
 
 type DocumentsType = {
   id: number | null;
+  name: string;
   type: DOCUMENTTYPES | null;
 };
 
@@ -88,12 +95,9 @@ export async function clientLoader() {
   /*
    * NOTE: Check user role if it's allowed.
    */
-  const response = await fetch("http://127.0.0.1/api/revision", {
+
+  const response = await apiFetch("/revision", {
     method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    },
   });
 
   const fetchedRevisions: RevisionsTypes[] = await response.json();
@@ -120,7 +124,7 @@ export default function Requests() {
       title: "None",
       reason: "None",
       approval_stage: APPROVALSTAGE.COORDINATOR,
-      status: REVISIONSTATUS.PENDING,
+      status: REVISIONSTATUS.COORDINATOR,
       user_id: null,
       document_id: null,
       document: {
@@ -227,11 +231,20 @@ export default function Requests() {
       return alert("No request selected.");
     }
 
+    if (revision.status === REVISIONSTATUS.COORDINATOR) {
+    }
+
+    const newStatus =
+      revision.status === REVISIONSTATUS.SUPERIOR
+        ? REVISIONSTATUS.APPROVED
+        : revision.status === REVISIONSTATUS.COORDINATOR
+          ? REVISIONSTATUS.SUPERIOR
+          : REVISIONSTATUS.COORDINATOR;
+
     const response = await apiFetch(`/revision/${revision.id}`, {
       method: "PATCH",
       body: JSON.stringify({
-        status: REVISIONSTATUS.APPROVED,
-        approval_stage: APPROVALSTAGE.SUPERIOR,
+        status: newStatus,
       }),
     });
 
@@ -256,21 +269,18 @@ export default function Requests() {
     setDocuments(document);
     setRevision(revision);
     console.log("DOCUMENT ID:", document_id);
-    const response = await fetch("http://127.0.0.1/api/version/latest", {
+
+    const response = await apiFetch("/version/latest", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
       body: JSON.stringify({
         document_id: document_id,
       }),
     });
 
-    const fetchedVersions = await response.json();
+    const latestVersion = await response.json();
 
     if (!response.ok) {
-      console.log("FAILED", fetchedVersions.message);
+      console.log("FAILED", latestVersion.message);
       return;
     }
 
@@ -282,9 +292,9 @@ export default function Requests() {
       revisionDate,
       approver,
       approvedDate,
-    } = fetchedVersions;
+    } = latestVersion;
 
-    console.log("Document Details:", fetchedVersions);
+    console.log("Document Details:", latestVersion);
 
     if (role === "superior" && fetchedRevisions.length === 0) {
       dispatch({
@@ -308,7 +318,7 @@ export default function Requests() {
 
   function DocumentDetailsPanel({ title }: { title: string }) {
     return (
-      <div className="flex flex-col gap-4 w-full px-4">
+      <div className="flex flex-col gap-4 w-full px-4 mb-8">
         <div>
           <h1>{title}</h1>
         </div>
@@ -345,7 +355,7 @@ export default function Requests() {
           {/* Revisions Panel */}
           <div className="flex flex-col w-1/3 h-full mr-8">
             <h1 className="mb-2">Requests</h1>
-            <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
+            <div className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
               {fetchedRevisions.map((item) => {
                 /*
                  * Shows the originator's requests
@@ -383,7 +393,7 @@ export default function Requests() {
                  * for coordinator approval
                  */
                 if (
-                  approval_stage === APPROVALSTAGE.COORDINATOR &&
+                  status === REVISIONSTATUS.COORDINATOR &&
                   role === USERROLES.COORDINATOR
                 ) {
                   // console.log("COORDINATOR:", revision);
@@ -408,7 +418,7 @@ export default function Requests() {
                  * for superior approval
                  */
                 if (
-                  approval_stage === APPROVALSTAGE.SUPERIOR &&
+                  status === REVISIONSTATUS.SUPERIOR &&
                   role === USERROLES.SUPERIOR
                 ) {
                   // console.log("SUPERIOR:", approval_stage);
@@ -428,17 +438,17 @@ export default function Requests() {
                   );
                 }
               })}
-            </ul>
+            </div>
           </div>
           {/* Document Details Panel */}
           <div className="flex flex-col justify-between flex-1 px-4 border-l border-slate-300">
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4 overflow-y-scroll">
               {documents && (
                 <div className="flex flex-col px-4 w-full gap-4">
                   <div className="flex flex-col">
                     <h1>
                       Request to Revise{" "}
-                      {documents === null ? "Unknown Document" : documents.type}
+                      {documents === null ? "Unknown Document" : documents.name}
                     </h1>
                     <p>
                       {users === null

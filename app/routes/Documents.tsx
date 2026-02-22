@@ -24,7 +24,6 @@ export async function clientLoader() {
 
 export default function Documents() {
   const documents = useLoaderData<DocumentsType[]>();
-  console.log("Documents.tsx | PARAMS:", documents);
 
   const documentsIcon = {
     wastemanagement: "trash",
