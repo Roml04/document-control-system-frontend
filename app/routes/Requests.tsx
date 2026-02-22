@@ -3,6 +3,7 @@ import { useLoaderData, useRevalidator } from "react-router";
 import { useSessionStore } from "stores/sessionStore";
 import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
+import { apiFetch } from "~/utils/apiFetch";
 import { isRoleAllowed, USERROLES } from "~/utils/isRoleAllowed";
 
 enum ACTION {
@@ -185,31 +186,6 @@ export default function Requests() {
     }
   }
 
-  async function sendRequest(
-    uri: string,
-    method: string,
-    body: Record<string, unknown>,
-  ) {
-    const response = await fetch(`http://127.0.0.1/api${uri}`, {
-      method: method,
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify(body),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message);
-    }
-
-    /**
-     * NOTE: Create a confirmation toast
-     */
-  }
-
   function handleCancel() {
     setTextAreaValue("");
     setIsPopUpVisible(false);
@@ -223,12 +199,21 @@ export default function Requests() {
       return alert("No request selected.");
     }
 
-    await sendRequest(`/revision/${revision.id}`, "PATCH", {
-      status: REVISIONSTATUS.APPROVED,
-      /**
-       * NOTE: Add comment
-       */
+    const response = await apiFetch(`/revision/${revision.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: REVISIONSTATUS.APPROVED,
+        /**
+         * NOTE: Add comment
+         */
+      }),
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message);
+    }
 
     revalidate();
     setRevision(null);
@@ -242,10 +227,19 @@ export default function Requests() {
       return alert("No request selected.");
     }
 
-    await sendRequest(`/revision/${revision.id}`, "PATCH", {
-      status: REVISIONSTATUS.APPROVED,
-      approval_stage: APPROVALSTAGE.SUPERIOR,
+    const response = await apiFetch(`/revision/${revision.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: REVISIONSTATUS.APPROVED,
+        approval_stage: APPROVALSTAGE.SUPERIOR,
+      }),
     });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      alert(data.message);
+    }
 
     revalidate();
     setRevision(null);

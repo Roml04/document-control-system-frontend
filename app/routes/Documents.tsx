@@ -1,35 +1,50 @@
-import type { IconName } from "~/assets/icons/icons";
+import { useLoaderData } from "react-router";
+import { Icons, type IconName } from "~/assets/icons/icons";
 import { CardItem } from "~/components";
+import { apiFetch } from "~/utils/apiFetch";
+import type { DOCUMENTTYPES } from "./Requests";
+import type { Route } from "../+types/root";
+
+type DocumentsType = {
+  id: number;
+  name: string;
+  type: DOCUMENTTYPES;
+  file_path: string;
+};
+
+export async function clientLoader() {
+  const response = await apiFetch("/document", {
+    method: "GET",
+  });
+
+  const documents: DocumentsType[] = await response.json();
+  console.log("Documents.tsx | DOCUMENTS:", documents);
+
+  return documents;
+}
 
 export default function Documents() {
-  const documentsItems: { title: string; uri: string; icon: IconName }[] = [
-    {
-      title: "Waste Management Procedure",
-      uri: "/document/waste-management-procedure",
-      icon: "trash",
-    },
-    {
-      title: "HR Procedure",
-      uri: "/document/hr-procedure",
-      icon: "person",
-    },
-    {
-      title: "Document Control Procedure",
-      uri: "/document/document-control-procedure",
-      icon: "document",
-    },
-  ];
+  const documents = useLoaderData<DocumentsType[]>();
+  console.log("Documents.tsx | PARAMS:", documents);
+
+  const documentsIcon = {
+    wastemanagement: "trash",
+    hrprocedure: "person",
+    documentcontrol: "document",
+  };
 
   return (
     <div className="grid grid-cols-5 gap-2 auto-rows-[16rem]">
-      {documentsItems.map((item, index) => (
-        <CardItem
-          key={index}
-          title={item.title}
-          uri={item.uri}
-          icon={item.icon}
-        />
-      ))}
+      {documents.map((document, index) => {
+        return (
+          <CardItem
+            key={index}
+            title={document.name}
+            uri={`/documents/${document.id}`}
+            icon={documentsIcon[document.type] as IconName}
+          />
+        );
+      })}
     </div>
   );
 }

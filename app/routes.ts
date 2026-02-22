@@ -17,15 +17,12 @@ export default [
   ]),
 
   layout("./routes/documents/layout.tsx", [
-    route(
-      "/document/waste-management-procedure",
-      "./routes/documents/WasteManagement.tsx",
-    ),
-    route("/document/hr-procedure", "./routes/documents/HRProcedure.tsx"),
-    route(
-      "/document/document-control-procedure",
-      "./routes/documents/DocumentControl.tsx",
-    ),
+    route("/documents/:documentId", "./routes/documents/DocumentPage.tsx"),
+    // route("/document/hr-procedure", "./routes/documents/HRProcedure.tsx"),
+    // route(
+    //   "/document/document-control-procedure",
+    //   "./routes/documents/DocumentControl.tsx",
+    // ),
   ]),
 
   // apply layout to these routes
