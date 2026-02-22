@@ -8,14 +8,14 @@ export type SessionStateType = {
   role: string;
 };
 
-type ActionType = {
+type SessionActionType = {
   updateUserId: (userId: SessionStateType["userId"]) => void;
   updateFirstName: (firstName: SessionStateType["firstName"]) => void;
   updateLastName: (lastName: SessionStateType["lastName"]) => void;
   updateRole: (role: SessionStateType["role"]) => void;
 };
 
-export const useSessionStore = create<SessionStateType & ActionType>()(
+export const useSessionStore = create<SessionStateType & SessionActionType>()(
   persist(
     (set) => ({
       userId: null,
