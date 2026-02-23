@@ -1,10 +1,11 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer, useState, type ComponentProps } from "react";
 import { useSessionStore } from "stores/sessionStore";
 import { PopUpModal, DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import DataBlock from "~/components/ui/DataBlock";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
-import type { Route } from "../+types/home";
+import type { Route } from "./+types/DocumentPage";
+import { apiFetch } from "~/utils/apiFetch";
 
 enum ACTION {
   SETORIGINATOR = "SETORIGINATOR",
@@ -33,18 +34,38 @@ type StateType = {
   revisionReason: string;
 };
 
-type ActionType = {
-  type: ACTION;
-  payload: string | Partial<StateType>;
-};
+type ActionType =
+  | { type: ACTION.SETORIGINATOR; payload: string }
+  | { type: ACTION.SETDEPARTMENT; payload: string }
+  | { type: ACTION.SETREVISIONNUM; payload: string }
+  | { type: ACTION.SETREVISIONDETAILS; payload: string }
+  | { type: ACTION.SETREVISIONDATE; payload: string }
+  | { type: ACTION.SETAPPROVER; payload: string }
+  | { type: ACTION.SETAPPROVEDDATE; payload: string }
+  | { type: ACTION.SETREVISIONTITLE; payload: string }
+  | { type: ACTION.SETREVISIONREASON; payload: string }
+  | { type: ACTION.SETUSERID; payload: number | null }
+  | { type: ACTION.FETCHDOCUDETAILS; payload: StateType };
 
-export async function clientLoader({ params }: Route.LoaderArgs) {
-  console.log("PARAMS:", params);
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
+  console.log("DocumentPage.tsx | params.documentId:", params.documentId);
 
-  // const response = await apiFetch('/document/${}');
+  const response = await apiFetch(`/document/${params.documentId}`, {
+    method: "GET",
+  });
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.log("FAILED");
+    console.error(data.message);
+  }
+
+  console.log("clientLoader | data:", data);
+
+  return data;
 }
 
-export default function DocumentPage({ params }: Route.ComponentProps) {
+export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   const initialState: StateType = {
     originator: "None",
     department: "None",
@@ -65,27 +86,10 @@ export default function DocumentPage({ params }: Route.ComponentProps) {
   const userId = useSessionStore((state) => state.userId);
 
   useEffect(() => {
-    fetchDocumentDetails();
+    dispatch({ type: ACTION.FETCHDOCUDETAILS, payload: loaderData });
   }, []);
 
   const btnsVisible = isRoleAllowed(["originator", "coordinator"], role);
-
-  async function fetchDocumentDetails() {
-    const storedToken = localStorage.getItem("apiToken");
-    setToken(storedToken ? storedToken : "");
-
-    const response = await fetch("http://127.0.0.1/api/document/1", {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const data = await response.json();
-
-    dispatch({ type: ACTION.FETCHDOCUDETAILS, payload: data });
-  }
 
   function documentDetailsReducer(state: StateType, action: ActionType) {
     const { type, payload } = action;
@@ -130,7 +134,7 @@ export default function DocumentPage({ params }: Route.ComponentProps) {
         case ACTION.SETUSERID:
           return {
             ...state,
-            uesrId: payload,
+            userId: payload,
           };
         case ACTION.SETREVISIONTITLE:
           return {
@@ -251,7 +255,11 @@ export default function DocumentPage({ params }: Route.ComponentProps) {
               value={state.revisionNumber}
               styling="col-span-2"
             />
-            <DataBlock title="Date" value={state.revisionDate} styling="" />
+            <DataBlock
+              title="Date"
+              value={state.revisionDate}
+              styling="col-span-2"
+            />
             <DataBlock
               title="Revision Details"
               value={state.revisionDetails}

@@ -13,6 +13,7 @@ enum ACTION {
   CANCELUPDATE = "CANCELUPDATE",
   DISABLEBUTTONS = "DIABLEBUTTONS",
   ENABLEBUTTONS = "ENABLEBUTTONS",
+  FETCHDATA = "FETCHDATA",
   // old ACTIONs
   ENABLEAPPROVE = "ENABLEAPPROVE",
   DISABLESUBMIT = "DISABLESUBMIT",
@@ -96,12 +97,32 @@ export async function clientLoader() {
    * NOTE: Check user role if it's allowed.
    */
 
+  /**
+   * Index revisions alongside users (id, first_name, & last_name) and documents (id, name)
+   * If role === superior, fetch latest version of document
+   */
   const response = await apiFetch("/revision", {
     method: "GET",
   });
 
   const fetchedRevisions: RevisionsTypes[] = await response.json();
   console.log("FETCHED REVISION DATA:", fetchedRevisions);
+
+  const requestsData = fetchedRevisions.map((item) => {
+    const { document, user } = item;
+
+    return {
+      user: {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+      },
+      document: {
+        id: document.id,
+        name: document.name,
+      },
+    };
+  });
 
   return fetchedRevisions;
 }
@@ -196,7 +217,7 @@ export default function Requests() {
   }
 
   /*
-   * Request denied
+   * Request DENIED
    */
   async function handleSubmit() {
     if (!revision) {
@@ -224,7 +245,7 @@ export default function Requests() {
   }
 
   /**
-   * Request approved
+   * Request APPROVED
    */
   async function handleApprove() {
     if (!revision) {
@@ -258,63 +279,66 @@ export default function Requests() {
     setRevision(null);
   }
 
-  async function handleRevisionOnClick(revision: RevisionsTypes) {
-    if (!revision) {
-      return alert("Revision is null");
-    }
-
-    const { user, document, document_id } = revision;
-
-    setUsers(user);
-    setDocuments(document);
-    setRevision(revision);
-    console.log("DOCUMENT ID:", document_id);
-
+  async function handleClickRequest() {
     const response = await apiFetch("/version/latest", {
-      method: "POST",
+      method: "GET",
       body: JSON.stringify({
-        document_id: document_id,
+        document_id: 3,
       }),
     });
-
-    const latestVersion = await response.json();
-
-    if (!response.ok) {
-      console.log("FAILED", latestVersion.message);
-      return;
-    }
-
-    const {
-      originator,
-      department,
-      revisionNumber,
-      revisionDetails,
-      revisionDate,
-      approver,
-      approvedDate,
-    } = latestVersion;
-
-    console.log("Document Details:", latestVersion);
-
-    if (role === "superior" && fetchedRevisions.length === 0) {
-      dispatch({
-        type: ACTION.APPROVEREQUEST,
-        payload: {
-          originator: originator,
-          department: department,
-          revisionNumber: revisionNumber,
-          revisionDetails: revisionDetails,
-          dateRevised: revisionDate,
-          approver: approver,
-          dateApproved: approvedDate,
-        },
-      });
-    }
-
-    dispatch({
-      type: ACTION.ENABLEAPPROVE,
-    });
   }
+
+  // async function handleRevisionOnClick(revision: RevisionsTypes) {
+  //   if (!revision) {
+  //     return alert("Revision is null");
+  //   }
+
+  //   const { user, document, document_id } = revision;
+
+  //   setUsers(user);
+  //   setDocuments(document);
+  //   setRevision(revision);
+  //   console.log("DOCUMENT ID:", document_id);
+
+  //   const response = await apiFetch("/version/latest", {
+  //     method: "POST",
+  //     body: JSON.stringify({
+  //       document_id: document_id,
+  //     }),
+  //   });
+
+  //   const latestVersion = await response.json();
+
+  //   if (!response.ok) {
+  //     console.log("FAILED", latestVersion.message);
+  //     return;
+  //   }
+
+  //   const {
+  //     originator,
+  //     department,
+  //     revisionNumber,
+  //     revisionDetails,
+  //     revisionDate,
+  //     approver,
+  //     approvedDate,
+  //   } = latestVersion;
+
+  //   console.log("Document Details:", latestVersion);
+
+  //   if (role === "superior" && fetchedRevisions.length === 0) {
+  //     dispatch({
+  //       type: ACTION.CLICKREQUEST,
+  //       payload: {
+  //         ...latestVersion,
+  //       },
+  //     });
+  //   }
+
+  //   dispatch({
+  //     type: ACTION.ENABLEAPPROVE,
+  //   });
+  // }
 
   function DocumentDetailsPanel({ title }: { title: string }) {
     return (
@@ -355,7 +379,7 @@ export default function Requests() {
           {/* Revisions Panel */}
           <div className="flex flex-col w-1/3 h-full mr-8">
             <h1 className="mb-2">Requests</h1>
-            <div className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
+            <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
               {fetchedRevisions.map((item) => {
                 /*
                  * Shows the originator's requests
@@ -380,7 +404,7 @@ export default function Requests() {
                       status={status}
                       handleOnClick={() => {
                         if (document_id) {
-                          handleRevisionOnClick(item);
+                          // handleRevisionOnClick(item);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -405,7 +429,7 @@ export default function Requests() {
                       status={status}
                       handleOnClick={() => {
                         if (document_id) {
-                          handleRevisionOnClick(item);
+                          // handleRevisionOnClick(item);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -430,7 +454,7 @@ export default function Requests() {
                       status={status}
                       handleOnClick={() => {
                         if (document_id) {
-                          handleRevisionOnClick(item);
+                          // handleRevisionOnClick(item);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -438,7 +462,7 @@ export default function Requests() {
                   );
                 }
               })}
-            </div>
+            </ul>
           </div>
           {/* Document Details Panel */}
           <div className="flex flex-col justify-between flex-1 px-4 border-l border-slate-300">
@@ -457,18 +481,6 @@ export default function Requests() {
                     </p>
                   </div>
                   <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
-                    <div className="flex flex-col w-full">
-                      <div className="flex flex-col bg-slate-50 rounded-lg">
-                        <h2 className="text-gray-500">
-                          {!revision ? "Untitled" : revision.title}
-                        </h2>
-                        <p className="text-gray-500">
-                          {!revision
-                            ? "No reasons provided..."
-                            : revision.reason}
-                        </p>
-                      </div>
-                    </div>
                     {/* File Component */}
                     <div className="flex items-center w-full justify-between gap-3">
                       <div className="flex gap-2 items-center">

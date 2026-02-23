@@ -32,10 +32,18 @@ type StateType = {
   revisionReason: string;
 };
 
-type ActionType = {
-  type: ACTION;
-  payload: string | Partial<StateType>;
-};
+type ActionType =
+  | { type: ACTION.SETORIGINATOR; payload: string }
+  | { type: ACTION.SETDEPARTMENT; payload: string }
+  | { type: ACTION.SETREVISIONNUM; payload: string }
+  | { type: ACTION.SETREVISIONDETAILS; payload: string }
+  | { type: ACTION.SETREVISIONDATE; payload: string }
+  | { type: ACTION.SETAPPROVER; payload: string }
+  | { type: ACTION.SETAPPROVEDDATE; payload: string }
+  | { type: ACTION.SETREVISIONTITLE; payload: string }
+  | { type: ACTION.SETREVISIONREASON; payload: string }
+  | { type: ACTION.SETUSERID; payload: number | null }
+  | { type: ACTION.FETCHDOCUDETAILS; payload: StateType };
 
 export default function WasteManagement() {
   const initialState: StateType = {
@@ -123,7 +131,7 @@ export default function WasteManagement() {
         case ACTION.SETUSERID:
           return {
             ...state,
-            uesrId: payload,
+            userId: payload,
           };
         case ACTION.SETREVISIONTITLE:
           return {
