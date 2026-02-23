@@ -108,10 +108,14 @@ export async function clientLoader() {
   const fetchedRevisions: RevisionsTypes[] = await response.json();
   console.log("FETCHED REVISION DATA:", fetchedRevisions);
 
-  const requestsData = fetchedRevisions.map((item) => {
-    const { document, user } = item;
+  const requestsData = fetchedRevisions.map((revision) => {
+    const { document, user } = revision;
 
     return {
+      id: revision.id,
+      title: revision.title,
+      reason: revision.reason,
+      status: revision.status,
       user: {
         id: user.id,
         first_name: user.first_name,
@@ -168,13 +172,11 @@ export default function Requests() {
   const [textAreaValue, setTextAreaValue] = useState("");
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
 
-  /**
-   * Single revision object: revision
-   */
   const [revision, setRevision] = useState<RevisionsTypes | null>(null);
   const [documents, setDocuments] = useState<Partial<DocumentsType> | null>(
     null,
   );
+
   const [users, setUsers] = useState<Partial<UsersType> | null>(null);
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
@@ -288,57 +290,57 @@ export default function Requests() {
     });
   }
 
-  // async function handleRevisionOnClick(revision: RevisionsTypes) {
-  //   if (!revision) {
-  //     return alert("Revision is null");
-  //   }
+  async function handleRevisionOnClick(revision: RevisionsTypes) {
+    if (!revision) {
+      return alert("Revision is null");
+    }
 
-  //   const { user, document, document_id } = revision;
+    const { user, document, document_id } = revision;
 
-  //   setUsers(user);
-  //   setDocuments(document);
-  //   setRevision(revision);
-  //   console.log("DOCUMENT ID:", document_id);
+    setUsers(user);
+    setDocuments(document);
+    setRevision(revision);
+    console.log("DOCUMENT ID:", document_id);
 
-  //   const response = await apiFetch("/version/latest", {
-  //     method: "POST",
-  //     body: JSON.stringify({
-  //       document_id: document_id,
-  //     }),
-  //   });
+    const response = await apiFetch("/version/latest", {
+      method: "POST",
+      body: JSON.stringify({
+        document_id: document_id,
+      }),
+    });
 
-  //   const latestVersion = await response.json();
+    const latestVersion = await response.json();
 
-  //   if (!response.ok) {
-  //     console.log("FAILED", latestVersion.message);
-  //     return;
-  //   }
+    if (!response.ok) {
+      console.log("FAILED", latestVersion.message);
+      return;
+    }
 
-  //   const {
-  //     originator,
-  //     department,
-  //     revisionNumber,
-  //     revisionDetails,
-  //     revisionDate,
-  //     approver,
-  //     approvedDate,
-  //   } = latestVersion;
+    const {
+      originator,
+      department,
+      revisionNumber,
+      revisionDetails,
+      revisionDate,
+      approver,
+      approvedDate,
+    } = latestVersion;
 
-  //   console.log("Document Details:", latestVersion);
+    console.log("Document Details:", latestVersion);
 
-  //   if (role === "superior" && fetchedRevisions.length === 0) {
-  //     dispatch({
-  //       type: ACTION.CLICKREQUEST,
-  //       payload: {
-  //         ...latestVersion,
-  //       },
-  //     });
-  //   }
+    if (role === "superior" && fetchedRevisions.length === 0) {
+      dispatch({
+        type: ACTION.APPROVEREQUEST,
+        payload: {
+          ...latestVersion,
+        },
+      });
+    }
 
-  //   dispatch({
-  //     type: ACTION.ENABLEAPPROVE,
-  //   });
-  // }
+    dispatch({
+      type: ACTION.ENABLEAPPROVE,
+    });
+  }
 
   function DocumentDetailsPanel({ title }: { title: string }) {
     return (
@@ -404,7 +406,7 @@ export default function Requests() {
                       status={status}
                       handleOnClick={() => {
                         if (document_id) {
-                          // handleRevisionOnClick(item);
+                          handleRevisionOnClick(item);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -429,7 +431,7 @@ export default function Requests() {
                       status={status}
                       handleOnClick={() => {
                         if (document_id) {
-                          // handleRevisionOnClick(item);
+                          handleRevisionOnClick(item);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -454,7 +456,7 @@ export default function Requests() {
                       status={status}
                       handleOnClick={() => {
                         if (document_id) {
-                          // handleRevisionOnClick(item);
+                          handleRevisionOnClick(item);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
