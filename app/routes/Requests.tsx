@@ -1,58 +1,36 @@
 import { useEffect, useReducer, useState } from "react";
-import { useLoaderData, useRevalidator } from "react-router";
+import { useRevalidator } from "react-router";
 import { useSessionStore } from "stores/sessionStore";
 import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import { apiFetch } from "~/utils/apiFetch";
-import { isRoleAllowed, USERROLES } from "~/utils/isRoleAllowed";
+import { isRoleAllowed } from "~/utils/isRoleAllowed";
+import type { Route } from "./documents/+types/DocumentPage";
+import { REVISIONSTATUS, USERROLES } from "~/constants/";
 
 enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
-  APPROVEREQUEST = "APPROVEREQUEST",
-  DENYREQUEST = "DENYREQUEST",
-  CANCELUPDATE = "CANCELUPDATE",
-  DISABLEBUTTONS = "DIABLEBUTTONS",
-  ENABLEBUTTONS = "ENABLEBUTTONS",
-  FETCHDATA = "FETCHDATA",
-  // old ACTIONs
-  ENABLEAPPROVE = "ENABLEAPPROVE",
-  DISABLESUBMIT = "DISABLESUBMIT",
+  /**
+   * Include "RESETDATA"
+   */
 }
 
-export enum DOCUMENTTYPES {
-  WASTEMANAGEMENT = "wastemanagement",
-  HRPROCEDURE = "hrprocedure",
-  DOCUMENTCONTROL = "documentcontrol",
-}
-
-export enum APPROVALSTAGE {
-  COORDINATOR = "coordinator_approval",
-  SUPERIOR = "superior_approval",
-}
-
-export enum REVISIONSTATUS {
-  COORDINATOR = "coordinator_approval",
-  SUPERIOR = "superior_approval",
-  APPROVED = "approved",
-  DENIED = "denied",
-}
-
-type StateTypes = {
-  isApproveEnabled: boolean;
-  isInteractable: boolean;
-  documentDetails: VersionTypes;
-  revisions: RevisionsTypes;
-  previousDocumentDetails: VersionTypes | null;
+type StateType = {
+  areButtonsEnabled: boolean;
+  isDocumentPanelShown: boolean;
+  revision: Partial<RevisionType>;
+  document: Partial<DocumentType>;
+  user: Partial<UserType>;
 };
 
-type ActionTypes =
-  | { type: ACTION.APPROVEREQUEST; payload: VersionTypes }
-  | {
-      type: ACTION.ENABLEAPPROVE;
-    }
-  | {
-      type: ACTION.CANCELUPDATE;
-    };
+type ActionType = {
+  type: ACTION;
+  payload?: {
+    revision: RevisionType;
+    document: DocumentType;
+    user: UserType;
+  };
+};
 
 type VersionTypes = {
   originator: string;
@@ -64,32 +42,31 @@ type VersionTypes = {
   dateApproved: string;
 };
 
-type RevisionsTypes = {
-  id: number | null;
-  title: string;
-  reason: string;
-  approval_stage: APPROVALSTAGE;
-  status: REVISIONSTATUS;
-  user_id: number | null;
-  document_id: number | null;
-  document: Partial<DocumentsType>;
-  user: Partial<UsersType>;
-  // comment: string;
-};
-
-type DocumentsType = {
+type DocumentType = {
   id: number | null;
   name: string;
-  type: DOCUMENTTYPES | null;
 };
 
-type UsersType = {
+type UserType = {
   id: number | null;
   first_name: string;
   last_name: string;
-  email: string;
-  password: string;
-  role: USERROLES;
+};
+
+type RevisionType = {
+  id: number | null;
+  title: string;
+  reason: string;
+  status: REVISIONSTATUS;
+  user: {
+    id: number | null;
+    first_name: string;
+    last_name: string;
+  };
+  document: {
+    id: number | null;
+    name: string;
+  };
 };
 
 export async function clientLoader() {
@@ -105,114 +82,106 @@ export async function clientLoader() {
     method: "GET",
   });
 
-  const fetchedRevisions: RevisionsTypes[] = await response.json();
-  console.log("FETCHED REVISION DATA:", fetchedRevisions);
+  const fetchedData: RevisionType[] = await response.json();
 
-  const requestsData = fetchedRevisions.map((revision) => {
+  const LoadedData: RevisionType[] = fetchedData.map((revision) => {
     const { document, user } = revision;
 
     return {
-      id: revision.id,
+      id: revision.id ?? null,
       title: revision.title,
       reason: revision.reason,
       status: revision.status,
       user: {
-        id: user.id,
-        first_name: user.first_name,
-        last_name: user.last_name,
+        id: user.id ?? null,
+        first_name: user.first_name ?? "",
+        last_name: user.last_name ?? "",
       },
       document: {
-        id: document.id,
-        name: document.name,
+        id: document.id ?? null,
+        name: document.name ?? "",
       },
     };
   });
 
-  return fetchedRevisions;
+  return LoadedData;
 }
 
-export default function Requests() {
-  const initialState: StateTypes = {
-    isApproveEnabled: false,
-    isInteractable: false,
-    documentDetails: {
-      originator: "None",
-      department: "None",
-      revisionNumber: "None",
-      revisionDetails: "None",
-      dateRevised: "None",
-      approver: "None",
-      dateApproved: "None",
-    },
-    revisions: {
+export default function Requests({ loaderData }: Route.ComponentProps) {
+  /**
+   * UI related hooks
+   */
+  const { revalidate } = useRevalidator();
+  const [textAreaValue, setTextAreaValue] = useState("");
+  const [isPopUpVisible, setIsPopUpVisible] = useState(false);
+
+  /**
+   * Data related hooks
+   */
+  const role = useSessionStore((state) => state.role);
+  const userId = useSessionStore((state) => state.userId);
+
+  const initialState = {
+    areButtonsEnabled: false,
+    revision: {
       id: null,
-      title: "None",
-      reason: "None",
-      approval_stage: APPROVALSTAGE.COORDINATOR,
+      title: "",
+      reason: "",
       status: REVISIONSTATUS.COORDINATOR,
-      user_id: null,
-      document_id: null,
-      document: {
-        id: null,
-        type: null,
-      },
       user: {
         id: null,
         first_name: "",
         last_name: "",
       },
+      document: {
+        id: null,
+        name: "",
+      },
     },
-    previousDocumentDetails: null,
   };
 
-  const fetchedRevisions = useLoaderData<RevisionsTypes[] | []>();
-
+  const revisions: RevisionType[] = loaderData;
   const [state, dispatch] = useReducer(revisionsReducer, initialState);
-  const { revalidate } = useRevalidator();
-  const [textAreaValue, setTextAreaValue] = useState("");
-  const [isPopUpVisible, setIsPopUpVisible] = useState(false);
 
-  const [revision, setRevision] = useState<RevisionsTypes | null>(null);
-  const [documents, setDocuments] = useState<Partial<DocumentsType> | null>(
-    null,
-  );
+  useEffect(() => {
+    console.log("REVISION:", state.revision);
+  }, [state]);
 
-  const [users, setUsers] = useState<Partial<UsersType> | null>(null);
-  const role = useSessionStore((state) => state.role);
-  const userId = useSessionStore((state) => state.userId);
+  function revisionsReducer(state: Partial<StateType>, action: ActionType) {
+    const { type, payload } = action;
+    switch (type) {
+      case ACTION.CLICKREQUEST:
+        if (!payload) {
+          return state;
+        }
 
-  function revisionsReducer(state: StateTypes, action: ActionTypes) {
-    switch (action.type) {
-      case ACTION.APPROVEREQUEST:
+        const { revision, document, user } = payload;
+
         return {
           ...state,
-          previousDocumentDetails: state.documentDetails,
-          documentDetails: action.payload,
-          isApproveEnabled: true,
-          isInteractable: true,
+          areButtonsEnabled: true,
+          revision: {
+            id: revision.id,
+            title: revision.title,
+            reason: revision.reason,
+            status: revision.status,
+          },
+          document: {
+            id: document.id,
+            name: document.name,
+          },
+          user: {
+            id: user.id,
+            first_name: user.first_name,
+            last_name: user.last_name,
+          },
         };
-
-      case ACTION.CANCELUPDATE:
-        return {
-          ...state,
-          documentDetails: initialState.documentDetails,
-          previousDocumentDetails: null,
-          isApproveEnabled: false,
-          isInteractable: false,
-        };
-
-      case ACTION.ENABLEAPPROVE:
-        return {
-          ...state,
-          isInteractable: true,
-          isApproveEnabled: true,
-        };
-
-      default:
-        return state;
     }
   }
 
+  /**
+   * Functions
+   */
   function handleCancel() {
     setTextAreaValue("");
     setIsPopUpVisible(false);
@@ -221,127 +190,50 @@ export default function Requests() {
   /*
    * Request DENIED
    */
-  async function handleSubmit() {
-    if (!revision) {
-      return alert("No request selected.");
-    }
+  // async function handleSubmit() {
+  //   if (!revision) {
+  //     return alert("No request selected.");
+  //   }
 
-    const response = await apiFetch(`/revision/${revision.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        status: REVISIONSTATUS.APPROVED,
-        /**
-         * NOTE: Add comment
-         */
-      }),
-    });
+  //   const response = await apiFetch(`/revision/${revision.id}`, {
+  //     method: "PATCH",
+  //     body: JSON.stringify({
+  //       status: REVISIONSTATUS.APPROVED,
+  //       /**
+  //        * NOTE: Add comment
+  //        */
+  //     }),
+  //   });
 
-    const data = await response.json();
+  //   const data = await response.json();
 
-    if (!response.ok) {
-      alert(data.message);
-    }
+  //   if (!response.ok) {
+  //     alert(data.message);
+  //   }
 
-    revalidate();
-    setRevision(null);
-  }
+  //   revalidate();
+  //   setRevision(null);
+  // }
 
   /**
    * Request APPROVED
    */
-  async function handleApprove() {
-    if (!revision) {
-      return alert("No request selected.");
-    }
+  async function handleApprove() {}
 
-    if (revision.status === REVISIONSTATUS.COORDINATOR) {
-    }
-
-    const newStatus =
-      revision.status === REVISIONSTATUS.SUPERIOR
-        ? REVISIONSTATUS.APPROVED
-        : revision.status === REVISIONSTATUS.COORDINATOR
-          ? REVISIONSTATUS.SUPERIOR
-          : REVISIONSTATUS.COORDINATOR;
-
-    const response = await apiFetch(`/revision/${revision.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        status: newStatus,
-      }),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      alert(data.message);
-    }
-
-    revalidate();
-    setRevision(null);
-  }
-
-  async function handleClickRequest() {
-    const response = await apiFetch("/version/latest", {
-      method: "GET",
-      body: JSON.stringify({
-        document_id: 3,
-      }),
-    });
-  }
-
-  async function handleRevisionOnClick(revision: RevisionsTypes) {
-    if (!revision) {
-      return alert("Revision is null");
-    }
-
-    const { user, document, document_id } = revision;
-
-    setUsers(user);
-    setDocuments(document);
-    setRevision(revision);
-    console.log("DOCUMENT ID:", document_id);
-
-    const response = await apiFetch("/version/latest", {
-      method: "POST",
-      body: JSON.stringify({
-        document_id: document_id,
-      }),
-    });
-
-    const latestVersion = await response.json();
-
-    if (!response.ok) {
-      console.log("FAILED", latestVersion.message);
-      return;
-    }
-
-    const {
-      originator,
-      department,
-      revisionNumber,
-      revisionDetails,
-      revisionDate,
-      approver,
-      approvedDate,
-    } = latestVersion;
-
-    console.log("Document Details:", latestVersion);
-
-    if (role === "superior" && fetchedRevisions.length === 0) {
-      dispatch({
-        type: ACTION.APPROVEREQUEST,
-        payload: {
-          ...latestVersion,
-        },
-      });
-    }
-
+  async function handleClickRequest(revision: RevisionType) {
     dispatch({
-      type: ACTION.ENABLEAPPROVE,
+      type: ACTION.CLICKREQUEST,
+      payload: {
+        document: revision.document,
+        user: revision.user,
+        revision: revision,
+      },
     });
   }
 
+  /**
+   * Page-specific component
+   */
   function DocumentDetailsPanel({ title }: { title: string }) {
     return (
       <div className="flex flex-col gap-4 w-full px-4 mb-8">
@@ -349,26 +241,17 @@ export default function Requests() {
           <h1>{title}</h1>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <DataBlock
-            title="Originator"
-            value={state.documentDetails.originator}
-          />
-          <DataBlock
-            title="Department"
-            value={state.documentDetails.department}
-          />
-          <DataBlock
-            title="Revision Number"
-            value={state.documentDetails.revisionNumber}
-          />
-          <DataBlock title="Date" value={state.documentDetails.dateRevised} />
+          <DataBlock title="Originator" value="None - A" />
+          <DataBlock title="Department" value="None - A" />
+          <DataBlock title="Revision Number" value="None - A" />
+          <DataBlock title="Date" value="None - A" />
           <DataBlock
             title="Revision Details"
-            value={state.documentDetails.revisionDetails}
+            value="None - A"
             styling="col-span-2"
           />
-          <DataBlock title="Approver" value={state.documentDetails.approver} />
-          <DataBlock title="Date" value={state.documentDetails.dateApproved} />
+          <DataBlock title="Approver" value="None - A" />
+          <DataBlock title="Date" value="None - A" />
         </div>
       </div>
     );
@@ -382,22 +265,13 @@ export default function Requests() {
           <div className="flex flex-col w-1/3 h-full mr-8">
             <h1 className="mb-2">Requests</h1>
             <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
-              {fetchedRevisions.map((item) => {
+              {revisions.map((revision) => {
+                const { id, title, reason, status, user, document } = revision;
+
                 /*
                  * Shows the originator's requests
                  */
-                const {
-                  id,
-                  title,
-                  reason,
-                  approval_stage,
-                  status,
-                  document_id,
-                  user,
-                } = item;
-
                 if (role === USERROLES.ORIGINATOR && userId === user.id) {
-                  console.log("ORIGINATOR:", approval_stage);
                   return (
                     <DropDownItem
                       key={id}
@@ -405,8 +279,9 @@ export default function Requests() {
                       description={reason}
                       status={status}
                       handleOnClick={() => {
-                        if (document_id) {
-                          handleRevisionOnClick(item);
+                        handleClickRequest(revision);
+                        if (document.id) {
+                          handleClickRequest(revision);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -430,8 +305,8 @@ export default function Requests() {
                       description={reason}
                       status={status}
                       handleOnClick={() => {
-                        if (document_id) {
-                          handleRevisionOnClick(item);
+                        if (document.id) {
+                          handleClickRequest(revision);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -455,8 +330,8 @@ export default function Requests() {
                       description={reason}
                       status={status}
                       handleOnClick={() => {
-                        if (document_id) {
-                          handleRevisionOnClick(item);
+                        if (document.id) {
+                          handleClickRequest(revision);
                         }
                       }}
                       handleDeny={() => setIsPopUpVisible(true)}
@@ -469,17 +344,20 @@ export default function Requests() {
           {/* Document Details Panel */}
           <div className="flex flex-col justify-between flex-1 px-4 border-l border-slate-300">
             <div className="flex flex-col gap-4 overflow-y-scroll">
-              {documents && (
+              {/* {documents && ( */}
+              {true && (
                 <div className="flex flex-col px-4 w-full gap-4">
                   <div className="flex flex-col">
                     <h1>
                       Request to Revise{" "}
-                      {documents === null ? "Unknown Document" : documents.name}
+                      {state.document
+                        ? state.document?.name
+                        : "Unknown Document"}
                     </h1>
                     <p>
-                      {users === null
-                        ? "Unknown Author"
-                        : users.first_name + " " + users.last_name}
+                      {state.user
+                        ? `${state.user.first_name} ${state.user.last_name}`
+                        : "Unknown Author"}
                     </p>
                   </div>
                   <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
@@ -512,46 +390,30 @@ export default function Requests() {
             </div>
             {isRoleAllowed(["coordinator", "superior"], role) && (
               <div className="flex w-full justify-end gap-2">
-                {state.isInteractable && (
+                {state.areButtonsEnabled && (
                   <>
                     <Button
-                      type={
-                        state.isInteractable
-                          ? BUTTONTYPES.CANCEL
-                          : BUTTONTYPES.DISABLED
-                      }
+                      type={BUTTONTYPES.CANCEL}
                       text="Cancel"
-                      handleOnClick={() => {
-                        dispatch({
-                          type: ACTION.CANCELUPDATE,
-                        });
-                      }}
+                      handleOnClick={() => {}}
                     />
                     <Button
-                      type={
-                        state.isInteractable
-                          ? BUTTONTYPES.DANGER
-                          : BUTTONTYPES.DISABLED
-                      }
+                      type={BUTTONTYPES.DANGER}
                       text="Deny"
                       handleOnClick={() => {
                         setIsPopUpVisible(true);
-                        dispatch({
-                          type: ACTION.CANCELUPDATE,
-                        });
+                      }}
+                    />
+                    <Button
+                      type={BUTTONTYPES.CONFIRM}
+                      text="Approve"
+                      handleOnClick={() => {
+                        console.log("CLICKED REVISION", state.revision);
+                        console.log("RELATED DOCUMENT", state.document);
                       }}
                     />
                   </>
                 )}
-                <Button
-                  type={
-                    state.isInteractable
-                      ? BUTTONTYPES.CONFIRM
-                      : BUTTONTYPES.DISABLED
-                  }
-                  text="Approve"
-                  handleOnClick={handleApprove}
-                />
               </div>
             )}
           </div>
@@ -578,7 +440,7 @@ export default function Requests() {
             <Button
               type={BUTTONTYPES.CONFIRM}
               text="Submit"
-              handleOnClick={handleSubmit}
+              handleOnClick={() => {}}
               styling="w-full"
             />
           </div>

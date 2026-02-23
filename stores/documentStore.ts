@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import type { DOCUMENTTYPES } from "~/routes/Requests";
+import type { DOCUMENTTYPES } from "~/constants";
 
 type DocumentStateType = {
   documentId: number | null;

@@ -10,6 +10,7 @@ type ButtonTypes = {
   text: string;
   handleOnClick: () => void;
   styling?: string;
+  isEnabled?: boolean;
 };
 
 export default function Button({
@@ -17,11 +18,19 @@ export default function Button({
   text,
   handleOnClick,
   styling = "",
+  isEnabled,
 }: ButtonTypes) {
   const btnClasses = type + " " + styling;
 
   return (
-    <button className={btnClasses} onClick={handleOnClick}>
+    <button
+      className={btnClasses}
+      onClick={() => {
+        if (!isEnabled) {
+          handleOnClick();
+        }
+      }}
+    >
       {text}
     </button>
   );

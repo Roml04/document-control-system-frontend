@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Icon } from "../primitives";
 import { useSessionStore } from "stores/sessionStore";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
-import { REVISIONSTATUS } from "~/routes/Requests";
+import { REVISIONSTATUS } from "~/constants";
 
 type DropDownItemProps = {
   title: string;

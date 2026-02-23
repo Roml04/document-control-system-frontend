@@ -1,8 +1,8 @@
 import { useLoaderData } from "react-router";
 import { type IconName } from "~/assets/icons/icons";
 import { CardItem } from "~/components";
+import type { DOCUMENTTYPES } from "~/constants/document.enum";
 import { apiFetch } from "~/utils/apiFetch";
-import type { DOCUMENTTYPES } from "./Requests";
 
 type DocumentsType = {
   id: number;
