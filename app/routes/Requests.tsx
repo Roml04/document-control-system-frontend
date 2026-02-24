@@ -38,7 +38,7 @@ type VersionType = {
   approvedDate: string;
 };
 
-type DocumentType = {
+export type DocumentType = {
   id: number | null;
   name: string;
 };
@@ -79,9 +79,9 @@ export async function clientLoader() {
     method: "GET",
   });
 
-  const fetchedData: FetchedRevisionType[] = await response.json();
+  const data: FetchedRevisionType[] = await response.json();
 
-  const LoadedData: FetchedRevisionType[] = fetchedData.map((revision) => {
+  const LoadedData: FetchedRevisionType[] = data.map((revision) => {
     const { document, user } = revision;
 
     return {
@@ -160,24 +160,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   /**
    * Functions
    */
-  async function fetchDocumentDetails(documentId: number) {
-    const response = await apiFetch(`/document/${documentId}`, {
-      method: "GET",
-    });
-
-    const fetchedLatestVersion: VersionType = await response.json();
-
-    console.log("fetchedLatestVersion:", fetchedLatestVersion);
-
-    dispatch({
-      type: ACTION.SHOWDOCUMENT,
-      payload: {
-        version: {
-          ...fetchedLatestVersion,
-        },
-      },
-    });
-  }
 
   function revisionsReducer(state: StateType, action: ActionType) {
     switch (action.type) {
@@ -199,6 +181,25 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       default:
         return state;
     }
+  }
+
+  async function fetchDocumentDetails(documentId: number) {
+    const response = await apiFetch(`/document/${documentId}`, {
+      method: "GET",
+    });
+
+    const fetchedLatestVersion: VersionType = await response.json();
+
+    console.log("fetchedLatestVersion:", fetchedLatestVersion);
+
+    dispatch({
+      type: ACTION.SHOWDOCUMENT,
+      payload: {
+        version: {
+          ...fetchedLatestVersion,
+        },
+      },
+    });
   }
 
   function handlePopUpCancel() {
@@ -391,7 +392,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 <div className="flex flex-col px-4 w-full gap-4">
                   <div className="flex flex-col">
                     <h1>
-                      Request to Revise{" "}
                       {state.document
                         ? state.document.name
                         : "Unknown Document"}

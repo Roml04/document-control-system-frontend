@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState, type ComponentProps } from "react";
+import { useReducer, useState } from "react";
 import { useSessionStore } from "stores/sessionStore";
 import { PopUpModal, DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
@@ -6,19 +6,11 @@ import DataBlock from "~/components/ui/DataBlock";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import type { Route } from "./+types/DocumentPage";
 import { apiFetch } from "~/utils/apiFetch";
+import type { DocumentType } from "../Requests";
 
 enum ACTION {
-  SETORIGINATOR = "SETORIGINATOR",
-  SETDEPARTMENT = "SETDEPARTMENT",
-  SETREVISIONNUM = "SETREVISIONNUM",
-  SETREVISIONDETAILS = "SETREVISIONDETAILS",
-  SETREVISIONDATE = "SETREVISIONDATE",
-  SETAPPROVER = "SETAPPROVER",
-  SETAPPROVEDDATE = "SETAPPROVEDDATE",
-  FETCHDOCUDETAILS = "FETCHDOCUDETAILS",
-  SETUSERID = "SETUSERID",
-  SETREVISIONREASON = "SETREVISIONREASON",
-  SETREVISIONTITLE = "SETREVISIONTITLE",
+  SETDOCUMENTDETAILS = "SETDOCUMENTDETAILS",
+  RESETDATA = "RESETDATA",
 }
 
 type StateType = {
@@ -34,18 +26,10 @@ type StateType = {
   revisionReason: string;
 };
 
-type ActionType =
-  | { type: ACTION.SETORIGINATOR; payload: string }
-  | { type: ACTION.SETDEPARTMENT; payload: string }
-  | { type: ACTION.SETREVISIONNUM; payload: string }
-  | { type: ACTION.SETREVISIONDETAILS; payload: string }
-  | { type: ACTION.SETREVISIONDATE; payload: string }
-  | { type: ACTION.SETAPPROVER; payload: string }
-  | { type: ACTION.SETAPPROVEDDATE; payload: string }
-  | { type: ACTION.SETREVISIONTITLE; payload: string }
-  | { type: ACTION.SETREVISIONREASON; payload: string }
-  | { type: ACTION.SETUSERID; payload: number | null }
-  | { type: ACTION.FETCHDOCUDETAILS; payload: StateType };
+type ActionType = {
+  type: ACTION;
+  payload: StateType;
+};
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   console.log("DocumentPage.tsx | params.documentId:", params.documentId);
@@ -53,16 +37,23 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const response = await apiFetch(`/document/${params.documentId}`, {
     method: "GET",
   });
-  const data = await response.json();
+
+  const responseBody: {
+    message: string;
+    data: {
+      version: StateType;
+      document: DocumentType;
+    };
+  } = await response.json();
 
   if (!response.ok) {
     console.log("FAILED");
-    console.error(data.message);
+    console.error(responseBody.message);
   }
 
-  console.log("clientLoader | data:", data);
+  console.log("clientLoader | data:", responseBody);
 
-  return data;
+  return responseBody.data;
 }
 
 export default function DocumentPage({ loaderData }: Route.ComponentProps) {
@@ -81,90 +72,25 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
 
   const [isPopUpVisible, setPopUpVisible] = useState(false);
   const [token, setToken] = useState("");
-  const [state, dispatch] = useReducer(documentDetailsReducer, initialState);
+  const [state, dispatch] = useReducer(documentVersionReducer, initialState);
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
 
-  useEffect(() => {
-    dispatch({ type: ACTION.FETCHDOCUDETAILS, payload: loaderData });
-  }, []);
+  const documentVersion = loaderData;
 
   const btnsVisible = isRoleAllowed(["originator", "coordinator"], role);
 
-  function documentDetailsReducer(state: StateType, action: ActionType) {
-    const { type, payload } = action;
+  function documentVersionReducer(state: StateType, action: ActionType) {
+    switch (action.type) {
+      case ACTION.SETDOCUMENTDETAILS:
+        return {
+          ...state,
+          ...action.payload,
+        };
 
-    if (typeof payload === "string") {
-      switch (type) {
-        case ACTION.SETORIGINATOR:
-          return {
-            ...state,
-            originator: payload,
-          };
-        case ACTION.SETDEPARTMENT:
-          return {
-            ...state,
-            department: payload,
-          };
-        case ACTION.SETREVISIONNUM:
-          return {
-            ...state,
-            revisionNumber: payload,
-          };
-        case ACTION.SETREVISIONDETAILS:
-          return {
-            ...state,
-            revisionDetails: payload,
-          };
-        case ACTION.SETREVISIONDATE:
-          return {
-            ...state,
-            revisionDate: payload,
-          };
-        case ACTION.SETAPPROVER:
-          return {
-            ...state,
-            approver: payload,
-          };
-        case ACTION.SETAPPROVEDDATE:
-          return {
-            ...state,
-            approvedDate: payload,
-          };
-        case ACTION.SETUSERID:
-          return {
-            ...state,
-            userId: payload,
-          };
-        case ACTION.SETREVISIONTITLE:
-          return {
-            ...state,
-            revisionTitle: payload,
-          };
-        case ACTION.SETREVISIONREASON:
-          return {
-            ...state,
-            revisionReason: payload,
-          };
-        default:
-          return state;
-      }
+      case ACTION.RESETDATA:
+        return initialState;
     }
-
-    if (typeof payload === "object" && payload !== null) {
-      switch (type) {
-        case ACTION.FETCHDOCUDETAILS:
-          return {
-            ...state,
-            ...payload,
-          };
-
-        default:
-          return state;
-      }
-    }
-
-    return state;
   }
 
   function handleRevisionClick() {
@@ -174,8 +100,6 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   function handleObsoleteClick() {}
 
   function handleCancel() {
-    dispatch({ type: ACTION.SETREVISIONTITLE, payload: "" });
-    dispatch({ type: ACTION.SETREVISIONREASON, payload: "" });
     setPopUpVisible(false);
   }
 
@@ -195,7 +119,7 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
         reason: state.revisionReason,
         status: "coordinator_approval",
         user_id: userId,
-        document_id: 3,
+        document_id: documentVersion.document.id,
       }),
     });
 
@@ -211,14 +135,12 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
 
     console.log("SUCCESS");
     console.log(revisionData);
-    dispatch({ type: ACTION.SETREVISIONTITLE, payload: "" });
-    dispatch({ type: ACTION.SETREVISIONREASON, payload: "" });
     setPopUpVisible(false);
   }
 
   return (
     <div>
-      <DocumentsPageLayout pagetitle="Waste Management Procedure">
+      <DocumentsPageLayout pagetitle={}>
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
           <div>
@@ -303,23 +225,13 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
               value={state.revisionTitle}
               placeholder="Title"
               className="resize-y outline-none text-xl font-bold"
-              onChange={(e) =>
-                dispatch({
-                  type: ACTION.SETREVISIONTITLE,
-                  payload: e.target.value,
-                })
-              }
+              onChange={() => {}}
             />
             <textarea
               className="resize-y min-h-32 outline-none"
               value={state.revisionReason}
               placeholder="Reason for revision..."
-              onChange={(e) =>
-                dispatch({
-                  type: ACTION.SETREVISIONREASON,
-                  payload: e.target.value,
-                })
-              }
+              onChange={() => {}}
             />
           </div>
           <div className="flex w-full justify-between gap-2">
