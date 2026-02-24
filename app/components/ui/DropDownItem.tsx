@@ -9,7 +9,6 @@ type DropDownItemProps = {
   description?: string;
   status: REVISIONSTATUS;
   handleOnClick: () => void;
-  handleDeny: () => void;
 };
 
 export default function DropDownItem({

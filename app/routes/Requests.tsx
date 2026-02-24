@@ -10,36 +10,32 @@ import { REVISIONSTATUS, USERROLES } from "~/constants/";
 
 enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
-  /**
-   * Include "RESETDATA"
-   */
+  RESETDATA = "RESETDATA",
+  SHOWDOCUMENT = "SHOWDOCUMENT",
 }
 
 type StateType = {
   areButtonsEnabled: boolean;
   isDocumentPanelShown: boolean;
-  revision: Partial<RevisionType>;
-  document: Partial<DocumentType>;
-  user: Partial<UserType>;
+  revision: RevisionType;
+  document: DocumentType;
+  user: UserType;
+  version: VersionType;
 };
 
-type ActionType = {
-  type: ACTION;
-  payload?: {
-    revision: RevisionType;
-    document: DocumentType;
-    user: UserType;
-  };
-};
+type ActionType =
+  | { type: ACTION.CLICKREQUEST; payload: Partial<StateType> }
+  | { type: ACTION.RESETDATA }
+  | { type: ACTION.SHOWDOCUMENT; payload: Partial<StateType> };
 
-type VersionTypes = {
+type VersionType = {
   originator: string;
   department: string;
   revisionNumber: string;
   revisionDetails: string;
-  dateRevised: string;
+  revisionDate: string;
   approver: string;
-  dateApproved: string;
+  approvedDate: string;
 };
 
 type DocumentType = {
@@ -58,15 +54,16 @@ type RevisionType = {
   title: string;
   reason: string;
   status: REVISIONSTATUS;
-  user: {
-    id: number | null;
-    first_name: string;
-    last_name: string;
-  };
-  document: {
-    id: number | null;
-    name: string;
-  };
+};
+
+type FetchedRevisionType = {
+  id: number | null;
+  title: string;
+  reason: string;
+  status: REVISIONSTATUS;
+  user: UserType;
+  document: DocumentType;
+  version?: VersionType;
 };
 
 export async function clientLoader() {
@@ -82,9 +79,9 @@ export async function clientLoader() {
     method: "GET",
   });
 
-  const fetchedData: RevisionType[] = await response.json();
+  const fetchedData: FetchedRevisionType[] = await response.json();
 
-  const LoadedData: RevisionType[] = fetchedData.map((revision) => {
+  const LoadedData: FetchedRevisionType[] = fetchedData.map((revision) => {
     const { document, user } = revision;
 
     return {
@@ -112,7 +109,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
    * UI related hooks
    */
   const { revalidate } = useRevalidator();
-  const [textAreaValue, setTextAreaValue] = useState("");
+  const [commentValue, setCommentValue] = useState("");
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
 
   /**
@@ -123,135 +120,185 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
 
   const initialState = {
     areButtonsEnabled: false,
+    isDocumentPanelShown: false,
     revision: {
       id: null,
-      title: "",
-      reason: "",
+      title: "Untitled",
+      reason: "No reasons provided...",
       status: REVISIONSTATUS.COORDINATOR,
-      user: {
-        id: null,
-        first_name: "",
-        last_name: "",
-      },
-      document: {
-        id: null,
-        name: "",
-      },
+    },
+    document: {
+      id: null,
+      name: "Unknown Document",
+    },
+    user: {
+      id: null,
+      first_name: "Unknown",
+      last_name: "User",
+    },
+    version: {
+      originator: "None",
+      department: "None",
+      revisionNumber: "None",
+      revisionDetails: "None",
+      revisionDate: "None",
+      approver: "None",
+      approvedDate: "None",
     },
   };
 
-  const revisions: RevisionType[] = loaderData;
+  const revisions: FetchedRevisionType[] = loaderData;
   const [state, dispatch] = useReducer(revisionsReducer, initialState);
 
   useEffect(() => {
-    console.log("REVISION:", state.revision);
+    console.log("state:", state);
+    console.log(
+      "isRoleAllowed:",
+      isRoleAllowed(["coordinator", "superior"], role),
+    );
   }, [state]);
-
-  function revisionsReducer(state: Partial<StateType>, action: ActionType) {
-    const { type, payload } = action;
-    switch (type) {
-      case ACTION.CLICKREQUEST:
-        if (!payload) {
-          return state;
-        }
-
-        const { revision, document, user } = payload;
-
-        return {
-          ...state,
-          areButtonsEnabled: true,
-          revision: {
-            id: revision.id,
-            title: revision.title,
-            reason: revision.reason,
-            status: revision.status,
-          },
-          document: {
-            id: document.id,
-            name: document.name,
-          },
-          user: {
-            id: user.id,
-            first_name: user.first_name,
-            last_name: user.last_name,
-          },
-        };
-    }
-  }
-
   /**
    * Functions
    */
-  function handleCancel() {
-    setTextAreaValue("");
-    setIsPopUpVisible(false);
+  async function fetchDocumentDetails(documentId: number) {
+    const response = await apiFetch(`/document/${documentId}`, {
+      method: "GET",
+    });
+
+    const fetchedLatestVersion: VersionType = await response.json();
+
+    console.log("fetchedLatestVersion:", fetchedLatestVersion);
+
+    dispatch({
+      type: ACTION.SHOWDOCUMENT,
+      payload: {
+        version: {
+          ...fetchedLatestVersion,
+        },
+      },
+    });
   }
 
-  /*
-   * Request DENIED
-   */
-  // async function handleSubmit() {
-  //   if (!revision) {
-  //     return alert("No request selected.");
-  //   }
+  function revisionsReducer(state: StateType, action: ActionType) {
+    switch (action.type) {
+      case ACTION.CLICKREQUEST:
+        return {
+          ...state,
+          ...action.payload,
+        };
 
-  //   const response = await apiFetch(`/revision/${revision.id}`, {
-  //     method: "PATCH",
-  //     body: JSON.stringify({
-  //       status: REVISIONSTATUS.APPROVED,
-  //       /**
-  //        * NOTE: Add comment
-  //        */
-  //     }),
-  //   });
+      case ACTION.SHOWDOCUMENT:
+        return {
+          ...state,
+          version: action.payload.version ?? state.version,
+        };
 
-  //   const data = await response.json();
+      case ACTION.RESETDATA:
+        return initialState;
 
-  //   if (!response.ok) {
-  //     alert(data.message);
-  //   }
+      default:
+        return state;
+    }
+  }
 
-  //   revalidate();
-  //   setRevision(null);
-  // }
+  function handlePopUpCancel() {
+    setCommentValue("");
+    setIsPopUpVisible(false);
+  }
 
   /**
    * Request APPROVED
    */
-  async function handleApprove() {}
+  async function handleApprove() {
+    if (!state.revision) {
+      return alert("No request selected");
+    }
 
-  async function handleClickRequest(revision: RevisionType) {
+    if (state.revision.status === REVISIONSTATUS.DENIED) {
+      return alert("You are trying to approve a denied request");
+    }
+
+    const status =
+      state.revision.status === REVISIONSTATUS.SUPERIOR ||
+      state.revision.status === REVISIONSTATUS.APPROVED
+        ? REVISIONSTATUS.APPROVED
+        : REVISIONSTATUS.SUPERIOR;
+
+    await apiFetch(`/revision/${state.revision.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: status,
+      }),
+    });
+    dispatch({ type: ACTION.RESETDATA });
+
+    revalidate();
+  }
+
+  /**
+   * Request DENIED
+   */
+  async function handleDeny(revisionId: number) {
+    console.log("comment:", commentValue);
+
+    const response = await apiFetch(`/revision/${revisionId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: REVISIONSTATUS.DENIED,
+        comment: commentValue,
+      }),
+    });
+
+    if (!response.ok) {
+      return alert("Something went wrong.");
+    }
+    setCommentValue("");
+
+    revalidate();
+  }
+
+  async function handleClickRequest(revision: FetchedRevisionType) {
+    console.log("handleClickRequest:", revision);
+
     dispatch({
       type: ACTION.CLICKREQUEST,
       payload: {
+        areButtonsEnabled: true,
         document: revision.document,
         user: revision.user,
         revision: revision,
       },
     });
+
+    if (isRoleAllowed(["superior"], role) && revision.document.id) {
+      fetchDocumentDetails(revision.document.id);
+    }
   }
 
   /**
    * Page-specific component
    */
-  function DocumentDetailsPanel({ title }: { title: string }) {
+  function DocumentDetailsPanel() {
     return (
       <div className="flex flex-col gap-4 w-full px-4 mb-8">
         <div>
-          <h1>{title}</h1>
+          <h1>Document Details</h1>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <DataBlock title="Originator" value="None - A" />
-          <DataBlock title="Department" value="None - A" />
-          <DataBlock title="Revision Number" value="None - A" />
-          <DataBlock title="Date" value="None - A" />
+          <DataBlock title="Originator" value={state.version.originator} />
+          <DataBlock title="Department" value={state.version.department} />
+          <DataBlock
+            title="Revision Number"
+            value={state.version.revisionNumber}
+          />
+          <DataBlock title="Date" value={state.version.revisionDate} />
           <DataBlock
             title="Revision Details"
-            value="None - A"
+            value={state.version.revisionDetails}
             styling="col-span-2"
           />
-          <DataBlock title="Approver" value="None - A" />
-          <DataBlock title="Date" value="None - A" />
+          <DataBlock title="Approver" value={state.version.approver} />
+          <DataBlock title="Date" value={state.version.approvedDate} />
         </div>
       </div>
     );
@@ -279,12 +326,10 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                       description={reason}
                       status={status}
                       handleOnClick={() => {
-                        handleClickRequest(revision);
                         if (document.id) {
                           handleClickRequest(revision);
                         }
                       }}
-                      handleDeny={() => setIsPopUpVisible(true)}
                     />
                   );
                 }
@@ -309,7 +354,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                           handleClickRequest(revision);
                         }
                       }}
-                      handleDeny={() => setIsPopUpVisible(true)}
                     />
                   );
                 }
@@ -334,7 +378,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                           handleClickRequest(revision);
                         }
                       }}
-                      handleDeny={() => setIsPopUpVisible(true)}
                     />
                   );
                 }
@@ -343,21 +386,20 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
           </div>
           {/* Document Details Panel */}
           <div className="flex flex-col justify-between flex-1 px-4 border-l border-slate-300">
-            <div className="flex flex-col gap-4 overflow-y-scroll">
-              {/* {documents && ( */}
+            <div className="flex flex-col gap-4 h-full overflow-y-scroll">
               {true && (
                 <div className="flex flex-col px-4 w-full gap-4">
                   <div className="flex flex-col">
                     <h1>
                       Request to Revise{" "}
                       {state.document
-                        ? state.document?.name
+                        ? state.document.name
                         : "Unknown Document"}
                     </h1>
                     <p>
                       {state.user
-                        ? `${state.user.first_name} ${state.user.last_name}`
-                        : "Unknown Author"}
+                        ? state.user.first_name + " " + state.user.last_name
+                        : "Unknown User"}
                     </p>
                   </div>
                   <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
@@ -384,9 +426,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                   </div>
                 </div>
               )}
-              {isRoleAllowed(["superior"], role) && (
-                <DocumentDetailsPanel title="Document Details" />
-              )}
+              {isRoleAllowed(["superior"], role) && <DocumentDetailsPanel />}
             </div>
             {isRoleAllowed(["coordinator", "superior"], role) && (
               <div className="flex w-full justify-end gap-2">
@@ -395,7 +435,13 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                     <Button
                       type={BUTTONTYPES.CANCEL}
                       text="Cancel"
-                      handleOnClick={() => {}}
+                      handleOnClick={() => {
+                        dispatch({ type: ACTION.RESETDATA });
+                      }}
+                      isEnabled={isRoleAllowed(
+                        ["coordinator", "superior"],
+                        role,
+                      )}
                     />
                     <Button
                       type={BUTTONTYPES.DANGER}
@@ -403,6 +449,10 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                       handleOnClick={() => {
                         setIsPopUpVisible(true);
                       }}
+                      isEnabled={isRoleAllowed(
+                        ["coordinator", "superior"],
+                        role,
+                      )}
                     />
                     <Button
                       type={BUTTONTYPES.CONFIRM}
@@ -410,7 +460,12 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                       handleOnClick={() => {
                         console.log("CLICKED REVISION", state.revision);
                         console.log("RELATED DOCUMENT", state.document);
+                        handleApprove();
                       }}
+                      isEnabled={isRoleAllowed(
+                        ["coordinator", "superior"],
+                        role,
+                      )}
                     />
                   </>
                 )}
@@ -426,21 +481,28 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
             <textarea
               placeholder="Write a comment..."
               className="w-full resize-y min-h-48 outline-none pl-4"
-              value={textAreaValue}
-              onChange={(e) => setTextAreaValue(e.target.value)}
+              value={commentValue}
+              onChange={(e) => setCommentValue(e.target.value)}
             />
           </div>
           <div className="flex w-full justify-between gap-2">
             <Button
               type={BUTTONTYPES.CANCEL}
               text="Cancel"
-              handleOnClick={handleCancel}
+              handleOnClick={handlePopUpCancel}
               styling="w-full"
             />
             <Button
               type={BUTTONTYPES.CONFIRM}
               text="Submit"
-              handleOnClick={() => {}}
+              handleOnClick={() => {
+                console.log("submitted:", state.revision.id);
+                if (state.revision.id) {
+                  console.log("submitted:", state.revision.id);
+                  handleDeny(state.revision.id);
+                  setIsPopUpVisible(false);
+                }
+              }}
               styling="w-full"
             />
           </div>

@@ -18,7 +18,7 @@ export default function Button({
   text,
   handleOnClick,
   styling = "",
-  isEnabled,
+  isEnabled = true,
 }: ButtonTypes) {
   const btnClasses = type + " " + styling;
 
@@ -26,7 +26,7 @@ export default function Button({
     <button
       className={btnClasses}
       onClick={() => {
-        if (!isEnabled) {
+        if (isEnabled) {
           handleOnClick();
         }
       }}
