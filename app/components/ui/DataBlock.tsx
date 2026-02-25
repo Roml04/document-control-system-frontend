@@ -10,12 +10,12 @@ enum ACTION {
 type DataBlockProps = {
   title: string;
   value: string;
-  isInteractable?: boolean;
+  isEditable?: boolean;
   styling?: string;
 };
 
 type StateTypes = {
-  isInteractable: boolean;
+  isEditable: boolean;
   documentDetail: string | undefined;
 };
 
@@ -27,11 +27,11 @@ type ActionTypes = {
 export default function DataBlock({
   title,
   value,
-  isInteractable,
+  isEditable,
   styling,
 }: DataBlockProps) {
   const initialState: StateTypes = {
-    isInteractable: false,
+    isEditable: false,
     documentDetail: value,
   };
 
@@ -42,23 +42,23 @@ export default function DataBlock({
   }, [value]);
 
   useEffect(() => {
-    isInteractable
+    isEditable
       ? dispatch({ type: ACTION.SETINTERACTABLEENABLED })
       : dispatch({ type: ACTION.SETINTERACTABLEDISABLED });
-  }, [isInteractable]);
+  }, [isEditable]);
 
   function dataBlockReducer(state: StateTypes, action: ActionTypes) {
     switch (action.type) {
       case ACTION.SETINTERACTABLEENABLED:
         return {
           ...state,
-          isInteractable: true,
+          isEditable: true,
         };
 
       case ACTION.SETINTERACTABLEDISABLED:
         return {
           ...state,
-          isInteractable: false,
+          isEditable: false,
         };
 
       case ACTION.UPDATEDETAIL:
@@ -77,7 +77,7 @@ export default function DataBlock({
       className={`w-full bg-white rounded-xl transition-all duration-200 ${styling}`}
     >
       <p className="text-sm text-gray-500 tracking-wide">{title}</p>
-      {state.isInteractable ? (
+      {state.isEditable ? (
         <input
           type="text"
           value={state.documentDetail}

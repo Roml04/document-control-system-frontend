@@ -5,8 +5,9 @@ import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import { apiFetch } from "~/utils/apiFetch";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
-import { REVISIONSTATUS, USERROLES } from "~/constants/";
+import { REVISIONSTATUS, USERROLE } from "~/constants/";
 import type { Route } from "./+types/Requests";
+import { changeStatus } from "~/utils/changeStatus";
 
 enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
@@ -149,15 +150,34 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
 
   const revisions = loaderData;
 
+  const filteredRevisions = revisions.filter((revision) => {
+    switch (role) {
+      case USERROLE.ORIGINATOR:
+        return (
+          revision.status === REVISIONSTATUS.ORIGINATOR ||
+          userId === revision.user.id
+        );
+
+      case USERROLE.COORDINATOR:
+        return (
+          revision.status === REVISIONSTATUS.COORDINATOR ||
+          userId === revision.user.id
+        );
+
+      case USERROLE.SUPERIOR:
+        return revision.status === REVISIONSTATUS.SUPERIOR;
+
+      default:
+        return false;
+    }
+  });
+
   const [state, dispatch] = useReducer(revisionsReducer, initialState);
 
   useEffect(() => {
     console.log("state:", state);
-    console.log(
-      "isRoleAllowed:",
-      isRoleAllowed(["coordinator", "superior"], role),
-    );
-  }, [state]);
+    console.log("revision:", filteredRevisions);
+  }, [state, filteredRevisions]);
 
   /**
    * Functions
@@ -173,7 +193,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       case ACTION.SHOWDOCUMENT:
         return {
           ...state,
-          version: action.payload.version ?? state.version,
+          version: action.payload.version ?? initialState.version,
         };
 
       case ACTION.RESETDATA:
@@ -189,15 +209,14 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       method: "GET",
     });
 
-    const fetchedLatestVersion: VersionType = await response.json();
-
-    console.log("fetchedLatestVersion:", fetchedLatestVersion);
+    const responseBody = await response.json();
+    const documentVersion = responseBody.data;
 
     dispatch({
       type: ACTION.SHOWDOCUMENT,
       payload: {
         version: {
-          ...fetchedLatestVersion,
+          ...documentVersion,
         },
       },
     });
@@ -220,16 +239,10 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       return alert("You are trying to approve a denied request");
     }
 
-    const status =
-      state.revision.status === REVISIONSTATUS.SUPERIOR ||
-      state.revision.status === REVISIONSTATUS.APPROVED
-        ? REVISIONSTATUS.APPROVED
-        : REVISIONSTATUS.SUPERIOR;
-
     await apiFetch(`/revision/${state.revision.id}`, {
       method: "PATCH",
       body: JSON.stringify({
-        status: status,
+        status: changeStatus(state.revision.status),
       }),
     });
     dispatch({ type: ACTION.RESETDATA });
@@ -241,8 +254,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
    * Request DENIED
    */
   async function handleDeny(revisionId: number) {
-    console.log("comment:", commentValue);
-
     const response = await apiFetch(`/revision/${revisionId}`, {
       method: "PATCH",
       body: JSON.stringify({
@@ -260,8 +271,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   }
 
   async function handleClickRequest(revision: FetchedRevisionType) {
-    console.log("handleClickRequest:", revision);
-
     dispatch({
       type: ACTION.CLICKREQUEST,
       payload: {
@@ -287,21 +296,123 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
           <h1>Document Details</h1>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <DataBlock title="Originator" value={state.version.originator} />
-          <DataBlock title="Department" value={state.version.department} />
+          <DataBlock
+            title="Originator"
+            value={state.version.originator}
+            isEditable={isRoleAllowed(["originator"], role)}
+          />
+          <DataBlock
+            title="Department"
+            value={state.version.department}
+            isEditable={isRoleAllowed(["originator"], role)}
+          />
           <DataBlock
             title="Revision Number"
             value={state.version.revisionNumber}
+            isEditable={isRoleAllowed(["originator"], role)}
           />
-          <DataBlock title="Date" value={state.version.revisionDate} />
+          <DataBlock
+            title="Date"
+            value={state.version.revisionDate}
+            isEditable={isRoleAllowed(["originator"], role)}
+          />
           <DataBlock
             title="Revision Details"
             value={state.version.revisionDetails}
             styling="col-span-2"
+            isEditable={isRoleAllowed(["originator"], role)}
           />
-          <DataBlock title="Approver" value={state.version.approver} />
-          <DataBlock title="Date" value={state.version.approvedDate} />
+          <DataBlock
+            title="Approver"
+            value={state.version.approver}
+            isEditable={isRoleAllowed(["originator"], role)}
+          />
+          <DataBlock
+            title="Date"
+            value={state.version.approvedDate}
+            isEditable={isRoleAllowed(["originator"], role)}
+          />
         </div>
+      </div>
+    );
+  }
+
+  function RevisionDetailsPanel() {
+    return (
+      <div className="flex flex-col justify-between flex-1 px-4 border-l border-slate-300">
+        <div className="flex flex-col gap-4 h-full overflow-y-scroll">
+          <div className="flex flex-col px-4 w-full gap-4">
+            <div className="flex flex-col">
+              <h1>
+                {state.document ? state.document.name : "Unknown Document"}
+              </h1>
+              <p>
+                {state.user
+                  ? state.user.first_name + " " + state.user.last_name
+                  : "Unknown User"}
+              </p>
+            </div>
+            <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
+              {/* File Component */}
+              <div className="flex items-center w-full justify-between gap-3">
+                <div className="flex gap-2 items-center">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-md bg-slate-200 text-slate-600"></div>
+                  <div className="flex flex-col">
+                    <span className="text-sm text-slate-500">File</span>
+                    <span className="font-medium text-gray-500">
+                      waste-management.docx
+                    </span>
+                  </div>
+                </div>
+
+                <a
+                  className="px-4 py-2 text-sm rounded-md border border-slate-400 hover:bg-black hover:text-white transition"
+                  href=""
+                  target="_blank"
+                >
+                  Open
+                </a>
+              </div>
+            </div>
+          </div>
+          {isRoleAllowed(["superior"], role) ||
+          (state.revision.status === REVISIONSTATUS.ORIGINATOR &&
+            isRoleAllowed(["originator"], role)) ? (
+            <DocumentDetailsPanel />
+          ) : null}
+        </div>
+        {isRoleAllowed(["coordinator", "superior"], role) && (
+          <div className="flex w-full justify-end gap-2">
+            {state.areButtonsEnabled && (
+              <>
+                <Button
+                  type={BUTTONTYPES.CANCEL}
+                  text="Cancel"
+                  handleOnClick={() => {
+                    dispatch({ type: ACTION.RESETDATA });
+                  }}
+                  isEnabled={isRoleAllowed(["coordinator", "superior"], role)}
+                />
+                <Button
+                  type={BUTTONTYPES.DANGER}
+                  text="Deny"
+                  handleOnClick={() => {
+                    setIsPopUpVisible(true);
+                  }}
+                  isEnabled={isRoleAllowed(["coordinator", "superior"], role)}
+                />
+                <Button
+                  type={BUTTONTYPES.CONFIRM}
+                  text="Approve"
+                  handleOnClick={() => {
+                    handleApprove();
+                  }}
+                  isEnabled={isRoleAllowed(["coordinator", "superior"], role)}
+                />
+              </>
+            )}
+          </div>
+        )}
       </div>
     );
   }
@@ -311,168 +422,43 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       <div className="flex flex-col w-full h-full px-4 py-4 gap-2">
         <div className="flex h-full ">
           {/* Revisions Panel */}
-          <div className="flex flex-col w-1/3 h-full mr-8">
-            <h1 className="mb-2">Requests</h1>
-            <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
-              {revisions.map((revision) => {
-                const { id, title, reason, status, user, document } = revision;
-
-                /*
-                 * Shows the originator's requests
-                 */
-                if (role === USERROLES.ORIGINATOR && userId === user.id) {
-                  return (
-                    <DropDownItem
-                      key={id}
-                      title={title}
-                      description={reason}
-                      status={status}
-                      handleOnClick={() => {
-                        if (document.id) {
-                          handleClickRequest(revision);
-                        }
-                      }}
-                    />
-                  );
-                }
-
-                /*
-                 * Shows all pending requests that are
-                 * for coordinator approval
-                 */
-                if (
-                  status === REVISIONSTATUS.COORDINATOR &&
-                  role === USERROLES.COORDINATOR
-                ) {
-                  // console.log("COORDINATOR:", revision);
-                  return (
-                    <DropDownItem
-                      key={id}
-                      title={title}
-                      description={reason}
-                      status={status}
-                      handleOnClick={() => {
-                        if (document.id) {
-                          handleClickRequest(revision);
-                        }
-                      }}
-                    />
-                  );
-                }
-
-                /*
-                 * Shows all pending requests that are
-                 * for superior approval
-                 */
-                if (
-                  status === REVISIONSTATUS.SUPERIOR &&
-                  role === USERROLES.SUPERIOR
-                ) {
-                  // console.log("SUPERIOR:", approval_stage);
-                  return (
-                    <DropDownItem
-                      key={id}
-                      title={title}
-                      description={reason}
-                      status={status}
-                      handleOnClick={() => {
-                        if (document.id) {
-                          handleClickRequest(revision);
-                        }
-                      }}
-                    />
-                  );
-                }
-              })}
-            </ul>
-          </div>
-          {/* Document Details Panel */}
-          <div className="flex flex-col justify-between flex-1 px-4 border-l border-slate-300">
-            <div className="flex flex-col gap-4 h-full overflow-y-scroll">
-              {true && (
-                <div className="flex flex-col px-4 w-full gap-4">
-                  <div className="flex flex-col">
-                    <h1>
-                      {state.document
-                        ? state.document.name
-                        : "Unknown Document"}
-                    </h1>
-                    <p>
-                      {state.user
-                        ? state.user.first_name + " " + state.user.last_name
-                        : "Unknown User"}
-                    </p>
-                  </div>
-                  <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
-                    {/* File Component */}
-                    <div className="flex items-center w-full justify-between gap-3">
-                      <div className="flex gap-2 items-center">
-                        <div className="flex items-center justify-center w-12 h-12 rounded-md bg-slate-200 text-slate-600"></div>
-                        <div className="flex flex-col">
-                          <span className="text-sm text-slate-500">File</span>
-                          <span className="font-medium text-gray-500">
-                            waste-management.docx
-                          </span>
-                        </div>
-                      </div>
-
-                      <a
-                        className="px-4 py-2 text-sm rounded-md border border-slate-400 hover:bg-black hover:text-white transition"
-                        href=""
-                        target="_blank"
-                      >
-                        Open
-                      </a>
-                    </div>
-                  </div>
+          {filteredRevisions.length !== 0 ? (
+            <>
+              <div className="flex flex-col w-1/3 h-full mr-8">
+                <h1 className="mb-2">Requests</h1>
+                <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
+                  {filteredRevisions.map((revision) => {
+                    const { id, title, reason, status, document } = revision;
+                    return (
+                      <DropDownItem
+                        key={id}
+                        title={title}
+                        description={reason}
+                        status={status}
+                        handleOnClick={() => {
+                          if (document.id) {
+                            handleClickRequest(revision);
+                          }
+                        }}
+                      />
+                    );
+                  })}
+                </ul>
+              </div>
+              {state.document.id ? (
+                <RevisionDetailsPanel />
+              ) : (
+                <div className="border-l border-slate-300 flex flex-1 w-full h-full justify-center items-center">
+                  <h2 className="text-slate-400">No request selected</h2>
                 </div>
               )}
-              {isRoleAllowed(["superior"], role) && <DocumentDetailsPanel />}
+            </>
+          ) : (
+            <div className="flex w-full h-full justify-center items-center">
+              <h2 className="text-slate-400">No items to process</h2>
             </div>
-            {isRoleAllowed(["coordinator", "superior"], role) && (
-              <div className="flex w-full justify-end gap-2">
-                {state.areButtonsEnabled && (
-                  <>
-                    <Button
-                      type={BUTTONTYPES.CANCEL}
-                      text="Cancel"
-                      handleOnClick={() => {
-                        dispatch({ type: ACTION.RESETDATA });
-                      }}
-                      isEnabled={isRoleAllowed(
-                        ["coordinator", "superior"],
-                        role,
-                      )}
-                    />
-                    <Button
-                      type={BUTTONTYPES.DANGER}
-                      text="Deny"
-                      handleOnClick={() => {
-                        setIsPopUpVisible(true);
-                      }}
-                      isEnabled={isRoleAllowed(
-                        ["coordinator", "superior"],
-                        role,
-                      )}
-                    />
-                    <Button
-                      type={BUTTONTYPES.CONFIRM}
-                      text="Approve"
-                      handleOnClick={() => {
-                        console.log("CLICKED REVISION", state.revision);
-                        console.log("RELATED DOCUMENT", state.document);
-                        handleApprove();
-                      }}
-                      isEnabled={isRoleAllowed(
-                        ["coordinator", "superior"],
-                        role,
-                      )}
-                    />
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+          )}
+          {/* Revision Details Panel */}
         </div>
       </div>
       {isPopUpVisible && (
@@ -497,9 +483,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
               type={BUTTONTYPES.CONFIRM}
               text="Submit"
               handleOnClick={() => {
-                console.log("submitted:", state.revision.id);
                 if (state.revision.id) {
-                  console.log("submitted:", state.revision.id);
                   handleDeny(state.revision.id);
                   setIsPopUpVisible(false);
                 }

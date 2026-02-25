@@ -1,4 +1,4 @@
-import { USERROLES } from "~/constants";
+import { USERROLE } from "~/constants";
 
 export function isRoleAllowed(allowedRoles: string[] | "all", role: string) {
   if (allowedRoles === "all") {
@@ -7,7 +7,7 @@ export function isRoleAllowed(allowedRoles: string[] | "all", role: string) {
 
   if (
     allowedRoles.includes(role) &&
-    Object.values(USERROLES).includes(role as USERROLES)
+    Object.values(USERROLE).includes(role as USERROLE)
   )
     return true;
 

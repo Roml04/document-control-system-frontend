@@ -1,4 +1,4 @@
-export enum USERROLES {
+export enum USERROLE {
   USER = "user",
   ORIGINATOR = "originator",
   COORDINATOR = "coordinator",
