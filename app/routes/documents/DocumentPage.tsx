@@ -1,4 +1,4 @@
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { useSessionStore } from "stores/sessionStore";
 import { PopUpModal, DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
@@ -11,6 +11,7 @@ import type { DocumentType } from "../Requests";
 enum ACTION {
   SETDOCUMENTDETAILS = "SETDOCUMENTDETAILS",
   RESETDATA = "RESETDATA",
+  SETPOPUPDETAILS = "SETPOPUPDETAILS",
 }
 
 type StateType = {
@@ -26,13 +27,16 @@ type StateType = {
   revisionReason: string;
 };
 
-type ActionType = {
-  type: ACTION;
-  payload: StateType;
-};
+type ActionType =
+  | {
+      type: ACTION.SETDOCUMENTDETAILS;
+      payload: Partial<StateType>;
+    }
+  | { type: ACTION.SETPOPUPDETAILS; payload: Partial<StateType> }
+  | { type: ACTION.RESETDATA };
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  console.log("DocumentPage.tsx | params.documentId:", params.documentId);
+  console.log("documentId:", params.documentId);
 
   const response = await apiFetch(`/document/${params.documentId}`, {
     method: "GET",
@@ -41,17 +45,25 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const responseBody: {
     message: string;
     data: {
-      version: StateType;
+      originator: string;
+      department: string;
+      revisionNumber: string;
+      revisionDetails: string;
+      revisionDate: string;
+      approver: string;
+      approvedDate: string;
+      userId: number | null;
+      revisionTitle: string;
+      revisionReason: string;
       document: DocumentType;
     };
   } = await response.json();
 
   if (!response.ok) {
-    console.log("FAILED");
-    console.error(responseBody.message);
+    alert(responseBody.message);
   }
 
-  console.log("clientLoader | data:", responseBody);
+  console.log("responseBody:", responseBody);
 
   return responseBody.data;
 }
@@ -71,14 +83,23 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   };
 
   const [isPopUpVisible, setPopUpVisible] = useState(false);
-  const [token, setToken] = useState("");
   const [state, dispatch] = useReducer(documentVersionReducer, initialState);
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
 
   const documentVersion = loaderData;
 
-  const btnsVisible = isRoleAllowed(["originator", "coordinator"], role);
+  useEffect(() => {
+    console.log("documentVersion:", documentVersion);
+    dispatch({
+      type: ACTION.SETDOCUMENTDETAILS,
+      payload: {
+        ...documentVersion,
+      },
+    });
+
+    console.log("state:", state);
+  }, [documentVersion]);
 
   function documentVersionReducer(state: StateType, action: ActionType) {
     switch (action.type) {
@@ -88,8 +109,17 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
           ...action.payload,
         };
 
+      case ACTION.SETPOPUPDETAILS:
+        return {
+          ...state,
+          ...action.payload,
+        };
+
       case ACTION.RESETDATA:
         return initialState;
+
+      default:
+        return state;
     }
   }
 
@@ -104,15 +134,11 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   }
 
   async function handleSubmit() {
-    console.log("TITLE:", state.revisionTitle);
-    console.log("REASON:", state.revisionReason);
-
     const response = await fetch("http://127.0.0.1/api/revision", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
         title: state.revisionTitle,
@@ -123,8 +149,6 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
       }),
     });
 
-    console.log("RESPONSE IS OK:", response.ok);
-
     const revisionData = await response.json();
 
     if (!response.ok) {
@@ -133,14 +157,12 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
       return;
     }
 
-    console.log("SUCCESS");
-    console.log(revisionData);
     setPopUpVisible(false);
   }
 
   return (
     <div>
-      <DocumentsPageLayout pagetitle={}>
+      <DocumentsPageLayout pagetitle={documentVersion.document.name}>
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
           <div>
@@ -199,7 +221,7 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
             />
           </div>
         </div>
-        {btnsVisible && (
+        {isRoleAllowed(["originator", "coordinator"], role) && (
           <div className="flex w-full justify-end gap-2">
             <button
               onClick={handleRevisionClick}
@@ -225,13 +247,25 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
               value={state.revisionTitle}
               placeholder="Title"
               className="resize-y outline-none text-xl font-bold"
-              onChange={() => {}}
+              onChange={(e) =>
+                dispatch({
+                  type: ACTION.SETDOCUMENTDETAILS,
+                  payload: {
+                    revisionTitle: e.target.value,
+                  },
+                })
+              }
             />
             <textarea
               className="resize-y min-h-32 outline-none"
               value={state.revisionReason}
               placeholder="Reason for revision..."
-              onChange={() => {}}
+              onChange={(e) => {
+                dispatch({
+                  type: ACTION.SETDOCUMENTDETAILS,
+                  payload: { revisionReason: e.target.value },
+                });
+              }}
             />
           </div>
           <div className="flex w-full justify-between gap-2">

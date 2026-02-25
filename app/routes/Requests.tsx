@@ -5,8 +5,8 @@ import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import { apiFetch } from "~/utils/apiFetch";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
-import type { Route } from "./documents/+types/DocumentPage";
 import { REVISIONSTATUS, USERROLES } from "~/constants/";
+import type { Route } from "./+types/Requests";
 
 enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
@@ -81,7 +81,7 @@ export async function clientLoader() {
 
   const data: FetchedRevisionType[] = await response.json();
 
-  const LoadedData: FetchedRevisionType[] = data.map((revision) => {
+  const responseBody: FetchedRevisionType[] = data.map((revision) => {
     const { document, user } = revision;
 
     return {
@@ -101,7 +101,7 @@ export async function clientLoader() {
     };
   });
 
-  return LoadedData;
+  return responseBody;
 }
 
 export default function Requests({ loaderData }: Route.ComponentProps) {
@@ -147,7 +147,8 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
     },
   };
 
-  const revisions: FetchedRevisionType[] = loaderData;
+  const revisions = loaderData;
+
   const [state, dispatch] = useReducer(revisionsReducer, initialState);
 
   useEffect(() => {
@@ -157,10 +158,10 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       isRoleAllowed(["coordinator", "superior"], role),
     );
   }, [state]);
+
   /**
    * Functions
    */
-
   function revisionsReducer(state: StateType, action: ActionType) {
     switch (action.type) {
       case ACTION.CLICKREQUEST:
