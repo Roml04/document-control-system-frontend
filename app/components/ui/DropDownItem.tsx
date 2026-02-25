@@ -26,6 +26,10 @@ export default function DropDownItem({
       style: "text-slate-400",
       title: "Pending Superior Approval",
     },
+    [REVISIONSTATUS.ORIGINATOR]: {
+      style: "text-amber-400",
+      title: "Pending Edit",
+    },
     [REVISIONSTATUS.APPROVED]: { style: "text-green-500", title: "Approved" },
     [REVISIONSTATUS.DENIED]: { style: "text-red-600", title: "Denied" },
   };
