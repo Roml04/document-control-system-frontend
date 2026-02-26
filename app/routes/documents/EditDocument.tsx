@@ -1,22 +1,23 @@
 import { useEffect, useReducer } from "react";
-import { useSessionStore } from "stores/sessionStore";
 import { DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import DataBlock from "~/components/ui/DataBlock";
-import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import { apiFetch } from "~/utils/apiFetch";
 import type { DocumentType } from "../Requests";
 import type { Route } from "./+types/EditDocument";
 import { useRevisionStore } from "stores/revisionStore";
-import { changeStatus } from "~/utils/changeStatus";
+import FileBlock from "~/components/ui/FileBlock";
+import { isRoleAllowed } from "~/utils/isRoleAllowed";
+import { REVISIONSTATUS } from "~/constants";
+import { useSessionStore } from "stores/sessionStore";
+import { useVersionStore } from "stores/versionStore";
 
 enum ACTION {
-  SETDOCUMENTDETAILS = "SETDOCUMENTDETAILS",
-  RESETDATA = "RESETDATA",
-  SETPOPUPDETAILS = "SETPOPUPDETAILS",
+  SETREVISION = "SETREVISION",
+  RESETREVISION = "RESETREVISION",
 }
 
-type StateType = {
+type RevisionStateType = {
   originator: string;
   department: string;
   revisionNumber: string;
@@ -24,264 +25,247 @@ type StateType = {
   revisionDate: string;
   approver: string;
   approvedDate: string;
-  userId: number | null;
-  revisionTitle: string;
-  revisionReason: string;
 };
 
-type ActionType =
-  | {
-      type: ACTION.SETDOCUMENTDETAILS;
-      payload: Partial<StateType>;
-    }
-  | { type: ACTION.SETPOPUPDETAILS; payload: Partial<StateType> }
-  | { type: ACTION.RESETDATA };
+type RevisionActionType =
+  | { type: ACTION.SETREVISION; payload: Partial<RevisionStateType> }
+  | { type: ACTION.RESETREVISION };
+
+type FetchedDataType = {
+  message: string;
+  data: {
+    originator: string;
+    department: string;
+    revisionNumber: string;
+    revisionDetails: string;
+    revisionDate: string;
+    approver: string;
+    approvedDate: string;
+    userId: number | null;
+    revisionTitle: string;
+    revisionReason: string;
+    document: DocumentType;
+  };
+};
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  console.log("EditDocument:", params.documentId);
-
-  // return;
+  console.log("EditDocument params:", params.documentId);
 
   const response = await apiFetch(`/document/${params.documentId}`, {
     method: "GET",
   });
 
-  const responseBody: {
-    message: string;
-    data: {
-      originator: string;
-      department: string;
-      revisionNumber: string;
-      revisionDetails: string;
-      revisionDate: string;
-      approver: string;
-      approvedDate: string;
-      userId: number | null;
-      revisionTitle: string;
-      revisionReason: string;
-      document: DocumentType;
-    };
-  } = await response.json();
+  const responseBody = await response.json();
+
+  const { message, data } = responseBody;
 
   if (!response.ok) {
-    alert(responseBody.message);
-
+    alert(message);
     return null;
   }
 
   console.log("responseBody:", responseBody);
 
-  return responseBody.data;
+  return {
+    originator: data.originator,
+    department: data.department,
+    revisionNumber: data.revisionNumber,
+    revisionDate: data.revisionDate,
+    revisionDetails: data.revisionDetails,
+    approver: data.approver,
+    approvedDate: data.approvedDate,
+  };
 }
 
 export default function EditDocument({ loaderData }: Route.ComponentProps) {
-  const documentVersion = loaderData;
-
-  let initialState: StateType = {
-    originator: "None",
-    department: "None",
-    revisionNumber: "None",
-    revisionDetails: "None",
-    revisionDate: "None",
-    approver: "None",
-    approvedDate: "None",
-    userId: null,
-    revisionTitle: "",
-    revisionReason: "",
-  };
-
-  if (documentVersion) {
-    initialState = documentVersion;
-  }
-
-  const [state, dispatch] = useReducer(documentVersionReducer, initialState);
-  const role = useSessionStore((state) => state.role);
-  const userId = useSessionStore((state) => state.userId);
+  /**
+   * revisionId for patching revision status
+   */
   const revisionId = useRevisionStore((state) => state.revisionId);
   const revisionStatus = useRevisionStore((state) => state.status);
 
-  const isEditable = isRoleAllowed(["originator"], role);
+  /**
+   * versionId for patching version
+   */
+  const versionId = useVersionStore((state) => state.versionId);
+
+  const userRole = useSessionStore((state) => state.role);
+
+  const version = loaderData;
+
+  console.log("EditDocument | version", version);
+  console.log("EditDocument | revisionId", revisionId);
+
+  const isEditable =
+    isRoleAllowed(["originator"], userRole) &&
+    revisionStatus === REVISIONSTATUS.ORIGINATOR;
+
+  let versionInitState = {
+    originator: "None",
+    department: "None",
+    revisionNumber: "None",
+    revisionDate: "None",
+    revisionDetails: "None",
+    approver: "None",
+    approvedDate: "None",
+  };
+
+  if (version) {
+    versionInitState = version;
+  }
 
   useEffect(() => {
-    console.log("state:", state);
-    dispatch({
-      type: ACTION.SETDOCUMENTDETAILS,
-      payload: {
-        ...documentVersion,
-      },
-    });
+    if (version)
+      return versionDispatch({ type: ACTION.SETREVISION, payload: version });
 
-    console.log("state:", state);
-  }, [documentVersion]);
+    alert("No document loaded");
+  }, []);
 
-  function documentVersionReducer(state: StateType, action: ActionType) {
+  const [versionState, versionDispatch] = useReducer(
+    versionReducer,
+    versionInitState,
+  );
+
+  function versionReducer(
+    state: RevisionStateType,
+    action: RevisionActionType,
+  ) {
     switch (action.type) {
-      case ACTION.SETDOCUMENTDETAILS:
+      case ACTION.SETREVISION:
         return {
           ...state,
           ...action.payload,
         };
-
-      case ACTION.SETPOPUPDETAILS:
-        return {
-          ...state,
-          ...action.payload,
-        };
-
-      case ACTION.RESETDATA:
-        return initialState;
+      case ACTION.RESETREVISION:
+        return versionInitState;
 
       default:
         return state;
     }
   }
 
-  function handleDiscardChanges() {
-    dispatch({ type: ACTION.RESETDATA });
+  async function handleSave() {
+    const {
+      originator,
+      department,
+      revisionNumber,
+      revisionDate,
+      revisionDetails,
+      approver,
+      approvedDate,
+    } = versionState;
+
+    console.log("revisionId:", revisionId);
+
+    const response = await apiFetch(`/version/${versionId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        originator: originator,
+        department: department,
+        revisionNumber: revisionNumber,
+        revisionDate: revisionDate,
+        revisionDetails: revisionDetails,
+        approver: approver,
+        approvedDate: approvedDate,
+      }),
+    });
   }
 
-  async function handleSave(documentId: number) {
-    console.log("handleSave | state:", documentId);
-    const versionResponse = await apiFetch(`/version/${documentId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        originator: state.originator,
-        department: state.department,
-        revisionNumber: state.revisionNumber,
-        revisionDetails: state.revisionDetails,
-        revisionDate: state.revisionDate,
-        approver: state.approver,
-        approvedDate: state.approvedDate,
-      }),
-    });
-
-    const responseBody = await versionResponse.json();
-
-    if (!versionResponse.ok) {
-      return alert(responseBody.message);
-    }
-
-    console.log("SUCCESS", responseBody);
-
-    const revisionResponse = await apiFetch(`/revision/${revisionId}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        status: changeStatus(revisionStatus),
-      }),
-    });
-
-    console.log("revisionRepsonse:", revisionResponse);
+  async function handleDiscard() {
+    versionDispatch({ type: ACTION.RESETREVISION });
   }
 
   return (
     <div>
-      <DocumentsPageLayout
-        pagetitle={`Editing ${documentVersion ? documentVersion.document.name : "Unknown Document"}`}
-      >
-        <div className="flex flex-col my-4 gap-4">
+      <DocumentsPageLayout pagetitle="Editing">
+        <div className="flex flex-col gap-4">
           {/* File Component */}
-          <div>
-            <div className="flex items-center justify-between w-full p-4 rounded-lg border border-slate-300 bg-slate-50">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-md bg-slate-200 text-slate-600"></div>
-                <div className="flex flex-col">
-                  <span className="text-sm text-slate-500">File</span>
-                  <span className="font-medium">waste-management.docx</span>
-                </div>
-              </div>
-              <a
-                className="px-4 py-2 text-sm rounded-md border border-slate-400 hover:bg-black hover:text-white transition"
-                href=""
-                target="_blank"
-              >
-                Open
-              </a>
-            </div>
-          </div>
+          <FileBlock documentId={null} onEditClick={() => {}} />
+
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
               title="Originator"
-              value={state.originator}
+              value={versionState.originator}
               styling="col-span-2"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { originator: value },
-                });
-              }}
+                })
+              }
             />
             <DataBlock
               title="Department"
-              value={state.department}
+              value={versionState.department}
               styling="col-span-2"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { department: value },
-                });
-              }}
+                })
+              }
             />
             <DataBlock
               title="Revision Number"
-              value={state.revisionNumber}
+              value={versionState.revisionNumber}
               styling="col-span-2"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { revisionNumber: value },
-                });
-              }}
+                })
+              }
             />
             <DataBlock
               title="Date"
-              value={state.revisionDate}
+              value={versionState.revisionDate}
               styling="col-span-2"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { revisionDate: value },
-                });
-              }}
+                })
+              }
             />
             <DataBlock
               title="Revision Details"
-              value={state.revisionDetails}
+              value={versionState.revisionDetails}
               styling="col-span-4"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { revisionDetails: value },
-                });
-              }}
+                })
+              }
             />
             <DataBlock
               title="Approver"
-              value={state.approver}
+              value={versionState.approver}
               styling="col-span-2"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { approver: value },
-                });
-              }}
+                })
+              }
             />
             <DataBlock
               title="Date"
-              value={state.approvedDate}
+              value={versionState.approvedDate}
               styling="col-span-2"
               isEditable={isEditable}
-              onChange={(value) => {
-                dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+              onChange={(value) =>
+                versionDispatch({
+                  type: ACTION.SETREVISION,
                   payload: { approvedDate: value },
-                });
-              }}
+                })
+              }
             />
           </div>
         </div>
@@ -290,20 +274,12 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
             <Button
               type={BUTTONTYPES.CANCEL}
               text="Discard Changes"
-              handleOnClick={handleDiscardChanges}
+              handleOnClick={handleDiscard}
             />
             <Button
               type={BUTTONTYPES.CONFIRM}
               text="Save"
-              handleOnClick={() => {
-                if (documentVersion && documentVersion.document.id) {
-                  console.log(
-                    "documentVersion.document.id:",
-                    documentVersion.document.id,
-                  );
-                  handleSave(documentVersion.document.id);
-                }
-              }}
+              handleOnClick={handleSave}
             />
           </div>
         )}

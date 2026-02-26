@@ -354,21 +354,23 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 </p>
               </div>
             </div>
-            <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
-              {/* File Component */}
-              <FileBlock
-                documentId={state.document.id}
-                onEditClick={() => {
-                  console.log("onEditClick | state.revision:", state.revision);
-                  updateRevision(state.revision);
-                  if (state.document.id) {
-                    return navigate(`/documents/${state.document.id}/edit`);
-                  }
+            {/* File Component */}
+            <FileBlock
+              documentId={state.document.id}
+              onEditClick={() => {
+                console.log("onEditClick | state.revision:", state.revision);
+                console.log(
+                  "onEditClick | state.revision.id:",
+                  state.revision.id,
+                );
+                updateRevision(state.revision);
+                if (state.document.id) {
+                  return navigate(`/documents/${state.document.id}/edit`);
+                }
 
-                  return alert("No document to edit");
-                }}
-              />
-            </div>
+                return alert("No document to edit");
+              }}
+            />
           </div>
           {isRoleAllowed(["superior"], role) ? <DocumentDetailsPanel /> : null}
         </div>
