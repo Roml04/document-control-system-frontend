@@ -6,15 +6,15 @@ import { REVISIONSTATUS } from "~/constants";
 
 type DropDownItemProps = {
   title: string;
-  description?: string;
   status: REVISIONSTATUS;
+  author?: string;
   handleOnClick: () => void;
 };
 
 export default function DropDownItem({
   title,
-  description = "...",
   status,
+  author = "Unknown",
   handleOnClick,
 }: DropDownItemProps) {
   const statusInfo: Record<REVISIONSTATUS, Record<string, string>> = {
@@ -44,6 +44,7 @@ export default function DropDownItem({
         className={`
         flex-1
         truncate
+        text-right
         ${style}
       `}
         title={title}
@@ -67,11 +68,13 @@ export default function DropDownItem({
       }}
     >
       <div className="flex w-full py-1 cursor-pointer">
-        <div className="flex flex-col w-full min-w-0 overflow-hidden">
-          <h3 className="flex-1 text-nowrap">{title}</h3>
+        <div className="flex justify-between w-full min-w-0 overflow-hidden">
+          <h3 className="flex-1 truncate text-nowrap" title={title}>
+            {title}
+          </h3>
           <RevisionStatus status={status} />
         </div>
-        <div
+        {/* <div
           className="flex items-center"
           onClick={() => setIsShown((prev) => !prev)}
         >
@@ -80,7 +83,7 @@ export default function DropDownItem({
           ) : (
             <Icon name="arrowdropdown" />
           )}
-        </div>
+        </div> */}
       </div>
 
       {/* Animated container */}
@@ -92,8 +95,7 @@ export default function DropDownItem({
       >
         <div className="flex flex-col">
           <div className="flex flex-col px-3 py-1 w-full border-l border-slate-300 mb-2">
-            <h3 className="text-slate-400">Reason</h3>
-            <p className="text-slate-400">{description}</p>
+            <h3 className="text-slate-400">{author}</h3>
           </div>
         </div>
       </div>

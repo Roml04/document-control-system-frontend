@@ -1,5 +1,3 @@
-import { useEffect, useReducer } from "react";
-
 enum ACTION {
   SETINTERACTABLEENABLED = "SETINTERACTABLEENABLED",
   SETINTERACTABLEDISABLED = "SETINTERACTABLEDISABLED",
@@ -12,16 +10,7 @@ type DataBlockProps = {
   value: string;
   isEditable?: boolean;
   styling?: string;
-};
-
-type StateTypes = {
-  isEditable: boolean;
-  documentDetail: string | undefined;
-};
-
-type ActionTypes = {
-  type: ACTION;
-  payload?: string;
+  onChange?: (value: string) => void;
 };
 
 export default function DataBlock({
@@ -29,61 +18,22 @@ export default function DataBlock({
   value,
   isEditable,
   styling,
+  onChange,
 }: DataBlockProps) {
-  const initialState: StateTypes = {
-    isEditable: false,
-    documentDetail: value,
-  };
-
-  const [state, dispatch] = useReducer(dataBlockReducer, initialState);
-
-  useEffect(() => {
-    dispatch({ type: ACTION.UPDATEDETAIL, payload: value });
-  }, [value]);
-
-  useEffect(() => {
-    isEditable
-      ? dispatch({ type: ACTION.SETINTERACTABLEENABLED })
-      : dispatch({ type: ACTION.SETINTERACTABLEDISABLED });
-  }, [isEditable]);
-
-  function dataBlockReducer(state: StateTypes, action: ActionTypes) {
-    switch (action.type) {
-      case ACTION.SETINTERACTABLEENABLED:
-        return {
-          ...state,
-          isEditable: true,
-        };
-
-      case ACTION.SETINTERACTABLEDISABLED:
-        return {
-          ...state,
-          isEditable: false,
-        };
-
-      case ACTION.UPDATEDETAIL:
-        return {
-          ...state,
-          documentDetail: action.payload ?? state.documentDetail,
-        };
-
-      default:
-        return state;
-    }
-  }
-
   return (
     <div
       className={`w-full bg-white rounded-xl transition-all duration-200 ${styling}`}
     >
       <p className="text-sm text-gray-500 tracking-wide">{title}</p>
-      {state.isEditable ? (
+      {isEditable ? (
         <input
           type="text"
-          value={state.documentDetail}
-          onChange={(e) =>
-            dispatch({ type: ACTION.UPDATEDETAIL, payload: e.target.value })
-          }
+          value={value}
+          onChange={(e) => {
+            if (onChange) {
+              onChange(e.target.value);
+            }
+          }}
           className={`w-full
             font-medium
             bg-slate-50
@@ -112,9 +62,9 @@ export default function DataBlock({
             focus:ring-2
             focus:ring-blue-500
             focus:border-blue-500
-            text-lg ${state.documentDetail === "None" ? "text-gray-400" : "text-gray-800"}`}
+            text-lg ${value === "None" ? "text-gray-400" : "text-gray-800"}`}
         >
-          {state.documentDetail}
+          {value}
         </p>
       )}
     </div>

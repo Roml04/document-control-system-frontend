@@ -7,6 +7,7 @@ import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import type { Route } from "./+types/DocumentPage";
 import { apiFetch } from "~/utils/apiFetch";
 import type { DocumentType } from "../Requests";
+import { REVISIONSTATUS } from "~/constants";
 
 enum ACTION {
   SETDOCUMENTDETAILS = "SETDOCUMENTDETAILS",
@@ -143,7 +144,7 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
       body: JSON.stringify({
         title: state.revisionTitle,
         reason: state.revisionReason,
-        status: "coordinator_approval",
+        status: REVISIONSTATUS.COORDINATOR,
         user_id: userId,
         document_id: documentVersion.document.id,
       }),
@@ -156,8 +157,6 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
       console.error(revisionData.message);
       return;
     }
-
-    setPopUpVisible(false);
   }
 
   return (

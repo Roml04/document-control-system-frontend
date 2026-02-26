@@ -1,13 +1,21 @@
 import { useEffect, useReducer, useState } from "react";
-import { useRevalidator } from "react-router";
+import { useNavigate, useRevalidator } from "react-router";
 import { useSessionStore } from "stores/sessionStore";
-import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
+import {
+  Button,
+  DataBlock,
+  DropDownItem,
+  Icon,
+  PopUpModal,
+} from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import { apiFetch } from "~/utils/apiFetch";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import { REVISIONSTATUS, USERROLE } from "~/constants/";
 import type { Route } from "./+types/Requests";
 import { changeStatus } from "~/utils/changeStatus";
+import FileBlock from "~/components/ui/FileBlock";
+import { useRevisionStore } from "stores/revisionStore";
 
 enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
@@ -57,7 +65,7 @@ type RevisionType = {
   status: REVISIONSTATUS;
 };
 
-type FetchedRevisionType = {
+export type FetchedRevisionType = {
   id: number | null;
   title: string;
   reason: string;
@@ -110,6 +118,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
    * UI related hooks
    */
   const { revalidate } = useRevalidator();
+  const navigate = useNavigate();
   const [commentValue, setCommentValue] = useState("");
   const [isPopUpVisible, setIsPopUpVisible] = useState(false);
 
@@ -118,6 +127,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
    */
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
+  const updateRevision = useRevisionStore((state) => state.updateRevision);
 
   const initialState = {
     areButtonsEnabled: false,
@@ -239,12 +249,23 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       return alert("You are trying to approve a denied request");
     }
 
-    await apiFetch(`/revision/${state.revision.id}`, {
+    const newStatus = changeStatus(state.revision.status);
+
+    const response = await apiFetch(`/revision/${state.revision.id}`, {
       method: "PATCH",
       body: JSON.stringify({
-        status: changeStatus(state.revision.status),
+        status: newStatus,
       }),
     });
+
+    const responseBody = await response.json();
+
+    if (!response.ok) {
+      console.error("FAILED", responseBody.message);
+
+      return;
+    }
+
     dispatch({ type: ACTION.RESETDATA });
 
     revalidate();
@@ -296,42 +317,20 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
           <h1>Document Details</h1>
         </div>
         <div className="grid grid-cols-2 gap-x-4 gap-y-4">
-          <DataBlock
-            title="Originator"
-            value={state.version.originator}
-            isEditable={isRoleAllowed(["originator"], role)}
-          />
-          <DataBlock
-            title="Department"
-            value={state.version.department}
-            isEditable={isRoleAllowed(["originator"], role)}
-          />
+          <DataBlock title="Originator" value={state.version.originator} />
+          <DataBlock title="Department" value={state.version.department} />
           <DataBlock
             title="Revision Number"
             value={state.version.revisionNumber}
-            isEditable={isRoleAllowed(["originator"], role)}
           />
-          <DataBlock
-            title="Date"
-            value={state.version.revisionDate}
-            isEditable={isRoleAllowed(["originator"], role)}
-          />
+          <DataBlock title="Date" value={state.version.revisionDate} />
           <DataBlock
             title="Revision Details"
             value={state.version.revisionDetails}
             styling="col-span-2"
-            isEditable={isRoleAllowed(["originator"], role)}
           />
-          <DataBlock
-            title="Approver"
-            value={state.version.approver}
-            isEditable={isRoleAllowed(["originator"], role)}
-          />
-          <DataBlock
-            title="Date"
-            value={state.version.approvedDate}
-            isEditable={isRoleAllowed(["originator"], role)}
-          />
+          <DataBlock title="Approver" value={state.version.approver} />
+          <DataBlock title="Date" value={state.version.approvedDate} />
         </div>
       </div>
     );
@@ -346,40 +345,32 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
               <h1>
                 {state.document ? state.document.name : "Unknown Document"}
               </h1>
-              <p>
-                {state.user
-                  ? state.user.first_name + " " + state.user.last_name
-                  : "Unknown User"}
-              </p>
+              <div className="grid grid-cols-10 gap-y-2 py-4 border-b border-slate-300">
+                <h3 className="col-span-1 pr-4">Author</h3>
+                <p className="col-span-9 px-4">{`${state.user.first_name} ${state.user.last_name}`}</p>
+                <h3 className="col-span-1 pr-4">Reason</h3>
+                <p className="col-span-9 px-4 line-clamp-3">
+                  {state.revision.reason}
+                </p>
+              </div>
             </div>
             <div className="flex flex-col gap-4 items-center justify-between w-full h-fit p-4 rounded-lg border border-slate-300 bg-slate-50">
               {/* File Component */}
-              <div className="flex items-center w-full justify-between gap-3">
-                <div className="flex gap-2 items-center">
-                  <div className="flex items-center justify-center w-12 h-12 rounded-md bg-slate-200 text-slate-600"></div>
-                  <div className="flex flex-col">
-                    <span className="text-sm text-slate-500">File</span>
-                    <span className="font-medium text-gray-500">
-                      waste-management.docx
-                    </span>
-                  </div>
-                </div>
+              <FileBlock
+                documentId={state.document.id}
+                onEditClick={() => {
+                  console.log("onEditClick | state.revision:", state.revision);
+                  updateRevision(state.revision);
+                  if (state.document.id) {
+                    return navigate(`/documents/${state.document.id}/edit`);
+                  }
 
-                <a
-                  className="px-4 py-2 text-sm rounded-md border border-slate-400 hover:bg-black hover:text-white transition"
-                  href=""
-                  target="_blank"
-                >
-                  Open
-                </a>
-              </div>
+                  return alert("No document to edit");
+                }}
+              />
             </div>
           </div>
-          {isRoleAllowed(["superior"], role) ||
-          (state.revision.status === REVISIONSTATUS.ORIGINATOR &&
-            isRoleAllowed(["originator"], role)) ? (
-            <DocumentDetailsPanel />
-          ) : null}
+          {isRoleAllowed(["superior"], role) ? <DocumentDetailsPanel /> : null}
         </div>
         {isRoleAllowed(["coordinator", "superior"], role) && (
           <div className="flex w-full justify-end gap-2">
@@ -428,13 +419,13 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 <h1 className="mb-2">Requests</h1>
                 <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
                   {filteredRevisions.map((revision) => {
-                    const { id, title, reason, status, document } = revision;
+                    const { id, title, status, document } = revision;
                     return (
                       <DropDownItem
                         key={id}
                         title={title}
-                        description={reason}
                         status={status}
+                        author={`${revision.user.first_name} ${revision.user.last_name}`}
                         handleOnClick={() => {
                           if (document.id) {
                             handleClickRequest(revision);
