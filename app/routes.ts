@@ -18,7 +18,10 @@ export default [
 
   layout("./routes/documents/layout.tsx", [
     route("/documents/:documentId", "./routes/documents/DocumentPage.tsx"),
-    route("/documents/:documentId/edit", "./routes/documents/EditDocument.tsx"),
+    route(
+      "/documents/:documentId/revisions/:revisionId",
+      "./routes/documents/EditDocument.tsx",
+    ),
   ]),
 
   /**

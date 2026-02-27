@@ -163,21 +163,27 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   const filteredRevisions = revisions.filter((revision) => {
     switch (role) {
       case USERROLE.ORIGINATOR:
+        console.log("USERROLE.ORIGINATOR:", revision);
         return (
-          revision.status === REVISIONSTATUS.ORIGINATOR ||
-          userId === revision.user.id
+          (revision.status === REVISIONSTATUS.ORIGINATOR &&
+            userId === revision.user.id) ||
+          (revision.status === REVISIONSTATUS.COORDINATOR &&
+            userId === revision.user.id)
         );
 
       case USERROLE.COORDINATOR:
+        console.log("USERROLE.COORDINATOR:", revision);
         return (
           revision.status === REVISIONSTATUS.COORDINATOR ||
           userId === revision.user.id
         );
 
       case USERROLE.SUPERIOR:
+        console.log("USERROLE.SUPERIOR:", revision);
         return revision.status === REVISIONSTATUS.SUPERIOR;
 
       default:
+        console.log("default:", revision);
         return false;
     }
   });
@@ -363,16 +369,11 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 )
               }
               onEditClick={() => {
-                console.log("onEditClick | state.revision:", state.revision);
-                console.log(
-                  "onEditClick | state.revision.id:",
-                  state.revision.id,
-                );
-                updateRevision(state.revision);
                 if (state.document.id) {
-                  return navigate(`/documents/${state.document.id}/edit`);
+                  return navigate(
+                    `/documents/${state.document.id}/revisions/${state.revision.id}`,
+                  );
                 }
-
                 return alert("No document to edit");
               }}
             />
@@ -427,6 +428,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
                   {filteredRevisions.map((revision) => {
                     const { id, title, status, document } = revision;
+                    console.log("RENDERING REVISIONS:", revision);
                     return (
                       <DropDownItem
                         key={id}

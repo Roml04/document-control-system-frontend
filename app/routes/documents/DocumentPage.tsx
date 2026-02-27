@@ -157,6 +157,8 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
       console.error(revisionData.message);
       return;
     }
+
+    setPopUpVisible(false);
   }
 
   return (

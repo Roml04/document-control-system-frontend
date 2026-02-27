@@ -31,9 +31,12 @@ type RevisionActionType =
   | { type: ACTION.RESETREVISION };
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const response = await apiFetch(`/document/${params.documentId}/version`, {
-    method: "GET",
-  });
+  const response = await apiFetch(
+    `/document/${params.documentId}/revision/${params.revisionId}`,
+    {
+      method: "GET",
+    },
+  );
 
   const responseBody = await response.json();
 
@@ -85,8 +88,13 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
   const { version, revision, document } = loaderData;
 
   const isEditable =
-    isRoleAllowed(["originator"], userRole) &&
+    isRoleAllowed(["originator", "coordinator"], userRole) &&
     revision.status === REVISIONSTATUS.ORIGINATOR;
+
+  console.log(
+    `isEditable ${isRoleAllowed(["originator", "coordinator"], userRole)}`,
+    revision,
+  );
 
   const documentExists = version.id && document.id;
 
@@ -203,14 +211,16 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
       <DocumentsPageLayout pagetitle={`Editing ${document.name}`}>
         <div className="flex flex-col gap-4">
           {/* File Component */}
-          <FileBlock isDisabled={false} onEditClick={() => {}} />
+          <FileBlock isDisabled={true} onEditClick={() => {}} />
 
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
               title="Originator"
               value={versionState.originator}
               styling="col-span-2"
-              isEditable={isEditable}
+              isEditable={
+                isEditable && isRoleAllowed(["coordinator"], userRole)
+              }
               onChange={(value) =>
                 versionDispatch({
                   type: ACTION.SETREVISION,
