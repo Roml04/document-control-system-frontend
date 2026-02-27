@@ -63,7 +63,7 @@ export default function DataBlock({
             focus:ring-2
             focus:ring-blue-500
             focus:border-blue-500
-            text-lg ${!value ? "text-gray-400" : "text-gray-800"}`}
+            text-lg ${!value || !isEditable ? "text-gray-400" : "text-gray-800"}`}
         >
           {!value ? "None" : value}
         </p>

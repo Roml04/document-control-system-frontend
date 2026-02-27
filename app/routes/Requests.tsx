@@ -1,13 +1,7 @@
 import { useEffect, useReducer, useState } from "react";
 import { useNavigate, useRevalidator } from "react-router";
 import { useSessionStore } from "stores/sessionStore";
-import {
-  Button,
-  DataBlock,
-  DropDownItem,
-  Icon,
-  PopUpModal,
-} from "~/components";
+import { Button, DataBlock, DropDownItem, PopUpModal } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import { apiFetch } from "~/utils/apiFetch";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
@@ -15,7 +9,7 @@ import { REVISIONSTATUS, USERROLE } from "~/constants/";
 import type { Route } from "./+types/Requests";
 import { changeStatus } from "~/utils/changeStatus";
 import FileBlock from "~/components/ui/FileBlock";
-import { useRevisionStore } from "stores/revisionStore";
+import { VERSIONSTATUS } from "~/constants/versionStatus.enum";
 
 enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
@@ -63,6 +57,7 @@ type RevisionType = {
   title: string;
   reason: string;
   status: REVISIONSTATUS;
+  comment: string;
 };
 
 export type FetchedRevisionType = {
@@ -73,6 +68,7 @@ export type FetchedRevisionType = {
   user: UserType;
   document: DocumentType;
   version?: VersionType;
+  comment: string;
 };
 
 export async function clientLoader() {
@@ -107,6 +103,7 @@ export async function clientLoader() {
         id: document.id ?? null,
         name: document.name ?? "",
       },
+      comment: revision.comment,
     };
   });
 
@@ -127,7 +124,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
    */
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
-  const updateRevision = useRevisionStore((state) => state.updateRevision);
 
   const initialState = {
     areButtonsEnabled: false,
@@ -137,6 +133,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       title: "Untitled",
       reason: "No reasons provided...",
       status: REVISIONSTATUS.COORDINATOR,
+      comment: "No comment...",
     },
     document: {
       id: null,
@@ -163,27 +160,24 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   const filteredRevisions = revisions.filter((revision) => {
     switch (role) {
       case USERROLE.ORIGINATOR:
-        console.log("USERROLE.ORIGINATOR:", revision);
         return (
           (revision.status === REVISIONSTATUS.ORIGINATOR &&
             userId === revision.user.id) ||
           (revision.status === REVISIONSTATUS.COORDINATOR &&
-            userId === revision.user.id)
+            userId === revision.user.id) ||
+          userId === revision.user.id
         );
 
       case USERROLE.COORDINATOR:
-        console.log("USERROLE.COORDINATOR:", revision);
         return (
           revision.status === REVISIONSTATUS.COORDINATOR ||
           userId === revision.user.id
         );
 
       case USERROLE.SUPERIOR:
-        console.log("USERROLE.SUPERIOR:", revision);
         return revision.status === REVISIONSTATUS.SUPERIOR;
 
       default:
-        console.log("default:", revision);
         return false;
     }
   });
@@ -192,7 +186,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
 
   useEffect(() => {
     console.log("state:", state);
-    console.log("revision:", filteredRevisions);
   }, [state, filteredRevisions]);
 
   /**
@@ -221,12 +214,13 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   }
 
   async function fetchDocumentDetails(documentId: number) {
-    const response = await apiFetch(`/document/${documentId}`, {
-      method: "GET",
+    const response = await apiFetch(`/version/pending/${documentId}`, {
+      method: "POST",
     });
 
-    const responseBody = await response.json();
-    const documentVersion = responseBody.data;
+    const documentVersion = await response.json();
+
+    console.log("/version/pending/", documentVersion);
 
     dispatch({
       type: ACTION.SHOWDOCUMENT,
@@ -265,6 +259,23 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
     });
 
     const responseBody = await response.json();
+
+    if (isRoleAllowed(["superior"], role) && state.revision.status) {
+      await apiFetch(`/version`, {
+        method: "POST",
+        body: JSON.stringify({
+          originator: state.version.originator,
+          department: state.version.department,
+          revisionNumber: state.version.revisionNumber,
+          revisionDate: state.version.revisionDate,
+          revisionDetails: state.version.revisionDetails,
+          approver: state.version.approver,
+          approvedDate: state.version.approvedDate,
+          documentId: state.document.id,
+          status: VERSIONSTATUS.APPROVED,
+        }),
+      });
+    }
 
     if (!response.ok) {
       console.error("FAILED", responseBody.message);
@@ -351,20 +362,30 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
               <h1>
                 {state.document ? state.document.name : "Unknown Document"}
               </h1>
-              <div className="grid grid-cols-10 gap-y-2 py-4 border-b border-slate-300">
-                <h3 className="col-span-1 pr-4">Author</h3>
-                <p className="col-span-9 px-4">{`${state.user.first_name} ${state.user.last_name}`}</p>
-                <h3 className="col-span-1 pr-4">Reason</h3>
-                <p className="col-span-9 px-4 line-clamp-3">
-                  {state.revision.reason}
-                </p>
+              <div className="flex flex-col border-b border-slate-300 py-4 gap-2">
+                <div className="grid grid-cols-12 gap-y-2">
+                  <h3 className="col-span-2 pr-4">Author</h3>
+                  <p className="col-span-10 px-4">{`${state.user.first_name} ${state.user.last_name}`}</p>
+                  <h3 className="col-span-2 pr-4">Reason</h3>
+                  <p className="col-span-10 px-4 line-clamp-3">
+                    {state.revision.reason}
+                  </p>
+                </div>
               </div>
+              {state.revision.comment && (
+                <div className="w-full col-span-12 flex flex-col gap-1 rounded-lg bg-slate-50 border border-slate-300 p-4 mt-4">
+                  <h3>Comment</h3>
+                  <p className="border-l border-slate-300 px-4 ml-2 line-clamp-3">
+                    {state.revision.comment}
+                  </p>
+                </div>
+              )}
             </div>
             {/* File Component */}
             <FileBlock
               isDisabled={
                 !(
-                  isRoleAllowed(["originator"], role) &&
+                  isRoleAllowed(["originator", "coordinator"], role) &&
                   state.revision.status === REVISIONSTATUS.ORIGINATOR
                 )
               }
@@ -428,7 +449,6 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 <ul className="flex flex-col gap-2 pr-4 pb-10 h-full overflow-y-scroll">
                   {filteredRevisions.map((revision) => {
                     const { id, title, status, document } = revision;
-                    console.log("RENDERING REVISIONS:", revision);
                     return (
                       <DropDownItem
                         key={id}

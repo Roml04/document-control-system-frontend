@@ -1,5 +1,3 @@
-import { useNavigate } from "react-router";
-
 export default function FileBlock({
   onEditClick,
   isDisabled,
@@ -7,7 +5,6 @@ export default function FileBlock({
   onEditClick: () => void;
   isDisabled: boolean;
 }) {
-  const navigate = useNavigate();
   return (
     <div>
       <div className="flex items-center justify-between w-full p-4 rounded-lg border border-slate-300 bg-slate-50">

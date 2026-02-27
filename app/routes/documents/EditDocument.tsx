@@ -10,6 +10,7 @@ import { REVISIONSTATUS } from "~/constants";
 import { useSessionStore } from "stores/sessionStore";
 import { changeStatus } from "~/utils/changeStatus";
 import { useNavigate } from "react-router";
+import { VERSIONSTATUS } from "~/constants/versionStatus.enum";
 
 enum ACTION {
   SETREVISION = "SETREVISION",
@@ -91,11 +92,6 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     isRoleAllowed(["originator", "coordinator"], userRole) &&
     revision.status === REVISIONSTATUS.ORIGINATOR;
 
-  console.log(
-    `isEditable ${isRoleAllowed(["originator", "coordinator"], userRole)}`,
-    revision,
-  );
-
   const documentExists = version.id && document.id;
 
   let versionInitState = {
@@ -169,8 +165,8 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
      * This should not patch an exisitng record
      * It should simply create a new one
      */
-    const versionResponse = await apiFetch(`/version/${version.id}`, {
-      method: "PATCH",
+    const versionResponse = await apiFetch(`/version`, {
+      method: "POST",
       body: JSON.stringify({
         originator: originator,
         department: department,
@@ -179,11 +175,18 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
         revisionDetails: revisionDetails,
         approver: approver,
         approvedDate: approvedDate,
+        documentId: document.id,
+        status: VERSIONSTATUS.PENDING,
       }),
     });
 
+    const data = await versionResponse.json();
+
+    console.log("/version", data);
+
     if (!versionResponse.ok) {
-      return alert("Something went wrong when submitting your changes");
+      // return alert("Something went wrong when submitting your changes");
+      return alert(data.message);
     }
 
     const revisionResponse = await apiFetch(`/revision/${revision.id}`, {
