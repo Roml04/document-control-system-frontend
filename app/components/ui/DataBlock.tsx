@@ -28,7 +28,8 @@ export default function DataBlock({
       {isEditable ? (
         <input
           type="text"
-          value={value}
+          value={!value ? "" : value}
+          placeholder="None"
           onChange={(e) => {
             if (onChange) {
               onChange(e.target.value);
@@ -62,9 +63,9 @@ export default function DataBlock({
             focus:ring-2
             focus:ring-blue-500
             focus:border-blue-500
-            text-lg ${value === "None" ? "text-gray-400" : "text-gray-800"}`}
+            text-lg ${!value ? "text-gray-400" : "text-gray-800"}`}
         >
-          {value}
+          {!value ? "None" : value}
         </p>
       )}
     </div>

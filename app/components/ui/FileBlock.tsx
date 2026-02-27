@@ -1,11 +1,11 @@
 import { useNavigate } from "react-router";
 
 export default function FileBlock({
-  documentId,
   onEditClick,
+  isDisabled,
 }: {
-  documentId: number | null;
   onEditClick: () => void;
+  isDisabled: boolean;
 }) {
   const navigate = useNavigate();
   return (
@@ -30,12 +30,15 @@ export default function FileBlock({
             >
               Open
             </a>
-            <button
-              className="px-4 py-2 text-sm rounded-md border border-slate-300 hover:bg-black hover:text-white transition"
-              onClick={onEditClick}
-            >
-              Edit
-            </button>
+            {!isDisabled && (
+              <button
+                className="px-4 py-2 text-sm rounded-md border border-slate-300 hover:bg-black hover:text-white transition"
+                onClick={onEditClick}
+                disabled={isDisabled}
+              >
+                Edit
+              </button>
+            )}
           </div>
         </div>
       </div>

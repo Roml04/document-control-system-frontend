@@ -356,7 +356,12 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
             </div>
             {/* File Component */}
             <FileBlock
-              documentId={state.document.id}
+              isDisabled={
+                !(
+                  isRoleAllowed(["originator"], role) &&
+                  state.revision.status === REVISIONSTATUS.ORIGINATOR
+                )
+              }
               onEditClick={() => {
                 console.log("onEditClick | state.revision:", state.revision);
                 console.log(

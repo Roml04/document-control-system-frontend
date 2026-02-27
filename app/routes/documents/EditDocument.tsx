@@ -3,14 +3,13 @@ import { DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import DataBlock from "~/components/ui/DataBlock";
 import { apiFetch } from "~/utils/apiFetch";
-import type { DocumentType } from "../Requests";
 import type { Route } from "./+types/EditDocument";
-import { useRevisionStore } from "stores/revisionStore";
 import FileBlock from "~/components/ui/FileBlock";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import { REVISIONSTATUS } from "~/constants";
 import { useSessionStore } from "stores/sessionStore";
-import { useVersionStore } from "stores/versionStore";
+import { changeStatus } from "~/utils/changeStatus";
+import { useNavigate } from "react-router";
 
 enum ACTION {
   SETREVISION = "SETREVISION",
@@ -31,100 +30,103 @@ type RevisionActionType =
   | { type: ACTION.SETREVISION; payload: Partial<RevisionStateType> }
   | { type: ACTION.RESETREVISION };
 
-type FetchedDataType = {
-  message: string;
-  data: {
-    originator: string;
-    department: string;
-    revisionNumber: string;
-    revisionDetails: string;
-    revisionDate: string;
-    approver: string;
-    approvedDate: string;
-    userId: number | null;
-    revisionTitle: string;
-    revisionReason: string;
-    document: DocumentType;
-  };
-};
-
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  console.log("EditDocument params:", params.documentId);
-
-  const response = await apiFetch(`/document/${params.documentId}`, {
+  const response = await apiFetch(`/document/${params.documentId}/version`, {
     method: "GET",
   });
 
   const responseBody = await response.json();
 
-  const { message, data } = responseBody;
-
   if (!response.ok) {
-    alert(message);
+    alert("Something went wrong");
     return null;
   }
 
-  console.log("responseBody:", responseBody);
+  const { revision, version, document } = responseBody;
 
   return {
-    originator: data.originator,
-    department: data.department,
-    revisionNumber: data.revisionNumber,
-    revisionDate: data.revisionDate,
-    revisionDetails: data.revisionDetails,
-    approver: data.approver,
-    approvedDate: data.approvedDate,
+    version: {
+      id: version.id,
+      originator: version.originator,
+      department: version.department,
+      revisionNumber: version.revision_number,
+      revisionDetails: version.revision_details,
+      revisionDate: version.revision_date,
+      approver: version.approver,
+      approvedDate: version.approved_date,
+      documentId: version.document_id,
+      filePath: version.file_path,
+    },
+    revision: {
+      id: revision.id,
+      title: revision.title,
+      reason: revision.reason,
+      status: revision.status,
+      userId: revision.userId,
+      documentId: revision.document_id,
+      comment: revision.comment,
+    },
+    document: {
+      id: document.id,
+      name: document.name,
+      type: document.type,
+    },
   };
 }
 
 export default function EditDocument({ loaderData }: Route.ComponentProps) {
-  /**
-   * revisionId for patching revision status
-   */
-  const revisionId = useRevisionStore((state) => state.revisionId);
-  const revisionStatus = useRevisionStore((state) => state.status);
-
-  /**
-   * versionId for patching version
-   */
-  const versionId = useVersionStore((state) => state.versionId);
-
   const userRole = useSessionStore((state) => state.role);
+  const navigate = useNavigate();
 
-  const version = loaderData;
+  if (!loaderData) {
+    throw new Error("No data loaded");
+  }
 
-  console.log("EditDocument | version", version);
-  console.log("EditDocument | revisionId", revisionId);
+  const { version, revision, document } = loaderData;
 
   const isEditable =
     isRoleAllowed(["originator"], userRole) &&
-    revisionStatus === REVISIONSTATUS.ORIGINATOR;
+    revision.status === REVISIONSTATUS.ORIGINATOR;
+
+  const documentExists = version.id && document.id;
 
   let versionInitState = {
-    originator: "None",
-    department: "None",
-    revisionNumber: "None",
-    revisionDate: "None",
-    revisionDetails: "None",
-    approver: "None",
-    approvedDate: "None",
+    originator: "",
+    department: "",
+    revisionNumber: "",
+    revisionDate: "",
+    revisionDetails: "",
+    approver: "",
+    approvedDate: "",
   };
 
-  if (version) {
-    versionInitState = version;
+  if (documentExists) {
+    versionInitState = {
+      originator: version.originator,
+      department: version.department,
+      revisionNumber: version.revisionNumber,
+      revisionDetails: version.revisionDetails,
+      revisionDate: version.revisionDate,
+      approver: version.approver,
+      approvedDate: version.approvedDate,
+    };
   }
-
-  useEffect(() => {
-    if (version)
-      return versionDispatch({ type: ACTION.SETREVISION, payload: version });
-
-    alert("No document loaded");
-  }, []);
 
   const [versionState, versionDispatch] = useReducer(
     versionReducer,
     versionInitState,
   );
+
+  useEffect(() => {
+    if (documentExists) {
+      return versionDispatch({
+        type: ACTION.SETREVISION,
+        payload: versionInitState,
+      });
+    }
+
+    versionDispatch({ type: ACTION.SETREVISION, payload: versionInitState });
+  }, [version]);
 
   function versionReducer(
     state: RevisionStateType,
@@ -144,7 +146,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     }
   }
 
-  async function handleSave() {
+  async function handleSubmit() {
     const {
       originator,
       department,
@@ -155,9 +157,11 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
       approvedDate,
     } = versionState;
 
-    console.log("revisionId:", revisionId);
-
-    const response = await apiFetch(`/version/${versionId}`, {
+    /**
+     * This should not patch an exisitng record
+     * It should simply create a new one
+     */
+    const versionResponse = await apiFetch(`/version/${version.id}`, {
       method: "PATCH",
       body: JSON.stringify({
         originator: originator,
@@ -169,6 +173,25 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
         approvedDate: approvedDate,
       }),
     });
+
+    if (!versionResponse.ok) {
+      return alert("Something went wrong when submitting your changes");
+    }
+
+    const revisionResponse = await apiFetch(`/revision/${revision.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status: changeStatus(revision.status),
+      }),
+    });
+
+    if (!revisionResponse.ok) {
+      return alert(
+        "Something went wrong when updating the status of your request",
+      );
+    }
+
+    navigate(-1);
   }
 
   async function handleDiscard() {
@@ -177,10 +200,10 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <DocumentsPageLayout pagetitle="Editing">
+      <DocumentsPageLayout pagetitle={`Editing ${document.name}`}>
         <div className="flex flex-col gap-4">
           {/* File Component */}
-          <FileBlock documentId={null} onEditClick={() => {}} />
+          <FileBlock isDisabled={false} onEditClick={() => {}} />
 
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
@@ -220,7 +243,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
               }
             />
             <DataBlock
-              title="Date"
+              title="Revision Date"
               value={versionState.revisionDate}
               styling="col-span-2"
               isEditable={isEditable}
@@ -256,7 +279,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
               }
             />
             <DataBlock
-              title="Date"
+              title="Approved Date"
               value={versionState.approvedDate}
               styling="col-span-2"
               isEditable={isEditable}
@@ -278,8 +301,8 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
             />
             <Button
               type={BUTTONTYPES.CONFIRM}
-              text="Save"
-              handleOnClick={handleSave}
+              text="Submit"
+              handleOnClick={handleSubmit}
             />
           </div>
         )}
