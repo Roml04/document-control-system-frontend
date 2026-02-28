@@ -42,9 +42,11 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const responseBody = await response.json();
 
   if (!response.ok) {
-    alert("Something went wrong");
+    alert(`Error: ${responseBody.message}`);
     return null;
   }
+
+  console.log(`/document/${params.documentId}/revision/${params.revisionId}`, responseBody);
 
   const { revision, version, document } = responseBody;
 
@@ -161,10 +163,6 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
       approvedDate,
     } = versionState;
 
-    /**
-     * This should not patch an exisitng record
-     * It should simply create a new one
-     */
     const versionResponse = await apiFetch(`/version`, {
       method: "POST",
       body: JSON.stringify({
