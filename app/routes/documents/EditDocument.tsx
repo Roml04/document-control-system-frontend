@@ -224,6 +224,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
               isEditable={
                 isEditable && isRoleAllowed(["coordinator"], userRole)
               }
+              allowedRoles={["coordinator"]}
               onChange={(value) =>
                 versionDispatch({
                   type: ACTION.SETREVISION,

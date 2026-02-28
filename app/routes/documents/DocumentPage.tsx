@@ -64,7 +64,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     alert(responseBody.message);
   }
 
-  console.log("responseBody:", responseBody);
+  console.log("/document/:documentId - ", responseBody);
 
   return responseBody.data;
 }
