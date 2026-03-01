@@ -39,6 +39,8 @@ type VersionType = {
   revisionDate: string;
   approver: string;
   approvedDate: string;
+  filePath: string | null;
+  fileName: string;
 };
 
 export type DocumentType = {
@@ -152,6 +154,8 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       revisionDate: "None",
       approver: "None",
       approvedDate: "None",
+      filePath: null,
+      fileName: "",
     },
   };
 
@@ -389,6 +393,10 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                   state.revision.status === REVISIONSTATUS.ORIGINATOR
                 )
               }
+              filename={
+                state.version.fileName ? state.version.fileName : "Untitled"
+              }
+              link={state.version.fileName}
               onEditClick={() => {
                 if (state.document.id) {
                   return navigate(

@@ -8,6 +8,7 @@ import type { Route } from "./+types/DocumentPage";
 import { apiFetch } from "~/utils/apiFetch";
 import type { DocumentType } from "../Requests";
 import { REVISIONSTATUS } from "~/constants";
+import FileBlock from "~/components/ui/FileBlock";
 
 enum ACTION {
   SETDOCUMENTDETAILS = "SETDOCUMENTDETAILS",
@@ -166,24 +167,12 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
       <DocumentsPageLayout pagetitle={documentVersion.document.name}>
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
-          <div>
-            <div className="flex items-center justify-between w-full p-4 rounded-lg border border-slate-300 bg-slate-50">
-              <div className="flex items-center gap-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-md bg-slate-200 text-slate-600"></div>
-                <div className="flex flex-col">
-                  <span className="text-sm text-slate-500">File</span>
-                  <span className="font-medium">waste-management.docx</span>
-                </div>
-              </div>
-              <a
-                className="px-4 py-2 text-sm rounded-md border border-slate-400 hover:bg-black hover:text-white transition"
-                href=""
-                target="_blank"
-              >
-                Open
-              </a>
-            </div>
-          </div>
+          <FileBlock
+            filename="Untitled.docx"
+            isDisabled={true}
+            onEditClick={() => {}}
+            link={null}
+          />
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
               title="Originator"

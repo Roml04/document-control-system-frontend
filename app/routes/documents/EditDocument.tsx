@@ -46,9 +46,11 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     return null;
   }
 
-  console.log(`/document/${params.documentId}/revision/${params.revisionId}`, responseBody);
+  console.log(`/document/${params.documentId}/revision/${params.revisionId}`);
+  console.log("RESPONSE:", responseBody);
 
   const { revision, version, document } = responseBody;
+  console.log("PATH", version.file_path);
 
   return {
     version: {
@@ -62,6 +64,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       approvedDate: version.approved_date,
       documentId: version.document_id,
       filePath: version.file_path,
+      fileName: version.filename,
     },
     revision: {
       id: revision.id,
@@ -180,8 +183,6 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
 
     const data = await versionResponse.json();
 
-    console.log("/version", data);
-
     if (!versionResponse.ok) {
       // return alert("Something went wrong when submitting your changes");
       return alert(data.message);
@@ -207,13 +208,21 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     versionDispatch({ type: ACTION.RESETREVISION });
   }
 
+  const link = null;
+
   return (
     <div>
       <DocumentsPageLayout pagetitle={`Editing ${document.name}`}>
         <div className="flex flex-col gap-4">
           {/* File Component */}
-          <FileBlock isDisabled={true} onEditClick={() => {}} />
-
+          <FileBlock
+            filename="Untitled.docx"
+            isDisabled={true}
+            onChange={(event) => {
+              console.log("EditDocument.tsx | file:", event);
+            }}
+            link={version.filePath}
+          />
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
               title="Originator"

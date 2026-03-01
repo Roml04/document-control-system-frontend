@@ -10,7 +10,8 @@
   h1,
   h2,
   h3,
-  p {
+  p,
+  span {
     @apply text-gray-700;
   }
   h1 {
