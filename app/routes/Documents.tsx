@@ -1,6 +1,7 @@
-import { useLoaderData } from "react-router";
+import { useState } from "react";
+import { NavLink, useLoaderData } from "react-router";
 import { type IconName } from "~/assets/icons/icons";
-import { CardItem } from "~/components";
+import { CardItem, Icon, PopUpModal } from "~/components";
 import type { DOCUMENTTYPES } from "~/constants/document.enum";
 import { apiFetch } from "~/utils/apiFetch";
 
@@ -16,7 +17,7 @@ export async function clientLoader() {
     method: "GET",
   });
 
-  const documents: DocumentsType[] = await response.json();
+  const documents = await response.json();
   console.log("Documents.tsx | DOCUMENTS:", documents);
 
   return documents;
@@ -25,24 +26,28 @@ export async function clientLoader() {
 export default function Documents() {
   const documents = useLoaderData<DocumentsType[]>();
 
-  const documentsIcon = {
-    wastemanagement: "trash",
-    hrprocedure: "person",
-    documentcontrol: "document",
-  };
-
   return (
-    <div className="grid grid-cols-5 gap-2 auto-rows-[16rem]">
-      {documents.map((document, index) => {
-        return (
+    <>
+      <div className="w-full grid grid-cols-5 gap-2 auto-rows-[16rem]">
+        <NavLink
+          to={"/documents/create"}
+          className={"rounded-lg hover:bg-slate-200"}
+        >
+          <div className="flex w-full h-full justify-center items-center flex-col px-4 py-4">
+            <Icon name="plus" size="lg" />
+            <p className="text-center">Add a Document</p>
+          </div>
+        </NavLink>
+        {documents.map((document, index) => (
           <CardItem
             key={index}
             title={document.name}
             uri={`/documents/${document.id}`}
-            icon={documentsIcon[document.type] as IconName}
+            icon="document"
+            // icon={documentsIcon[document.type] as IconName}
           />
-        );
-      })}
-    </div>
+        ))}
+      </div>
+    </>
   );
 }

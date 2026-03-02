@@ -5,6 +5,7 @@ import Close from "./close.svg";
 import Document from "./document.svg";
 import Person from "./person.svg";
 import Trash from "./trash.svg";
+import Plus from "./plus.svg";
 
 export const Icons = {
   arrowleft: ArrowLeft,
@@ -14,6 +15,7 @@ export const Icons = {
   document: Document,
   person: Person,
   trash: Trash,
+  plus: Plus,
 };
 
 export type IconName = keyof typeof Icons;

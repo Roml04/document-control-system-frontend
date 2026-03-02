@@ -58,7 +58,6 @@ export default function FileBlock({
             className="hidden"
             onChange={(event) => {
               if (event.target.files?.[0] && onChange) {
-                console.log("HELOOOOOOOOOOOOO");
                 onChange(event.target.files[0]);
               }
             }}

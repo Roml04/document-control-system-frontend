@@ -22,6 +22,7 @@ export default [
       "/documents/:documentId/revisions/:revisionId",
       "./routes/documents/EditDocument.tsx",
     ),
+    route("/documents/create", "./routes/documents/CreateDocument.tsx"),
   ]),
 
   /**
