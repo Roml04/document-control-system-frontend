@@ -11,6 +11,7 @@ enum ACTION {
 type DataBlockProps = {
   title: string;
   value: string;
+  placeholder?: string;
   isEditable?: boolean;
   allowedRoles?: string[] | "all";
   styling?: string;
@@ -22,6 +23,7 @@ export default function DataBlock({
   value,
   isEditable,
   allowedRoles = "all",
+  placeholder,
   styling,
   onChange,
 }: DataBlockProps) {
@@ -36,7 +38,7 @@ export default function DataBlock({
         <input
           type="text"
           value={!value ? "" : value}
-          placeholder="None"
+          placeholder={placeholder}
           onChange={(e) => {
             if (onChange) {
               onChange(e.target.value);

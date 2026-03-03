@@ -24,7 +24,7 @@ export default function NavBar() {
   const formattedRole = role ? role[0].toUpperCase() + role.slice(1) : "";
 
   return (
-    <div className="flex w-full h-fit justify-between rounded-xl px-2">
+    <div className="flex w-full h-fit justify-between rounded-xl mt-4 px-2">
       <div className="flex">
         {navBaritems.map((item, index) =>
           isRoleAllowed(item.allowedRoles, role) ? (

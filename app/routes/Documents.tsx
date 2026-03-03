@@ -30,19 +30,27 @@ export default function Documents() {
   const role = useSessionStore((state) => state.role);
 
   return (
-    <>
-      <div className="w-full grid grid-cols-5 gap-2 auto-rows-[16rem]">
-        {isRoleAllowed(["superior"], role) && (
-          <NavLink
-            to={"/documents/create"}
-            className={"rounded-lg hover:bg-slate-200"}
-          >
-            <div className="flex w-full h-full justify-center items-center flex-col px-4 py-4">
-              <Icon name="plus" size="lg" />
-              <p className="text-center">Add a Document</p>
-            </div>
-          </NavLink>
-        )}
+    <div className="flex flex-col gap-4 w-full mt-8 mx-16">
+      <div className="flex justify-between">
+        <div>
+          <h1>Documents</h1>
+          <p>Manage and organize your procedures and policies.</p>
+        </div>
+        <div className="flex items-center">
+          {isRoleAllowed(["superior"], role) && (
+            <NavLink
+              to={"/documents/create"}
+              className={"rounded-lg h-fit hover:bg-slate-200 py-2"}
+            >
+              <div className="flex w-full h-fit justify-center items-center px-8 rounded-lg gap-2">
+                <Icon name="plus" size="bs" />
+                <p className="text-center">Add a Document</p>
+              </div>
+            </NavLink>
+          )}
+        </div>
+      </div>
+      <div className="w-full grid grid-cols-3 gap-2 auto-rows-[16rem]">
         {documents.map((document, index) => (
           <CardItem
             key={index}
@@ -53,6 +61,6 @@ export default function Documents() {
           />
         ))}
       </div>
-    </>
+    </div>
   );
 }

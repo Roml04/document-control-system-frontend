@@ -155,6 +155,7 @@ export default function CreateDocument() {
                   payload: { title: value },
                 });
               }}
+              placeholder="Enter the title..."
               isEditable={true}
             />
             <DataBlock
@@ -167,6 +168,7 @@ export default function CreateDocument() {
                   payload: { reason: value },
                 });
               }}
+              placeholder="Enter the reason..."
               isEditable={true}
             />
           </div>
@@ -181,6 +183,7 @@ export default function CreateDocument() {
                   payload: { name: value },
                 });
               }}
+              placeholder="Enter document name..."
               isEditable={true}
             />
             <FileBlock
