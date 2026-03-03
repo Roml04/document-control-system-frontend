@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useLayoutEffect, useReducer, useState } from "react";
 import { useSessionStore } from "stores/sessionStore";
 import { PopUpModal, DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
@@ -6,17 +6,25 @@ import DataBlock from "~/components/ui/DataBlock";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import type { Route } from "./+types/DocumentPage";
 import { apiFetch } from "~/utils/apiFetch";
-import type { DocumentType } from "../Requests";
 import { REVISIONSTATUS } from "~/constants";
 import FileBlock from "~/components/ui/FileBlock";
 
 enum ACTION {
-  SETDOCUMENTDETAILS = "SETDOCUMENTDETAILS",
+  SETALLDATA = "SETALLDATA",
+  SETDOCUMENT = "SETDOCUMENT",
+  SETVERSION = "SETVERSION",
+  SETREVISION = "SETREVISION",
   RESETDATA = "RESETDATA",
   SETPOPUPDETAILS = "SETPOPUPDETAILS",
 }
 
 type StateType = {
+  document: DocumentType;
+  version: VersionType;
+  revision: RevisionType;
+};
+
+type VersionType = {
   originator: string;
   department: string;
   revisionNumber: string;
@@ -25,63 +33,82 @@ type StateType = {
   approver: string;
   approvedDate: string;
   userId: number | null;
-  revisionTitle: string;
-  revisionReason: string;
+  filePath: string | null;
+  fileName: string | null;
+};
+
+type DocumentType = {
+  id: number | null;
+  name: string;
+};
+
+type RevisionType = {
+  title: string;
+  reason: string;
+  status: REVISIONSTATUS;
+  userId: number | null;
+  documentId: number | null;
+  comment: string;
 };
 
 type ActionType =
+  | { type: ACTION.SETALLDATA; payload: StateType }
   | {
-      type: ACTION.SETDOCUMENTDETAILS;
-      payload: Partial<StateType>;
+      type: ACTION.SETDOCUMENT;
+      payload: Partial<DocumentType>;
     }
-  | { type: ACTION.SETPOPUPDETAILS; payload: Partial<StateType> }
+  | {
+      type: ACTION.SETVERSION;
+      payload: Partial<VersionType>;
+    }
+  | {
+      type: ACTION.SETREVISION;
+      payload: Partial<RevisionType>;
+    }
   | { type: ACTION.RESETDATA };
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  console.log("documentId:", params.documentId);
-
   const response = await apiFetch(`/document/${params.documentId}`, {
     method: "GET",
   });
 
-  const responseBody: {
-    message: string;
-    data: {
-      originator: string;
-      department: string;
-      revisionNumber: string;
-      revisionDetails: string;
-      revisionDate: string;
-      approver: string;
-      approvedDate: string;
-      userId: number | null;
-      revisionTitle: string;
-      revisionReason: string;
-      document: DocumentType;
-    };
-  } = await response.json();
+  const data = await response.json();
 
   if (!response.ok) {
-    alert(responseBody.message);
+    alert(data.message);
   }
 
-  console.log("/document/:documentId - ", responseBody);
+  console.log(`/document/no`, data);
 
-  return responseBody.data;
+  return data;
 }
 
 export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   const initialState: StateType = {
-    originator: "None",
-    department: "None",
-    revisionNumber: "None",
-    revisionDetails: "None",
-    revisionDate: "None",
-    approver: "None",
-    approvedDate: "None",
-    userId: null,
-    revisionTitle: "",
-    revisionReason: "",
+    version: {
+      originator: "",
+      department: "",
+      revisionNumber: "",
+      revisionDetails: "",
+      revisionDate: "",
+      approver: "",
+      approvedDate: "",
+      userId: null,
+      filePath: null,
+      fileName: null,
+    },
+    document: {
+      id: null,
+      name: "Untitled Document",
+    },
+    revision: {
+      title: "",
+      reason: "",
+      status: REVISIONSTATUS.COORDINATOR,
+      userId: null,
+      documentId: null,
+      comment: "",
+    },
   };
 
   const [isPopUpVisible, setPopUpVisible] = useState(false);
@@ -92,29 +119,43 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   const documentVersion = loaderData;
 
   useEffect(() => {
-    console.log("documentVersion:", documentVersion);
+    if (documentVersion) {
+      return dispatch({
+        type: ACTION.SETALLDATA,
+        payload: {
+          ...documentVersion,
+        },
+      });
+    }
     dispatch({
-      type: ACTION.SETDOCUMENTDETAILS,
-      payload: {
-        ...documentVersion,
-      },
+      type: ACTION.SETALLDATA,
+      payload: initialState,
     });
-
-    console.log("state:", state);
-  }, [documentVersion]);
+  }, []);
 
   function documentVersionReducer(state: StateType, action: ActionType) {
     switch (action.type) {
-      case ACTION.SETDOCUMENTDETAILS:
+      case ACTION.SETALLDATA:
         return {
           ...state,
           ...action.payload,
         };
-
-      case ACTION.SETPOPUPDETAILS:
+      case ACTION.SETDOCUMENT:
         return {
           ...state,
-          ...action.payload,
+          document: { ...state.document, ...action.payload },
+        };
+
+      case ACTION.SETVERSION:
+        return {
+          ...state,
+          version: { ...state.version, ...action.payload },
+        };
+
+      case ACTION.SETREVISION:
+        return {
+          ...state,
+          revision: { ...state.revision, ...action.payload },
         };
 
       case ACTION.RESETDATA:
@@ -136,6 +177,7 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   }
 
   async function handleSubmit() {
+    console.log("handleSubmit | document.id:", state.document.id);
     const response = await fetch("http://127.0.0.1/api/revision", {
       method: "POST",
       headers: {
@@ -143,8 +185,8 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
         Accept: "application/json",
       },
       body: JSON.stringify({
-        title: state.revisionTitle,
-        reason: state.revisionReason,
+        title: state.revision.title,
+        reason: state.revision.reason,
         status: REVISIONSTATUS.COORDINATOR,
         user_id: userId,
         document_id: documentVersion.document.id,
@@ -154,8 +196,7 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
     const revisionData = await response.json();
 
     if (!response.ok) {
-      console.error("FAILED");
-      console.error(revisionData.message);
+      console.error("ERROR:", revisionData.message);
       return;
     }
 
@@ -164,49 +205,59 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <DocumentsPageLayout pagetitle={documentVersion.document.name}>
+      <DocumentsPageLayout
+        pagetitle={
+          documentVersion.document.name
+            ? documentVersion.document.name
+            : "Untitled document"
+        }
+      >
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
           <FileBlock
-            filename="Untitled.docx"
+            filename={
+              state.version.fileName
+                ? state.version.fileName
+                : "Untitled document"
+            }
+            link={state.version.filePath}
             isDisabled={true}
-            onEditClick={() => {}}
-            link={null}
+            canUpload={false}
           />
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
               title="Originator"
-              value={state.originator}
+              value={state.version.originator}
               styling="col-span-2"
             />
             <DataBlock
               title="Department"
-              value={state.department}
+              value={state.version.department}
               styling="col-span-2"
             />
             <DataBlock
               title="Revision Number"
-              value={state.revisionNumber}
+              value={state.version.revisionNumber}
               styling="col-span-2"
             />
             <DataBlock
               title="Date"
-              value={state.revisionDate}
+              value={state.version.revisionDate}
               styling="col-span-2"
             />
             <DataBlock
               title="Revision Details"
-              value={state.revisionDetails}
+              value={state.version.revisionDetails}
               styling="col-span-4"
             />
             <DataBlock
               title="Approver"
-              value={state.approver}
+              value={state.version.approver}
               styling="col-span-2"
             />
             <DataBlock
               title="Date"
-              value={state.approvedDate}
+              value={state.version.approvedDate}
               styling="col-span-2"
             />
           </div>
@@ -234,26 +285,26 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
           <div className="flex flex-col gap-2">
             <input
               type="text"
-              value={state.revisionTitle}
+              value={state.revision.title}
               placeholder="Title"
               className="resize-y outline-none text-xl font-bold"
               onChange={(e) =>
                 dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
+                  type: ACTION.SETREVISION,
                   payload: {
-                    revisionTitle: e.target.value,
+                    title: e.target.value,
                   },
                 })
               }
             />
             <textarea
               className="resize-y min-h-32 outline-none"
-              value={state.revisionReason}
+              value={state.revision.reason}
               placeholder="Reason for revision..."
               onChange={(e) => {
                 dispatch({
-                  type: ACTION.SETDOCUMENTDETAILS,
-                  payload: { revisionReason: e.target.value },
+                  type: ACTION.SETREVISION,
+                  payload: { reason: e.target.value },
                 });
               }}
             />

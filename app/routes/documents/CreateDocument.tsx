@@ -118,7 +118,7 @@ export default function CreateDocument() {
     formData.append("revisionId", String(revision.id));
     formData.append("file", documentState.file);
     formData.append("fileName", documentState.name);
-    formData.append("status", VERSIONSTATUS.PENDING);
+    formData.append("status", VERSIONSTATUS.APPROVED);
 
     const versionResponse = await apiFetch("/version", {
       method: "POST",
@@ -134,6 +134,8 @@ export default function CreateDocument() {
         `An error occurred while uploading the file\n\n${versionBody.message}`,
       );
     }
+
+    console.log("VERSIONBODY:", versionBody);
 
     navigate(-1);
   }
@@ -185,7 +187,7 @@ export default function CreateDocument() {
               filename={
                 documentState.fileName ? documentState.fileName : "No File Name"
               }
-              isDisabled={true}
+              link={documentState.filePath}
               onChange={(file) => {
                 documentDispatch({
                   type: ACTION.SETDOCUMENT,
@@ -199,7 +201,9 @@ export default function CreateDocument() {
                   payload: { file: file },
                 });
               }}
-              link={documentState.filePath}
+              onEditClick={() => {}}
+              isDisabled={true}
+              canUpload={true}
             />
 
             <div className="flex w-full justify-end gap-2">
