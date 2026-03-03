@@ -208,8 +208,6 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     versionDispatch({ type: ACTION.RESETREVISION });
   }
 
-  const link = null;
-
   return (
     <div>
       <DocumentsPageLayout pagetitle={`Editing ${document.name}`}>
@@ -222,6 +220,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
               console.log("EditDocument.tsx | file:", event);
             }}
             link={version.filePath}
+            canUpload={true}
           />
           <div className="grid grid-cols-4 gap-4">
             <DataBlock

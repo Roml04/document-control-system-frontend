@@ -88,7 +88,9 @@ export async function clientLoader() {
 
   const data: FetchedRevisionType[] = await response.json();
 
-  const responseBody: FetchedRevisionType[] = data.map((revision) => {
+  console.log("Requests.tsx | /revision", data);
+
+  const responseBody = data.map((revision) => {
     const { document, user } = revision;
 
     return {
@@ -96,6 +98,7 @@ export async function clientLoader() {
       title: revision.title,
       reason: revision.reason,
       status: revision.status,
+      comment: revision.comment,
       user: {
         id: user.id ?? null,
         first_name: user.first_name ?? "",
@@ -105,7 +108,6 @@ export async function clientLoader() {
         id: document.id ?? null,
         name: document.name ?? "",
       },
-      comment: revision.comment,
     };
   });
 
@@ -147,13 +149,13 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
       last_name: "User",
     },
     version: {
-      originator: "None",
-      department: "None",
-      revisionNumber: "None",
-      revisionDetails: "None",
-      revisionDate: "None",
-      approver: "None",
-      approvedDate: "None",
+      originator: "",
+      department: "",
+      revisionNumber: "",
+      revisionDetails: "",
+      revisionDate: "",
+      approver: "",
+      approvedDate: "",
       filePath: null,
       fileName: "",
     },
@@ -405,6 +407,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                 }
                 return alert("No document to edit");
               }}
+              canUpload={false}
             />
           </div>
           {isRoleAllowed(["superior"], role) ? <DocumentDetailsPanel /> : null}
