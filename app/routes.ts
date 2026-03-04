@@ -16,8 +16,6 @@ export default [
     route("/requests", "./routes/Requests.tsx"),
   ]),
 
-  route("/test", "routes/Test.tsx"),
-
   layout("./routes/documents/layout.tsx", [
     route("/documents/:documentId", "./routes/documents/DocumentPage.tsx"),
     route(

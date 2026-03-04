@@ -15,6 +15,7 @@ enum ACTION {
   CLICKREQUEST = "CLICKREQUEST",
   RESETDATA = "RESETDATA",
   SHOWDOCUMENT = "SHOWDOCUMENT",
+  SHOWFILE = "SHOWFILE",
 }
 
 type StateType = {
@@ -29,7 +30,8 @@ type StateType = {
 type ActionType =
   | { type: ACTION.CLICKREQUEST; payload: Partial<StateType> }
   | { type: ACTION.RESETDATA }
-  | { type: ACTION.SHOWDOCUMENT; payload: Partial<StateType> };
+  | { type: ACTION.SHOWDOCUMENT; payload: Partial<StateType> }
+  | { type: ACTION.SHOWFILE; payload: Partial<StateType> };
 
 type VersionType = {
   originator: string;
@@ -134,19 +136,19 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
     isDocumentPanelShown: false,
     revision: {
       id: null,
-      title: "Untitled",
-      reason: "No reasons provided...",
+      title: "",
+      reason: "",
       status: REVISIONSTATUS.COORDINATOR,
-      comment: "No comment...",
+      comment: "",
     },
     document: {
       id: null,
-      name: "Unknown Document",
+      name: "",
     },
     user: {
       id: null,
-      first_name: "Unknown",
-      last_name: "User",
+      first_name: "",
+      last_name: "",
     },
     version: {
       originator: "",
@@ -191,8 +193,8 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   const [state, dispatch] = useReducer(revisionsReducer, initialState);
 
   useEffect(() => {
-    console.log("state:", state);
-  }, [state, filteredRevisions]);
+    console.log("STATE:", state);
+  }, [state]);
 
   /**
    * Functions
@@ -315,6 +317,17 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
   }
 
   async function handleClickRequest(revision: FetchedRevisionType) {
+    const latestVersionResponse = await apiFetch("/version/latest", {
+      method: "POST",
+      body: JSON.stringify({
+        document_id: revision.document.id,
+      }),
+    });
+
+    const latestVersion = await latestVersionResponse.json();
+
+    console.log(`/version/latest | RESPONSE:`, latestVersion);
+
     dispatch({
       type: ACTION.CLICKREQUEST,
       payload: {
@@ -322,6 +335,11 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
         document: revision.document,
         user: revision.user,
         revision: revision,
+        version: {
+          ...state.version,
+          filePath: latestVersion.filePath,
+          fileName: latestVersion.fileName,
+        },
       },
     });
 
@@ -398,7 +416,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
               filename={
                 state.version.fileName ? state.version.fileName : "Untitled"
               }
-              link={state.version.fileName}
+              link={state.version.filePath}
               onEditClick={() => {
                 if (state.document.id) {
                   return navigate(
