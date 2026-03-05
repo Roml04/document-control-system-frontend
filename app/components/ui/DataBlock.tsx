@@ -38,7 +38,7 @@ export default function DataBlock({
         <input
           type="text"
           value={!value ? "" : value}
-          placeholder={placeholder}
+          placeholder={placeholder ? placeholder : "None"}
           onChange={(e) => {
             if (onChange) {
               onChange(e.target.value);

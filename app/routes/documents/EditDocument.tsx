@@ -1,4 +1,4 @@
-import { useEffect, useReducer } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { DocumentsPageLayout, Button } from "~/components";
 import { BUTTONTYPES } from "~/components/primitives/Button";
 import DataBlock from "~/components/ui/DataBlock";
@@ -17,7 +17,7 @@ enum ACTION {
   RESETREVISION = "RESETREVISION",
 }
 
-type RevisionStateType = {
+type VersionStateType = {
   originator: string;
   department: string;
   revisionNumber: string;
@@ -28,7 +28,7 @@ type RevisionStateType = {
 };
 
 type RevisionActionType =
-  | { type: ACTION.SETREVISION; payload: Partial<RevisionStateType> }
+  | { type: ACTION.SETREVISION; payload: Partial<VersionStateType> }
   | { type: ACTION.RESETREVISION };
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
@@ -46,25 +46,21 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     return null;
   }
 
-  console.log(`/document/${params.documentId}/revision/${params.revisionId}`);
-  console.log("RESPONSE:", responseBody);
-
   const { revision, version, document } = responseBody;
-  console.log("PATH", version.file_path);
 
   return {
     version: {
       id: version.id,
       originator: version.originator,
       department: version.department,
-      revisionNumber: version.revision_number,
-      revisionDetails: version.revision_details,
-      revisionDate: version.revision_date,
+      revisionNumber: version.revisionNumber,
+      revisionDetails: version.revisionDetails,
+      revisionDate: version.revisionDate,
       approver: version.approver,
-      approvedDate: version.approved_date,
-      documentId: version.document_id,
-      filePath: version.file_path,
-      fileName: version.filename,
+      approvedDate: version.approvedDate,
+      documentId: version.documentId,
+      filePath: version.filePath,
+      fileName: version.fileName,
     },
     revision: {
       id: revision.id,
@@ -87,17 +83,21 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
   const userRole = useSessionStore((state) => state.role);
   const navigate = useNavigate();
 
+  const [file, setFile] = useState<File | null>(null);
+  const [removeFile, setRemoveFile] = useState(false);
+
   if (!loaderData) {
     throw new Error("No data loaded");
   }
 
-  const { version, revision, document } = loaderData;
+  const { version, revision, document: documentData } = loaderData;
+  // const { version, revision, document } = loaderData;
 
   const isEditable =
     isRoleAllowed(["originator", "coordinator"], userRole) &&
     revision.status === REVISIONSTATUS.ORIGINATOR;
 
-  const documentExists = version.id && document.id;
+  const documentExists = version.id && documentData.id;
 
   let versionInitState = {
     originator: "",
@@ -127,20 +127,13 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
   );
 
   useEffect(() => {
-    if (documentExists) {
-      return versionDispatch({
-        type: ACTION.SETREVISION,
-        payload: versionInitState,
-      });
-    }
-
-    versionDispatch({ type: ACTION.SETREVISION, payload: versionInitState });
+    versionDispatch({
+      type: ACTION.SETREVISION,
+      payload: versionInitState,
+    });
   }, [version]);
 
-  function versionReducer(
-    state: RevisionStateType,
-    action: RevisionActionType,
-  ) {
+  function versionReducer(state: VersionStateType, action: RevisionActionType) {
     switch (action.type) {
       case ACTION.SETREVISION:
         return {
@@ -156,35 +149,38 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
   }
 
   async function handleSubmit() {
-    const {
-      originator,
-      department,
-      revisionNumber,
-      revisionDate,
-      revisionDetails,
-      approver,
-      approvedDate,
-    } = versionState;
+    const formData = new FormData();
+
+    formData.append("originator", versionState.originator);
+    formData.append("department", versionState.department);
+    formData.append("revisionNumber", versionState.revisionNumber);
+    formData.append("revisionDate", versionState.revisionDate);
+    formData.append("revisionDetails", versionState.revisionDetails);
+    formData.append("approver", versionState.approver);
+    formData.append("approvedDate", versionState.approvedDate);
+    formData.append("revisionId", String(revision.id));
+    formData.append("documentId", String(documentData.id));
+    formData.append("status", VERSIONSTATUS.PENDING);
+
+    if (file) {
+      formData.append("file", file);
+      formData.append("fileName", file.name);
+    } else if (removeFile) {
+      formData.append("fileName", "");
+      formData.append("filePath", "");
+    } else {
+      formData.append("fileName", version.fileName);
+      formData.append("filePath", version.filePath);
+    }
 
     const versionResponse = await apiFetch(`/version`, {
       method: "POST",
-      body: JSON.stringify({
-        originator: originator,
-        department: department,
-        revisionNumber: revisionNumber,
-        revisionDate: revisionDate,
-        revisionDetails: revisionDetails,
-        approver: approver,
-        approvedDate: approvedDate,
-        documentId: document.id,
-        status: VERSIONSTATUS.PENDING,
-      }),
+      body: formData,
     });
 
     const data = await versionResponse.json();
 
     if (!versionResponse.ok) {
-      // return alert("Something went wrong when submitting your changes");
       return alert(data.message);
     }
 
@@ -204,24 +200,42 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     navigate(-1);
   }
 
-  async function handleDiscard() {
+  function handleDiscard() {
     versionDispatch({ type: ACTION.RESETREVISION });
+    setFile(null);
+    setRemoveFile(false);
   }
+
+  const displayedFilename = file
+    ? file.name
+    : removeFile
+      ? ""
+      : version.fileName;
+
+  const displayedLink = removeFile ? null : version.filePath;
 
   return (
     <div>
-      <DocumentsPageLayout pagetitle={`Editing ${document.name}`}>
+      <DocumentsPageLayout pagetitle={`Editing ${documentData.name}`}>
         <div className="flex flex-col gap-4">
-          {/* File Component */}
           <FileBlock
-            filename="Untitled.docx"
-            isDisabled={true}
-            onChange={(event) => {
-              console.log("EditDocument.tsx | file:", event);
-            }}
-            link={version.filePath}
+            filename={displayedFilename}
+            link={displayedLink}
+            isDisabled={!isEditable}
             canUpload={true}
+            onChange={(uploadedFile) => {
+              setFile(uploadedFile);
+              setRemoveFile(false);
+            }}
+            onEditClick={() => {
+              document.getElementById("fileInput")?.click();
+            }}
+            onRemove={() => {
+              setFile(null);
+              setRemoveFile(true);
+            }}
           />
+
           <div className="grid grid-cols-4 gap-4">
             <DataBlock
               title="Originator"
@@ -238,6 +252,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
                 })
               }
             />
+
             <DataBlock
               title="Department"
               value={versionState.department}
@@ -250,6 +265,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
                 })
               }
             />
+
             <DataBlock
               title="Revision Number"
               value={versionState.revisionNumber}
@@ -262,6 +278,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
                 })
               }
             />
+
             <DataBlock
               title="Revision Date"
               value={versionState.revisionDate}
@@ -274,6 +291,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
                 })
               }
             />
+
             <DataBlock
               title="Revision Details"
               value={versionState.revisionDetails}
@@ -286,6 +304,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
                 })
               }
             />
+
             <DataBlock
               title="Approver"
               value={versionState.approver}
@@ -298,6 +317,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
                 })
               }
             />
+
             <DataBlock
               title="Approved Date"
               value={versionState.approvedDate}
@@ -312,20 +332,19 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
             />
           </div>
         </div>
-        {true && (
-          <div className="flex w-full justify-end gap-2">
-            <Button
-              type={BUTTONTYPES.CANCEL}
-              text="Discard Changes"
-              handleOnClick={handleDiscard}
-            />
-            <Button
-              type={BUTTONTYPES.CONFIRM}
-              text="Submit"
-              handleOnClick={handleSubmit}
-            />
-          </div>
-        )}
+
+        <div className="flex w-full justify-end gap-2">
+          <Button
+            type={BUTTONTYPES.CANCEL}
+            text="Discard Changes"
+            handleOnClick={handleDiscard}
+          />
+          <Button
+            type={BUTTONTYPES.CONFIRM}
+            text="Submit"
+            handleOnClick={handleSubmit}
+          />
+        </div>
       </DocumentsPageLayout>
     </div>
   );
