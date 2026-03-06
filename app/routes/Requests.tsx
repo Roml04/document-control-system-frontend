@@ -228,13 +228,19 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
 
     const documentVersion = await response.json();
 
-    console.log("/version/pending/", documentVersion);
-
     dispatch({
       type: ACTION.SHOWDOCUMENT,
       payload: {
         version: {
-          ...documentVersion,
+          originator: documentVersion.originator,
+          department: documentVersion.department,
+          revisionNumber: documentVersion.revisionNumber,
+          revisionDetails: documentVersion.revisionDetails,
+          revisionDate: documentVersion.revisionDate,
+          approver: documentVersion.approver,
+          approvedDate: documentVersion.approvedDate,
+          filePath: documentVersion.approvedFilePath,
+          fileName: documentVersion.approvedFileName,
         },
       },
     });
@@ -269,7 +275,7 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
     const responseBody = await response.json();
 
     if (isRoleAllowed(["superior"], role) && state.revision.status) {
-      await apiFetch(`/version`, {
+      const versionResponse = await apiFetch(`/version`, {
         method: "POST",
         body: JSON.stringify({
           originator: state.version.originator,
@@ -280,9 +286,14 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
           approver: state.version.approver,
           approvedDate: state.version.approvedDate,
           documentId: state.document.id,
+          revisionId: state.revision.id,
+          fileName: state.version.fileName,
+          filePath: state.version.filePath,
           status: VERSIONSTATUS.APPROVED,
         }),
       });
+
+      console.log("versionResponse:", await versionResponse.json());
     }
 
     if (!response.ok) {
@@ -335,11 +346,13 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
         document: revision.document,
         user: revision.user,
         revision: revision,
-        version: {
-          ...state.version,
-          filePath: latestVersion.filePath,
-          fileName: latestVersion.fileName,
-        },
+      },
+    });
+
+    dispatch({
+      type: ACTION.SHOWDOCUMENT,
+      payload: {
+        version: latestVersion,
       },
     });
 
@@ -413,17 +426,12 @@ export default function Requests({ loaderData }: Route.ComponentProps) {
                   state.revision.status === REVISIONSTATUS.ORIGINATOR
                 )
               }
-              filename={
-                state.version.fileName ? state.version.fileName : "Untitled"
-              }
+              filename={state.version.fileName}
               link={state.version.filePath}
               onEditClick={() => {
-                if (state.document.id) {
-                  return navigate(
-                    `/documents/${state.document.id}/revisions/${state.revision.id}`,
-                  );
-                }
-                return alert("No document to edit");
+                navigate(
+                  `/documents/${state.document.id}/revisions/${state.revision.id}`,
+                );
               }}
               canUpload={false}
             />

@@ -78,7 +78,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     alert(data.message);
   }
 
-  console.log(`/document/no`, data);
+  console.log("TEST", data);
 
   return data;
 }
@@ -115,11 +115,12 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   const [state, dispatch] = useReducer(documentVersionReducer, initialState);
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
-
   const documentVersion = loaderData;
 
+  console.log("LOADER", documentVersion);
+
   useEffect(() => {
-    if (documentVersion) {
+    if (documentVersion.document && documentVersion.version) {
       return dispatch({
         type: ACTION.SETALLDATA,
         payload: {
@@ -127,6 +128,7 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
         },
       });
     }
+
     dispatch({
       type: ACTION.SETALLDATA,
       payload: initialState,
@@ -205,21 +207,11 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <DocumentsPageLayout
-        pagetitle={
-          documentVersion.document.name
-            ? documentVersion.document.name
-            : "Untitled document"
-        }
-      >
+      <DocumentsPageLayout pagetitle={documentVersion.document.name}>
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
           <FileBlock
-            filename={
-              state.version.fileName
-                ? state.version.fileName
-                : "Untitled document"
-            }
+            filename={state.version.fileName}
             link={state.version.filePath}
             isDisabled={true}
             canUpload={false}

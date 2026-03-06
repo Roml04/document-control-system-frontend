@@ -7,7 +7,7 @@ export default function FileBlock({
   onRemove,
   canUpload,
 }: {
-  filename: string;
+  filename: string | null;
   link: string | null;
   isDisabled: boolean;
   onChange?: (file: File) => void;
@@ -50,7 +50,7 @@ export default function FileBlock({
                   className="px-4 py-2 text-sm rounded-md border border-slate-300 hover:bg-black hover:text-white transition"
                   onClick={onEditClick}
                 >
-                  Replace
+                  Edit
                 </button>
               )}
 

@@ -187,9 +187,7 @@ export default function CreateDocument() {
               isEditable={true}
             />
             <FileBlock
-              filename={
-                documentState.fileName ? documentState.fileName : "No File Name"
-              }
+              filename={documentState.fileName}
               link={documentState.filePath}
               onChange={(file) => {
                 documentDispatch({
@@ -204,8 +202,7 @@ export default function CreateDocument() {
                   payload: { file: file },
                 });
               }}
-              onEditClick={() => {}}
-              isDisabled={true}
+              isDisabled={false}
               canUpload={true}
             />
 

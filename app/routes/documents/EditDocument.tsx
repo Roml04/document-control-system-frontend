@@ -46,6 +46,8 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     return null;
   }
 
+  console.log("LKDSJF:", responseBody);
+
   const { revision, version, document } = responseBody;
 
   return {
@@ -108,6 +110,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     approver: "",
     approvedDate: "",
   };
+  console.log("versions:", version);
 
   if (documentExists) {
     versionInitState = {
@@ -227,9 +230,9 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
               setFile(uploadedFile);
               setRemoveFile(false);
             }}
-            onEditClick={() => {
-              document.getElementById("fileInput")?.click();
-            }}
+            // onEditClick={() => {
+            //   document.getElementById("fileInput")?.click();
+            // }}
             onRemove={() => {
               setFile(null);
               setRemoveFile(true);
