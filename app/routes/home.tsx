@@ -21,7 +21,7 @@ export default function Home() {
 
   async function handleLogin() {
     try {
-      const apiResponse = await apiFetch("/login", {
+      const apiResponse = await apiFetch("/auth/login", {
         method: "POST",
         body: JSON.stringify({
           email: email,
@@ -30,7 +30,7 @@ export default function Home() {
       });
 
       if (!apiResponse.ok) {
-        console.log("An error occurred:", apiResponse.message);
+        console.error("An error occurred:", apiResponse.message);
         return alert(apiResponse.message);
       }
 

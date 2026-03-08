@@ -3,8 +3,24 @@ import { useSessionStore } from "stores/sessionStore";
 import { CardItem, Icon } from "~/components";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import type { Route } from "./+types/Documents";
+import { apiFetch } from "~/utils/apiFetch";
 
-export async function clientLoader() {}
+export async function clientLoader() {
+  const { role: userRole } = useSessionStore.getState();
+
+  const apiResponse = await apiFetch("/document", {
+    method: "POST",
+    body: JSON.stringify({
+      role: userRole,
+    }),
+  });
+
+  if (!apiResponse.ok) {
+    return alert(apiResponse.message);
+  }
+
+  return apiResponse.data;
+}
 
 export default function Documents({ loaderData }: Route.ComponentProps) {
   // const documents = useLoaderData<DocumentsType[]>();

@@ -45,7 +45,7 @@ export default function Register() {
 
   async function handleRegister() {
     try {
-      const apiResponse = await apiFetch("/register", {
+      const apiResponse = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           firstName: userState.firstName,
@@ -57,6 +57,7 @@ export default function Register() {
       });
 
       if (!apiResponse.ok) {
+        console.error("An error occurred:", apiResponse.message);
         return alert(apiResponse.message);
       }
 
