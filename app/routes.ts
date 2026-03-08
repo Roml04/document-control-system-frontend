@@ -26,7 +26,7 @@ export default [
   ]),
 
   /**
-   * Apply layout to these routes
+   * NOTE: Apply layout to these routes
    */
   ...prefix("/error", [
     route("/401", "./routes/error/401.tsx"),
