@@ -9,10 +9,7 @@ export type SessionStateType = {
 };
 
 type SessionActionType = {
-  updateUserId: (userId: SessionStateType["userId"]) => void;
-  updateFirstName: (firstName: SessionStateType["firstName"]) => void;
-  updateLastName: (lastName: SessionStateType["lastName"]) => void;
-  updateRole: (role: SessionStateType["role"]) => void;
+  updateSession: (session: Partial<SessionStateType>) => void;
 };
 
 export const useSessionStore = create<SessionStateType & SessionActionType>()(
@@ -22,15 +19,10 @@ export const useSessionStore = create<SessionStateType & SessionActionType>()(
       firstName: "",
       lastName: "",
       role: "user",
-      updateUserId: (userId: SessionStateType["userId"]) =>
-        set(() => ({ userId: userId })),
-      updateFirstName: (firstName: SessionStateType["firstName"]) =>
-        set(() => ({ firstName: firstName })),
-      updateLastName: (lastName: SessionStateType["lastName"]) =>
-        set(() => ({ lastName: lastName })),
-      updateRole: (role: SessionStateType["role"]) =>
-        set(() => ({
-          role: role,
+      updateSession: (session) =>
+        set((state) => ({
+          ...state,
+          ...session,
         })),
     }),
     { name: "session-store" },
