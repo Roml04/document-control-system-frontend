@@ -1,22 +1,8 @@
 import { useNavigate } from "react-router";
 import type { Route } from "./+types/home";
-import { useReducer } from "react";
+import { useState } from "react";
 import { useSessionStore } from "stores/sessionStore";
-
-enum ACTION {
-  SETEMAILVALUE = "SETEMAILVALUE",
-  SETPASSWORDVALUE = "SETPASSWORDVALUE",
-}
-
-type StateType = {
-  email: string;
-  password: string;
-};
-
-type ActionType = {
-  type: ACTION;
-  payload: string;
-};
+import { apiFetch } from "~/utils/apiFetch";
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -27,75 +13,36 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   const navigate = useNavigate();
-  const initialState: StateType = {
-    email: "",
-    password: "",
-  };
 
-  const [state, dispatch] = useReducer(loginReducer, initialState);
-  const updateFirstName = useSessionStore((state) => state.updateFirstName);
-  const updateLastName = useSessionStore((state) => state.updateLastName);
-  const updateRole = useSessionStore((state) => state.updateRole);
-  const updateUserId = useSessionStore((state) => state.updateUserId);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  function loginReducer(state: StateType, action: ActionType) {
-    switch (action.type) {
-      case ACTION.SETEMAILVALUE:
-        return {
-          ...state,
-          email: action.payload,
-        };
-
-      case ACTION.SETPASSWORDVALUE:
-        return {
-          ...state,
-          password: action.payload,
-        };
-
-      default:
-        return state;
-    }
-  }
+  const updateSession = useSessionStore((state) => state.updateSession);
 
   async function handleLogin() {
     try {
-      const response = await fetch(`http://127.0.0.1/api/user`, {
+      const response = await apiFetch("/login", {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          // Authorization: `Bearer ${token}`,
-        },
         body: JSON.stringify({
-          email: state.email,
-          password: state.password,
+          email: email,
+          password: password,
         }),
       });
 
-      const result = await response.json();
-      console.log("RESPONSE:", response);
+      const data = await response.json();
 
       if (!response.ok) {
-        console.error("FAILED:", result);
-        console.error(result.message);
-
-        return;
+        return alert(data.message);
       }
 
-      console.log("SUCCESS");
+      console.log("User successfully logged in", data);
 
-      const data = result.data;
-
-      console.log("home.tsx | userId:", data.user_id);
-
-      updateUserId(data.user_id);
-      updateFirstName(data.first_name);
-      updateLastName(data.last_name);
-      updateRole(data.role);
-
-      localStorage.setItem("apiToken", data.token);
-      localStorage.setItem("role", data.role);
+      updateSession({
+        userId: data.id,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        role: data.role,
+      });
 
       navigate("/documents");
     } catch (error) {
@@ -121,13 +68,8 @@ export default function Home() {
                 Email
               </label>
               <input
-                value={state.email}
-                onChange={(e) =>
-                  dispatch({
-                    type: ACTION.SETEMAILVALUE,
-                    payload: e.target.value,
-                  })
-                }
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
                 type="email"
               />
@@ -141,13 +83,8 @@ export default function Home() {
                 Password
               </label>
               <input
-                value={state.password}
-                onChange={(e) =>
-                  dispatch({
-                    type: ACTION.SETPASSWORDVALUE,
-                    payload: e.target.value,
-                  })
-                }
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="border border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
                 type="password"
               />
