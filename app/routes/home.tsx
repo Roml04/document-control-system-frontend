@@ -21,7 +21,7 @@ export default function Home() {
 
   async function handleLogin() {
     try {
-      const response = await apiFetch("/login", {
+      const apiResponse = await apiFetch("/login", {
         method: "POST",
         body: JSON.stringify({
           email: email,
@@ -29,19 +29,18 @@ export default function Home() {
         }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        return alert(data.message);
+      if (!apiResponse.ok) {
+        console.log("An error occurred:", apiResponse.message);
+        return alert(apiResponse.message);
       }
 
-      console.log("User successfully logged in", data);
+      console.log("User successfully logged in", apiResponse.data);
 
       updateSession({
-        userId: data.id,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        role: data.role,
+        userId: apiResponse.id,
+        firstName: apiResponse.firstName,
+        lastName: apiResponse.lastName,
+        role: apiResponse.role,
       });
 
       navigate("/documents");

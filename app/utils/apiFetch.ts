@@ -10,7 +10,7 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   const isFormData = options.body instanceof FormData;
 
-  return fetch(`${BASE_URL}${endpoint}`, {
+  const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
       // ...defaultHeaders,
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
@@ -20,4 +20,6 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
     },
     ...options,
   });
+
+  return response.json();
 }
