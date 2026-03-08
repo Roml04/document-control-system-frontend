@@ -36,11 +36,13 @@ export default function Home() {
 
       console.log("User successfully logged in", apiResponse.data);
 
+      const { id, firstName, lastName, role } = apiResponse.data;
+
       updateSession({
-        userId: apiResponse.id,
-        firstName: apiResponse.firstName,
-        lastName: apiResponse.lastName,
-        role: apiResponse.role,
+        userId: id,
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
       });
 
       navigate("/documents");
