@@ -92,14 +92,14 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     throw new Error("No data loaded");
   }
 
-  const { version, revision, document: documentData } = loaderData;
+  const { version, revision, document } = loaderData;
   // const { version, revision, document } = loaderData;
 
   const isEditable =
     isRoleAllowed(["originator", "coordinator"], userRole) &&
     revision.status === REVISIONSTATUS.ORIGINATOR;
 
-  const documentExists = version.id && documentData.id;
+  const documentExists = version.id && document.id;
 
   let versionInitState = {
     originator: "",
@@ -110,7 +110,6 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
     approver: "",
     approvedDate: "",
   };
-  console.log("versions:", version);
 
   if (documentExists) {
     versionInitState = {
@@ -154,27 +153,22 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
   async function handleSubmit() {
     const formData = new FormData();
 
-    formData.append("originator", versionState.originator);
-    formData.append("department", versionState.department);
-    formData.append("revisionNumber", versionState.revisionNumber);
-    formData.append("revisionDate", versionState.revisionDate);
-    formData.append("revisionDetails", versionState.revisionDetails);
-    formData.append("approver", versionState.approver);
-    formData.append("approvedDate", versionState.approvedDate);
-    formData.append("revisionId", String(revision.id));
-    formData.append("documentId", String(documentData.id));
-    formData.append("status", VERSIONSTATUS.PENDING);
+    const payload = {
+      originator: versionState.originator,
+      department: versionState.department,
+      revisionNumber: versionState.revisionNumber,
+      revisionDate: versionState.revisionDate,
+      revisionDetails: versionState.revisionDetails,
+      approver: versionState.approver,
+      approvedDate: versionState.approvedDate,
+      revisionId: revision.id,
+      documentId: document.id,
+      status: VERSIONSTATUS.PENDING,
+    };
 
-    if (file) {
-      formData.append("file", file);
-      formData.append("fileName", file.name);
-    } else if (removeFile) {
-      formData.append("fileName", "");
-      formData.append("filePath", "");
-    } else {
-      formData.append("fileName", version.fileName);
-      formData.append("filePath", version.filePath);
-    }
+    Object.entries(payload)
+      .filter(([_, v]) => v !== null && v !== undefined && v !== "")
+      .forEach(([k, v]) => formData.append(k, String(v)));
 
     const versionResponse = await apiFetch(`/version`, {
       method: "POST",
@@ -183,9 +177,12 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
 
     const data = await versionResponse.json();
 
+    console.log("versionData", data);
+
     if (!versionResponse.ok) {
       return alert(data.message);
     }
+    return;
 
     const revisionResponse = await apiFetch(`/revision/${revision.id}`, {
       method: "PATCH",
@@ -219,7 +216,7 @@ export default function EditDocument({ loaderData }: Route.ComponentProps) {
 
   return (
     <div>
-      <DocumentsPageLayout pagetitle={`Editing ${documentData.name}`}>
+      <DocumentsPageLayout pagetitle={`Editing ${document.name}`}>
         <div className="flex flex-col gap-4">
           <FileBlock
             filename={displayedFilename}
