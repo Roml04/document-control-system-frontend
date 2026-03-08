@@ -1,15 +1,12 @@
 import { useReducer } from "react";
 import { useNavigate } from "react-router";
+import { apiFetch } from "~/utils/apiFetch";
 
 enum ACTION {
-  SETFIRSTNAME = "SETFIRSTNAME",
-  SETLASTNAME = "SETLASTNAME",
-  SETEMAIL = "SETEMAIL",
-  SETPASSWORD = "SETPASSWORD",
-  SETROLE = "SETROLE",
+  SETUSERDETAIL = "SETUSERDETAIL",
 }
 
-type StateType = {
+type UserStateType = {
   firstName: string;
   lastName: string;
   email: string;
@@ -18,12 +15,12 @@ type StateType = {
 };
 
 type ActionType = {
-  type: ACTION;
-  payload: string;
+  type: ACTION.SETUSERDETAIL;
+  payload: Partial<UserStateType>;
 };
 
 export default function Register() {
-  const initialState: StateType = {
+  const initialState: UserStateType = {
     firstName: "",
     lastName: "",
     email: "",
@@ -31,35 +28,15 @@ export default function Register() {
     role: "",
   };
 
-  const [state, dispatch] = useReducer(registerReducer, initialState);
+  const [userState, userDispatch] = useReducer(registerReducer, initialState);
   const navigate = useNavigate();
 
-  function registerReducer(state: StateType, action: ActionType) {
+  function registerReducer(state: UserStateType, action: ActionType) {
     switch (action.type) {
-      case ACTION.SETFIRSTNAME:
+      case ACTION.SETUSERDETAIL:
         return {
           ...state,
-          firstName: action.payload,
-        };
-      case ACTION.SETLASTNAME:
-        return {
-          ...state,
-          lastName: action.payload,
-        };
-      case ACTION.SETEMAIL:
-        return {
-          ...state,
-          email: action.payload,
-        };
-      case ACTION.SETPASSWORD:
-        return {
-          ...state,
-          password: action.payload,
-        };
-      case ACTION.SETROLE:
-        return {
-          ...state,
-          role: action.payload,
+          ...action.payload,
         };
       default:
         return state;
@@ -68,35 +45,22 @@ export default function Register() {
 
   async function handleRegister() {
     try {
-      const response = await fetch(`http://127.0.0.1:80/api/register`, {
+      const apiResponse = await apiFetch("/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          // "Authorization": "Bearer LARAVEL_SANCTUM_TOKEN"
-        },
         body: JSON.stringify({
-          first_name: state.firstName,
-          last_name: state.lastName,
-          email: state.email,
-          password: state.password,
-          role: state.role,
+          firstName: userState.firstName,
+          lastName: userState.lastName,
+          email: userState.email,
+          password: userState.password,
+          role: userState.role,
         }),
       });
 
-      const result = await response.json();
-
-      console.log(result);
-
-      // return;
-
-      if (!response.ok) {
-        console.error(result.message);
-
-        return;
+      if (!apiResponse.ok) {
+        return alert(apiResponse.message);
       }
 
-      console.log(result.message);
+      console.log("User registered successfully", apiResponse.data);
       navigate("/");
     } catch (error) {
       throw error;
@@ -127,11 +91,13 @@ export default function Register() {
                   First Name
                 </label>
                 <input
-                  value={state.firstName}
+                  value={userState.firstName}
                   onChange={(e) =>
-                    dispatch({
-                      type: ACTION.SETFIRSTNAME,
-                      payload: e.target.value,
+                    userDispatch({
+                      type: ACTION.SETUSERDETAIL,
+                      payload: {
+                        firstName: e.target.value,
+                      },
                     })
                   }
                   className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
@@ -147,11 +113,13 @@ export default function Register() {
                   Last Name
                 </label>
                 <input
-                  value={state.lastName}
+                  value={userState.lastName}
                   onChange={(e) =>
-                    dispatch({
-                      type: ACTION.SETLASTNAME,
-                      payload: e.target.value,
+                    userDispatch({
+                      type: ACTION.SETUSERDETAIL,
+                      payload: {
+                        lastName: e.target.value,
+                      },
                     })
                   }
                   className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
@@ -169,9 +137,14 @@ export default function Register() {
                   Email
                 </label>
                 <input
-                  value={state.email}
+                  value={userState.email}
                   onChange={(e) =>
-                    dispatch({ type: ACTION.SETEMAIL, payload: e.target.value })
+                    userDispatch({
+                      type: ACTION.SETUSERDETAIL,
+                      payload: {
+                        email: e.target.value,
+                      },
+                    })
                   }
                   className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
                   type="email"
@@ -186,11 +159,13 @@ export default function Register() {
                   Password
                 </label>
                 <input
-                  value={state.password}
+                  value={userState.password}
                   onChange={(e) =>
-                    dispatch({
-                      type: ACTION.SETPASSWORD,
-                      payload: e.target.value,
+                    userDispatch({
+                      type: ACTION.SETUSERDETAIL,
+                      payload: {
+                        password: e.target.value,
+                      },
                     })
                   }
                   className="border w-full border-gray-300 rounded-md px-3 py-2 outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600 transition"
@@ -204,9 +179,14 @@ export default function Register() {
                 Role
               </label>
               <select
-                value={state.role}
+                value={userState.role}
                 onChange={(e) =>
-                  dispatch({ type: ACTION.SETROLE, payload: e.target.value })
+                  userDispatch({
+                    type: ACTION.SETUSERDETAIL,
+                    payload: {
+                      role: e.target.value,
+                    },
+                  })
                 }
                 name="role"
                 id="role"
