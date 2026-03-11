@@ -4,15 +4,13 @@ import { CardItem, Icon } from "~/components";
 import { isRoleAllowed } from "~/utils/isRoleAllowed";
 import type { Route } from "./+types/Documents";
 import { apiFetch } from "~/utils/apiFetch";
+import type { DocumentType } from "~/constants/types";
 
 export async function clientLoader() {
   const { role: userRole } = useSessionStore.getState();
 
   const apiResponse = await apiFetch("/document", {
-    method: "POST",
-    body: JSON.stringify({
-      role: userRole,
-    }),
+    method: "GET",
   });
 
   if (!apiResponse.ok) {
@@ -25,6 +23,8 @@ export async function clientLoader() {
 export default function Documents({ loaderData }: Route.ComponentProps) {
   // const documents = useLoaderData<DocumentsType[]>();
   const role = useSessionStore((state) => state.role);
+
+  const documents: Partial<DocumentType>[] = loaderData;
 
   return (
     <div className="flex flex-col gap-4 w-full mt-8 mx-16">
@@ -48,7 +48,9 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
         </div>
       </div>
       <div className="w-full grid grid-cols-3 gap-2 auto-rows-[16rem]">
-        <CardItem key={1} title="Title" uri="" icon="document" />
+        {documents.map((document) => (
+          <CardItem key={document.id} title="Title" uri="" icon="document" />
+        ))}
       </div>
     </div>
   );

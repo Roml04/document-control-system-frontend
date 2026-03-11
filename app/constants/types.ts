@@ -1,4 +1,20 @@
+import type { DOCUMENTTYPES } from "./document.enum";
 import type { REVISIONSTATUS } from "./revisionStatus.enum";
+
+export type DocumentType = {
+  id: number | null;
+  name: string;
+  type: DOCUMENTTYPES;
+  originator: string;
+  department: string;
+  revisionNumber: string;
+  revisionDetails: string;
+  revisionDate: string;
+  approver: string;
+  approvedDate: string;
+  documentId: number | null;
+  filePath: string;
+};
 
 export type VersionType = {
   id: number | null;
