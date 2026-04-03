@@ -68,19 +68,17 @@ type ActionType =
   | { type: ACTION.RESETDATA };
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const response = await apiFetch(`/document/${params.documentId}`, {
+  const apiResponse = await apiFetch(`/document/${params.documentId}`, {
     method: "GET",
   });
 
-  const data = await response.json();
-
-  if (!response.ok) {
-    alert(data.message);
+  if (!apiResponse.ok) {
+    alert(apiResponse.message);
   }
 
-  console.log("TEST", data);
+  console.log("apiResponse:", apiResponse);
 
-  return data;
+  return apiResponse.data;
 }
 
 export default function DocumentPage({ loaderData }: Route.ComponentProps) {
@@ -112,158 +110,52 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
   };
 
   const [isPopUpVisible, setPopUpVisible] = useState(false);
-  const [state, dispatch] = useReducer(documentVersionReducer, initialState);
   const role = useSessionStore((state) => state.role);
   const userId = useSessionStore((state) => state.userId);
   const documentVersion = loaderData;
 
   console.log("LOADER", documentVersion);
 
-  useEffect(() => {
-    if (documentVersion.document && documentVersion.version) {
-      return dispatch({
-        type: ACTION.SETALLDATA,
-        payload: {
-          ...documentVersion,
-        },
-      });
-    }
-
-    dispatch({
-      type: ACTION.SETALLDATA,
-      payload: initialState,
-    });
-  }, []);
-
-  function documentVersionReducer(state: StateType, action: ActionType) {
-    switch (action.type) {
-      case ACTION.SETALLDATA:
-        return {
-          ...state,
-          ...action.payload,
-        };
-      case ACTION.SETDOCUMENT:
-        return {
-          ...state,
-          document: { ...state.document, ...action.payload },
-        };
-
-      case ACTION.SETVERSION:
-        return {
-          ...state,
-          version: { ...state.version, ...action.payload },
-        };
-
-      case ACTION.SETREVISION:
-        return {
-          ...state,
-          revision: { ...state.revision, ...action.payload },
-        };
-
-      case ACTION.RESETDATA:
-        return initialState;
-
-      default:
-        return state;
-    }
-  }
-
-  function handleRevisionClick() {
-    setPopUpVisible(true);
-  }
-
-  function handleObsoleteClick() {}
-
-  function handleCancel() {
-    setPopUpVisible(false);
-  }
-
-  async function handleSubmit() {
-    console.log("handleSubmit | document.id:", state.document.id);
-    const response = await fetch("http://127.0.0.1/api/revision", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
-        title: state.revision.title,
-        reason: state.revision.reason,
-        status: REVISIONSTATUS.COORDINATOR,
-        user_id: userId,
-        document_id: documentVersion.document.id,
-      }),
-    });
-
-    const revisionData = await response.json();
-
-    if (!response.ok) {
-      console.error("ERROR:", revisionData.message);
-      return;
-    }
-
-    setPopUpVisible(false);
-  }
-
   return (
     <div>
-      <DocumentsPageLayout pagetitle={documentVersion.document.name}>
+      <DocumentsPageLayout pagetitle="value">
         <div className="flex flex-col my-4 gap-4">
           {/* File Component */}
           <FileBlock
-            filename={state.version.fileName}
-            link={state.version.filePath}
-            isDisabled={true}
-            canUpload={false}
+            filename={null}
+            link={null}
+            isDisabled={false}
+            canUpload={true}
           />
+
           <div className="grid grid-cols-4 gap-4">
-            <DataBlock
-              title="Originator"
-              value={state.version.originator}
-              styling="col-span-2"
-            />
-            <DataBlock
-              title="Department"
-              value={state.version.department}
-              styling="col-span-2"
-            />
+            <DataBlock title="Originator" value="value" styling="col-span-2" />
+            <DataBlock title="Department" value="value" styling="col-span-2" />
             <DataBlock
               title="Revision Number"
-              value={state.version.revisionNumber}
+              value="value"
               styling="col-span-2"
             />
-            <DataBlock
-              title="Date"
-              value={state.version.revisionDate}
-              styling="col-span-2"
-            />
+            <DataBlock title="Date" value="value" styling="col-span-2" />
             <DataBlock
               title="Revision Details"
-              value={state.version.revisionDetails}
+              value="value"
               styling="col-span-4"
             />
-            <DataBlock
-              title="Approver"
-              value={state.version.approver}
-              styling="col-span-2"
-            />
-            <DataBlock
-              title="Date"
-              value={state.version.approvedDate}
-              styling="col-span-2"
-            />
+            <DataBlock title="Approver" value="value" styling="col-span-2" />
+            <DataBlock title="Date" value="value" styling="col-span-2" />
           </div>
         </div>
         {isRoleAllowed(["originator", "coordinator"], role) && (
           <div className="flex w-full justify-end gap-2">
             <button
-              onClick={handleRevisionClick}
+              onClick={() => {}}
               className="hover:bg-black hover:text-white w-1/5 px-4 py-2 rounded-lg cursor-pointer"
             >
               Revision
             </button>
             <button
-              onClick={handleObsoleteClick}
+              onClick={() => {}}
               className="hover:bg-black hover:text-white w-1/5 px-4 py-2 rounded-lg cursor-pointer"
             >
               Obsolete
@@ -277,41 +169,29 @@ export default function DocumentPage({ loaderData }: Route.ComponentProps) {
           <div className="flex flex-col gap-2">
             <input
               type="text"
-              value={state.revision.title}
+              value="hello"
               placeholder="Title"
               className="resize-y outline-none text-xl font-bold"
-              onChange={(e) =>
-                dispatch({
-                  type: ACTION.SETREVISION,
-                  payload: {
-                    title: e.target.value,
-                  },
-                })
-              }
+              onChange={() => {}}
             />
             <textarea
               className="resize-y min-h-32 outline-none"
-              value={state.revision.reason}
+              value="hello"
               placeholder="Reason for revision..."
-              onChange={(e) => {
-                dispatch({
-                  type: ACTION.SETREVISION,
-                  payload: { reason: e.target.value },
-                });
-              }}
+              onChange={() => {}}
             />
           </div>
           <div className="flex w-full justify-between gap-2">
             <Button
               type={BUTTONTYPES.CANCEL}
               text="Cancel"
-              handleOnClick={handleCancel}
+              handleOnClick={() => {}}
               styling="w-full"
             />
             <Button
               type={BUTTONTYPES.CONFIRM}
               text="Submit"
-              handleOnClick={handleSubmit}
+              handleOnClick={() => {}}
               styling="w-full"
             />
           </div>

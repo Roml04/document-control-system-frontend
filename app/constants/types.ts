@@ -12,8 +12,8 @@ export type DocumentType = {
   revisionDate: string;
   approver: string;
   approvedDate: string;
-  documentId: number | null;
   filePath: string;
+  fileName: string;
 };
 
 export type VersionType = {

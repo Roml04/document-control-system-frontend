@@ -7,8 +7,6 @@ import { apiFetch } from "~/utils/apiFetch";
 import type { DocumentType } from "~/constants/types";
 
 export async function clientLoader() {
-  const { role: userRole } = useSessionStore.getState();
-
   const apiResponse = await apiFetch("/document", {
     method: "GET",
   });
@@ -49,7 +47,12 @@ export default function Documents({ loaderData }: Route.ComponentProps) {
       </div>
       <div className="w-full grid grid-cols-3 gap-2 auto-rows-[16rem]">
         {documents.map((document) => (
-          <CardItem key={document.id} title="Title" uri="" icon="document" />
+          <CardItem
+            key={document.id}
+            title={document.name ?? "Untitled"}
+            uri={`/documents/${document.id}`}
+            icon="document"
+          />
         ))}
       </div>
     </div>
