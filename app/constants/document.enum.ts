@@ -1,5 +1,0 @@
-export enum DOCUMENTTYPES {
-  DOCUMENT = "DOCUMENT",
-  FORM = "FORM",
-  CHECKLIST = "CHECKLIST",
-}
