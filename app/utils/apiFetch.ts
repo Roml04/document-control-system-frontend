@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost/api";
+const BASE_URL = "http://document-control-system-backend.test/api";
 
 export const defaultHeaders: HeadersInit = {
   "Content-Type": "application/json",
