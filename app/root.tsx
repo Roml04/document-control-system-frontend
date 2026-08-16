@@ -10,6 +10,9 @@ import {
 import type { Route } from "./+types/root";
 import "./styles/app.css";
 import { Toaster } from "sonner";
+import { TooltipProvider } from "./components/ui/tooltip";
+import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
+import { LucideProvider } from "lucide-react";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -45,8 +48,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <>
-      <Outlet />
-      <Toaster />
+      <LucideProvider color="#5E5E5E">
+        <TooltipProvider>
+          <Outlet />
+          <Toaster />
+        </TooltipProvider>
+      </LucideProvider>
     </>
   );
 }

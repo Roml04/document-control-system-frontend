@@ -19,6 +19,7 @@ import {
 import { Field, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -28,28 +29,44 @@ export default function Home() {
   const [popUpOpen, setPopUpOpen] = useState(false);
 
   const handleLogin: SubmitEventHandler<HTMLFormElement> = async (event) => {
-    event.preventDefault();
+    try {
+      event.preventDefault();
 
-    if (!email.trim() || !password.trim()) {
-      setPopUpOpen(true);
+      if (!email.trim() || !password.trim()) {
+        setPopUpOpen(true);
 
-      return;
+        return;
+      }
+
+      const apiResponse = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
+
+      console.log("ey", apiResponse);
+
+      if (!apiResponse.ok) {
+        return toast.error("Login Failed!", {
+          description: apiResponse.message,
+          position: "top-right",
+        });
+      }
+
+      toast.success("Login successful!", {
+        position: "top-right",
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("Login Failed!", {
+        position: "top-right",
+        description:
+          "We could not complete your log in request right now. Please try again in a moment.",
+      });
     }
-
-    const apiResponse = await apiFetch("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
-
-    if (!apiResponse.ok) {
-      return alert(apiResponse.message);
-    }
-
-    console.log(apiResponse.message);
-    // navigate();
   };
 
   return (
@@ -87,7 +104,6 @@ export default function Home() {
               />
             </Field>
             <Button type="submit">Login</Button>
-            {/* <Button onClick={handleLogin}>Login</Button> */}
           </div>
         </CardContent>
         <CardFooter>
