@@ -293,7 +293,7 @@ export default function files() {
           }
         }}
       >
-        <SheetContent className="w-[30vw] sm:!max-w-[30vw] h-dvh p-0">
+        <SheetContent className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0">
           <form
             onSubmit={handleUploadRequest}
             className="flex h-full min-h-0 flex-col"

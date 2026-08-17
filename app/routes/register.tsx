@@ -12,6 +12,7 @@ import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
+import { useNavigate } from "react-router";
 
 enum ACTION {
   SETSTATE = "SETSTATE",
@@ -32,6 +33,8 @@ type RegisterActionType = {
 };
 
 export default function register() {
+  const navigate = useNavigate();
+
   const registerInitialState = {
     firstName: "",
     lastName: "",
@@ -86,6 +89,14 @@ export default function register() {
         position: "top-right",
       });
     }
+
+    toast.success("Account registered!", {
+      description:
+        "An administrator will review and assign your role. You can sign in once approved.",
+      position: "top-right",
+    });
+
+    navigate("/");
   };
 
   return (

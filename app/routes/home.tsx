@@ -1,4 +1,3 @@
-import { DialogTitle } from "~/components/ui/dialog";
 import { useState, type SubmitEventHandler } from "react";
 import { NavLink, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
@@ -10,23 +9,23 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-} from "~/components/ui/dialog";
 import { Field, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
 import { Spinner } from "~/components/ui/spinner";
+import { useSessionStore } from "../../stores/sessionStore";
 
 export default function Home() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSpinning, setIsSpinning] = useState(false);
+
+  /**
+   * Session Store
+   */
+  const updateSession = useSessionStore((state) => state.updateSession);
 
   const handleLogin: SubmitEventHandler<HTMLFormElement> = async (event) => {
     try {
@@ -48,6 +47,17 @@ export default function Home() {
           position: "top-right",
         });
       }
+
+      const { id, firstName, lastName, role } = apiResponse.data;
+
+      console.log(apiResponse.data);
+
+      updateSession({
+        userId: id,
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
+      });
 
       toast.success("Login successful!", {
         position: "top-right",

@@ -15,9 +15,14 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar";
+import { useSessionStore } from "../../../stores/sessionStore";
 
 export default function layout() {
   const navigate = useNavigate();
+
+  const firstName = useSessionStore((state) => state.firstName);
+  const lastName = useSessionStore((state) => state.lastName);
+  const role = useSessionStore((state) => state.role);
 
   return (
     <>
@@ -67,12 +72,18 @@ export default function layout() {
               <SidebarMenuItem>
                 <SidebarMenuButton size={"lg"}>
                   <Avatar>
-                    <AvatarImage src="https://i.pinimg.com/474x/54/74/af/5474afb4b69e42c299fef40ebb733fe9.jpg" />
-                    <AvatarFallback>DCS</AvatarFallback>
+                    <AvatarImage src="" />
+                    <AvatarFallback>
+                      {`${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`}
+                    </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p>Suisei Hoshimachi</p>
-                    <h4>Originator</h4>
+                    <p>
+                      {firstName || lastName
+                        ? `${firstName ?? ""} ${lastName ?? ""}`.trim()
+                        : "Unknown User"}
+                    </p>
+                    <h4>{role}</h4>
                   </div>
                 </SidebarMenuButton>
                 <SidebarMenuAction>
