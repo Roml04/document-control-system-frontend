@@ -20,23 +20,19 @@ import { Field, FieldLabel } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
+import { Spinner } from "~/components/ui/spinner";
 
 export default function Home() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const [popUpOpen, setPopUpOpen] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
 
   const handleLogin: SubmitEventHandler<HTMLFormElement> = async (event) => {
     try {
       event.preventDefault();
 
-      if (!email.trim() || !password.trim()) {
-        setPopUpOpen(true);
-
-        return;
-      }
+      setIsSpinning(true);
 
       const apiResponse = await apiFetch("/auth/login", {
         method: "POST",
@@ -45,8 +41,6 @@ export default function Home() {
           password: password,
         }),
       });
-
-      console.log("ey", apiResponse);
 
       if (!apiResponse.ok) {
         return toast.error("Login Failed!", {
@@ -66,6 +60,8 @@ export default function Home() {
         description:
           "We could not complete your log in request right now. Please try again in a moment.",
       });
+    } finally {
+      setIsSpinning(false);
     }
   };
 
@@ -90,6 +86,7 @@ export default function Home() {
                 onChange={(e) => {
                   setEmail(e.target.value);
                 }}
+                required
               />
             </Field>
             <Field>
@@ -101,9 +98,14 @@ export default function Home() {
                 onChange={(e) => {
                   setPassword(e.target.value);
                 }}
+                required
               />
             </Field>
-            <Button type="submit">Login</Button>
+
+            <Button type="submit" disabled={isSpinning}>
+              {isSpinning && <Spinner />}
+              {isSpinning ? "Logging in..." : "Login"}
+            </Button>
           </div>
         </CardContent>
         <CardFooter>
@@ -117,16 +119,6 @@ export default function Home() {
           </div>
         </CardFooter>
       </Card>
-      <Dialog open={popUpOpen} onOpenChange={setPopUpOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>No Email and Password Provided</DialogTitle>
-            <DialogDescription>
-              Please provide a valid email and password.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
     </form>
   );
 }
