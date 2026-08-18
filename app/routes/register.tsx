@@ -90,7 +90,7 @@ export default function register() {
       });
     }
 
-    toast.success("Account registered!", {
+    toast.success("Account registered", {
       description:
         "An administrator will review and assign your role. You can sign in once approved.",
       position: "top-right",

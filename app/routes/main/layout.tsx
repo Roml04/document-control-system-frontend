@@ -16,13 +16,39 @@ import {
   SidebarTrigger,
 } from "~/components/ui/sidebar";
 import { useSessionStore } from "../../../stores/sessionStore";
+import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
 
 export default function layout() {
   const navigate = useNavigate();
+  const token = useSessionStore((state) => state.token);
 
   const firstName = useSessionStore((state) => state.firstName);
   const lastName = useSessionStore((state) => state.lastName);
   const role = useSessionStore((state) => state.role);
+
+  const handleLogOut = async () => {
+    const apiResponse = await apiFetch("/logout", {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (!apiResponse.ok) {
+      return toast.error("Logout failed", {
+        position: "top-right",
+      });
+    }
+
+    toast.success("Logout successful!", {
+      position: "top-right",
+    });
+
+    navigate("/");
+  };
 
   return (
     <>
@@ -86,7 +112,7 @@ export default function layout() {
                     <h4>{role}</h4>
                   </div>
                 </SidebarMenuButton>
-                <SidebarMenuAction>
+                <SidebarMenuAction onClick={handleLogOut}>
                   <LogOut />
                 </SidebarMenuAction>
               </SidebarMenuItem>

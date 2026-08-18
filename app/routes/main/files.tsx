@@ -179,7 +179,7 @@ export default function files() {
       });
 
       if (!apiResponse.ok) {
-        return toast.error("Submission Failed", {
+        return toast.error("Submission failed", {
           description: apiResponse.message,
           position: "top-center",
         });
