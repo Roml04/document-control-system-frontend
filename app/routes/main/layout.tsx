@@ -121,9 +121,9 @@ export default function layout() {
         </Sidebar>
         <main className="flex w-full h-full m-2">
           <SidebarTrigger />
-          <ScrollArea className="w-full m-4">
+          <div className="w-full m-4">
             <Outlet />
-          </ScrollArea>
+          </div>
         </main>
       </SidebarProvider>
     </>

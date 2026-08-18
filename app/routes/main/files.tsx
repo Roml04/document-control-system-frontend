@@ -167,7 +167,6 @@ export default function files() {
           type: "upl",
           title: uploadFileState.title,
           reason: uploadFileState.reason,
-          userId: 1,
           originator: uploadFileState.originator,
           department: uploadFileState.department,
           revisionNumber: uploadFileState.revisionNumber,
@@ -243,7 +242,7 @@ export default function files() {
 
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         <div className="flex justify-between">
           <h1>Files</h1>
           <Button

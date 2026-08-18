@@ -1,3 +1,5 @@
+import { useSessionStore } from "../../stores/sessionStore";
+
 const BASE_URL = "http://document-control-system-backend.test/api";
 
 export const defaultHeaders: HeadersInit = {
@@ -6,7 +8,7 @@ export const defaultHeaders: HeadersInit = {
 };
 
 export async function apiFetch(endpoint: string, options: RequestInit = {}) {
-  const token = localStorage.getItem("apiToken");
+  const { token } = useSessionStore.getState();
 
   const isFormData = options.body instanceof FormData;
 
