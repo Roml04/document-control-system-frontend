@@ -6,6 +6,7 @@ export type SessionStateType = {
   firstName: string;
   lastName: string;
   role: string;
+  token: string | null;
 };
 
 type SessionActionType = {
@@ -19,6 +20,7 @@ export const useSessionStore = create<SessionStateType & SessionActionType>()(
       firstName: "",
       lastName: "",
       role: "user",
+      token: null,
       updateSession: (session) =>
         set((state) => ({
           ...state,

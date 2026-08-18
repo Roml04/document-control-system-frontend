@@ -42,21 +42,22 @@ export default function Home() {
       });
 
       if (!apiResponse.ok) {
-        return toast.error("Login Failed!", {
+        return toast.error("Login failed", {
           description: apiResponse.message,
           position: "top-right",
         });
       }
 
-      const { id, firstName, lastName, role } = apiResponse.data;
+      const { userId, firstName, lastName, role, token } = apiResponse.data;
 
       console.log(apiResponse.data);
 
       updateSession({
-        userId: id,
+        userId: userId,
         firstName: firstName,
         lastName: lastName,
         role: role,
+        token: token,
       });
 
       toast.success("Login successful!", {
@@ -65,7 +66,7 @@ export default function Home() {
 
       navigate("/dashboard");
     } catch (error) {
-      toast.error("Login Failed!", {
+      toast.error("Login failed", {
         position: "top-right",
         description:
           "We could not complete your log in request right now. Please try again in a moment.",
