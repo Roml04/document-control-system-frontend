@@ -145,21 +145,17 @@ export default function files() {
     try {
       event.preventDefault();
 
-      console.log("> Form Values <");
-      console.log("Title", uploadFileState.title);
-      console.log("Reason", uploadFileState.reason);
-      console.log("Originator", uploadFileState.originator);
-      console.log("Department", uploadFileState.department);
-      console.log("Rev Num", uploadFileState.revisionNumber);
-      console.log("Rev Details", uploadFileState.revisionDetails);
-      console.log("Approver", uploadFileState.approver);
-      console.log("File", file);
-
       if (!file) {
+        console.log("No file was uploaded");
+        console.log("File Object | ", file);
         return toast.error("No file uploaded", {
           position: "top-center",
         });
       }
+
+      console.log("Sending POST request with body:");
+      console.log("uploadFileState:", uploadFileState);
+      console.log("File:", file);
 
       const apiResponse = await apiFetch("/request/create", {
         method: "POST",
@@ -178,6 +174,7 @@ export default function files() {
       });
 
       if (!apiResponse.ok) {
+        console.log();
         return toast.error("Submission failed", {
           description: apiResponse.message,
           position: "top-center",
@@ -191,6 +188,7 @@ export default function files() {
         position: "top-center",
       });
     } catch (error) {
+      console.log("ERROR |", error);
       toast.error("Failed to submit upload file request", {
         position: "top-center",
       });

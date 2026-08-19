@@ -38,9 +38,9 @@ export async function clientLoader() {
 export default function requests({ loaderData }: Route.ComponentProps) {
   const { ok, data, message } = loaderData;
 
-  console.log(data);
-  console.log(ok);
-  console.log(message);
+  console.log(`INFO | ${ok}`);
+  console.log(`INFO |`, data);
+  console.log(`INFO | ${message}`);
 
   const columnWidths = {
     title: "w-3/20",
@@ -98,7 +98,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 }
 
                 return (
-                  <TableRow className="cursor-pointer">
+                  <TableRow className="cursor-pointer" key={request.id}>
                     <TableCell className={`${columnWidths.title}`}>
                       {request.title}
                     </TableCell>
