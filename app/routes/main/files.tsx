@@ -36,6 +36,7 @@ import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";

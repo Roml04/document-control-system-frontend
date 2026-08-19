@@ -13,10 +13,6 @@ export default [
     route("/dashboard", "./routes/main/dashboard.tsx"),
     route("/files", "./routes/main/files.tsx"),
     route("/requests", "./routes/main/requests.tsx"),
-    ...prefix("/files", [
-      route("/create", "./routes/main/file/createFile.tsx"),
-      route("/:id", "./routes/main/file/showFile.tsx"),
-      route("/:id/edit", "./routes/main/file/editFile.tsx"),
-    ]),
+    ...prefix("/files", [route("/:id", "./routes/main/file/showFile.tsx")]),
   ]),
 ] satisfies RouteConfig;
