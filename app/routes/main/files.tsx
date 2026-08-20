@@ -36,7 +36,6 @@ import { Separator } from "~/components/ui/separator";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";
@@ -302,7 +301,7 @@ export default function files() {
             </SheetHeader>
             <Separator />
 
-            <ScrollArea className="flex-1 min-h-0 px-4">
+            <ScrollArea className="flex-1 min-h-0 px-4 py-4">
               <FieldSet>
                 <FieldGroup>
                   <h2>Request Details</h2>
