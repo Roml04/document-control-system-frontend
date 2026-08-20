@@ -6,15 +6,24 @@ import enumFormatter from "~/utils/enumFormatter";
 import { REQUESTSTATUS } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
 
-import { Outlet, useNavigate } from "react-router";
-import { Sheet, SheetContent, SheetHeader } from "~/components/ui/sheet";
-import { useEffect, useReducer, useState } from "react";
 import {
-  Item,
-  ItemContent,
-  ItemDescription,
-  ItemTitle,
-} from "~/components/ui/item";
+  Sheet,
+  SheetContent,
+  SheetFooter,
+  SheetHeader,
+} from "~/components/ui/sheet";
+import { useEffect, useReducer, useState } from "react";
+
+import { File } from "lucide-react";
+import { Badge } from "~/components/ui/badge";
+import {
+  Attachment,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+  AttachmentTrigger,
+} from "~/components/ui/attachment";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -55,7 +64,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    * Hook initialization
    */
   const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
-  const navigate = useNavigate();
 
   console.log(`INFO | apiResponse.ok: ${ok}`);
   console.log(`INFO | REQUESTS:`, data);
@@ -126,7 +134,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
     status: "w-full px-2 col-span-3 content-center",
     author: "w-full px-2 col-span-2 content-center",
     uploadDate: "w-full px-2 w-full col-span-3 content-center",
-    // action: "w-full px-2 col-span-1 content-center",
   };
 
   return (
@@ -217,36 +224,96 @@ export default function requests({ loaderData }: Route.ComponentProps) {
           <div className="flex h-full min-h-0 flex-col">
             <SheetHeader>
               <h1>{viewRequestState.title}</h1>
-              <p>
-                {`${viewRequestState.user?.firstName ?? ""} ${
-                  viewRequestState.user?.lastName ?? ""
-                }`.trim() ?? "Unknown User"}
-              </p>
+              <Badge title="Authored by" className="cursor-pointer">
+                {viewRequestState.status
+                  ? enumFormatter(viewRequestState.status)
+                  : "Unknown Status"}
+              </Badge>
             </SheetHeader>
             <Separator />
-            <ScrollArea className="flex-1 min-h-0 px-4 py-4">
-              <div className="flex flex-col gap-2">
-                <h2>Request Details</h2>
-                <div className="flex flex-col gap-1">
-                  <div className="grid grid-cols-3">
-                    <h3>Reason</h3>
-                    <p className="">{viewRequestState.reason}</p>
+            <ScrollArea className="flex-1 min-h-0 px-4 pt-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col">
+                  <h2>Request Details</h2>
+                  <div className="px-4">
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="col-span-1">Reason</h3>
+                      <p className="col-span-3">{viewRequestState.reason} </p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Author</h3>
+                      <p className="py-2 col-span-3">
+                        {`${viewRequestState.user?.firstName ?? ""} ${
+                          viewRequestState.user?.lastName ?? ""
+                        }`.trim() ?? "Unknown User"}
+                      </p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Upload Date</h3>
+
+                      <p className="py-2 col-span-3">
+                        {viewRequestState.uploadDate}
+                      </p>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3">
-                    <h3>Status</h3>
-                    <p className="">
-                      {viewRequestState.status
-                        ? enumFormatter(viewRequestState.status)
-                        : "Unknown Status"}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-3">
-                    <h3>Upload Date</h3>
-                    <p className="">{viewRequestState.uploadDate}</p>
+                </div>
+                <Separator />
+                <div className="flex flex-col">
+                  <h2>File Details</h2>
+                  <div className="px-4">
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Originator</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Department</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Revision Number</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Revision Details</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Upload Date</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Revision Date</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Approver</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
+                    <div className="py-4 grid grid-cols-4">
+                      <h3 className="py-2 col-span-1">Approved Date</h3>
+                      <p className="py-2 col-span-3">N/A</p>
+                    </div>
                   </div>
                 </div>
               </div>
             </ScrollArea>
+            <Separator />
+            <SheetFooter>
+              <h3>Uploaded File</h3>
+              <Attachment className="w-full">
+                <AttachmentMedia>
+                  <File />
+                </AttachmentMedia>
+                <AttachmentContent>
+                  <AttachmentTitle>File Title</AttachmentTitle>
+                  <AttachmentDescription>File Type</AttachmentDescription>
+                </AttachmentContent>
+                <AttachmentTrigger
+                  onClick={() => console.log("File Opened")}
+                  className="cursor-pointer"
+                ></AttachmentTrigger>
+              </Attachment>
+            </SheetFooter>
           </div>
         </SheetContent>
       </Sheet>
