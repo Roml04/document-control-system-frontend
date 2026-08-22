@@ -1,7 +1,7 @@
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/requests";
-import type { UserType } from "~/constants/types";
+import type { UserType, VersionType } from "~/constants/types";
 import enumFormatter from "~/utils/enumFormatter";
 import { REQUESTSTATUS } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -14,7 +14,7 @@ import {
 } from "~/components/ui/sheet";
 import { useEffect, useReducer, useState } from "react";
 
-import { File } from "lucide-react";
+import { File, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import {
   Attachment,
@@ -24,6 +24,15 @@ import {
   AttachmentTitle,
   AttachmentTrigger,
 } from "~/components/ui/attachment";
+import { toast } from "sonner";
+import fallbackIfNull from "~/utils/fallbackIfNull";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -37,6 +46,7 @@ type ViewRequestStateType = {
   status: REQUESTSTATUS | null;
   uploadDate: string | null;
   user: UserType | null;
+  version: VersionType | null;
 };
 
 type ViewRequestActionType = {
@@ -79,6 +89,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
     status: null,
     uploadDate: null,
     user: null,
+    version: null,
   };
 
   function viewRequestReducer(
@@ -117,9 +128,40 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    * Functions
    */
 
-  const renderRequestOnSheet = (request: ViewRequestStateType) => {
-    viewRequestDispatch({ type: ACTION.SETDETAILS, payload: request });
-    setOpenReqItemSheet(true);
+  const renderRequestOnSheet = async (request: ViewRequestStateType) => {
+    /**
+     * Fetch related version
+     */
+
+    try {
+      if (!request.version) {
+        return toast.success("Failed to show file details", {
+          position: "top-center",
+        });
+      }
+
+      const apiResponse = await apiFetch(`/version/${request.version.id}`);
+
+      console.log("INFO | RESPONSE OK:", apiResponse.ok);
+      console.log("INFO | RESPONSE DATA:", apiResponse.data);
+      console.log("INFO | RESPONSE MESSAGE:", apiResponse.message);
+
+      viewRequestDispatch({
+        type: ACTION.SETDETAILS,
+        payload: { ...request, version: apiResponse.data },
+        // payload: { ...request, version: apiResponse.data },
+      });
+
+      setOpenReqItemSheet(true);
+    } catch (error) {
+      toast.error("", {
+        position: "top-center",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again in a moment",
+      });
+    }
   };
 
   /**
@@ -236,83 +278,177 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 <div className="flex flex-col">
                   <h2>Request Details</h2>
                   <div className="px-4">
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="col-span-1">Reason</h3>
-                      <p className="col-span-3">{viewRequestState.reason} </p>
+                    <div className="py-4 grid grid-cols-6">
+                      <h3 className="py-2 col-span-2">Reason</h3>
+                      <p className="py-2 col-span-4">
+                        {viewRequestState.reason}{" "}
+                      </p>
                     </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Author</h3>
-                      <p className="py-2 col-span-3">
+                    <div className="py-4 grid grid-cols-6">
+                      <h3 className="py-2 col-span-2">Author</h3>
+                      <p className="py-2 col-span-4">
                         {`${viewRequestState.user?.firstName ?? ""} ${
                           viewRequestState.user?.lastName ?? ""
                         }`.trim() ?? "Unknown User"}
                       </p>
                     </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Upload Date</h3>
+                    <div className="py-4 grid grid-cols-6">
+                      <h3 className="py-2 col-span-2">Upload Date</h3>
 
-                      <p className="py-2 col-span-3">
+                      <p className="py-2 col-span-4">
                         {viewRequestState.uploadDate}
                       </p>
                     </div>
                   </div>
                 </div>
                 <Separator />
-                <div className="flex flex-col">
-                  <h2>File Details</h2>
-                  <div className="px-4">
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Originator</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Department</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Revision Number</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Revision Details</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Upload Date</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Revision Date</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Approver</h3>
-                      <p className="py-2 col-span-3">N/A</p>
-                    </div>
-                    <div className="py-4 grid grid-cols-4">
-                      <h3 className="py-2 col-span-1">Approved Date</h3>
-                      <p className="py-2 col-span-3">N/A</p>
+                {viewRequestState.version ? (
+                  <div className="flex flex-col">
+                    <h2>File Details</h2>
+                    <div className="px-4">
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Title</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.fileTitle,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Type</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.fileType,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Originator</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.originator,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Department</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.department,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Revision Number</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.revisionNumber,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Revision Details</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.revisionDetails,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Upload Date</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.uploadDate,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Revision Date</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.revisionDetails,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Approver</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.approver,
+                            "--",
+                          )}
+                        </p>
+                      </div>
+                      <div className="py-4 grid grid-cols-6">
+                        <h3 className="py-2 col-span-2">Approved Date</h3>
+                        <p className="py-2 col-span-4">
+                          {fallbackIfNull(
+                            viewRequestState.version.approvedDate,
+                            "--",
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  <Empty className="h-full border-dashed gap-0">
+                    <EmptyMedia variant={"icon"}>
+                      <TriangleAlert />
+                    </EmptyMedia>
+                    <EmptyHeader>
+                      <EmptyTitle>No version</EmptyTitle>
+                      <EmptyDescription className="text-pretty">
+                        This request is missing its associated version. Please
+                        contact your administrator for assistance.
+                      </EmptyDescription>
+                    </EmptyHeader>
+                  </Empty>
+                  // <div className="flex flex-1 w-full h-svh justify-center items-center">
+                  //   <p>This request does not have a version yet.</p>
+                  // </div>
+                )}
               </div>
             </ScrollArea>
             <Separator />
             <SheetFooter>
-              <h3>Uploaded File</h3>
-              <Attachment className="w-full">
-                <AttachmentMedia>
-                  <File />
-                </AttachmentMedia>
-                <AttachmentContent>
-                  <AttachmentTitle>File Title</AttachmentTitle>
-                  <AttachmentDescription>File Type</AttachmentDescription>
-                </AttachmentContent>
-                <AttachmentTrigger
-                  onClick={() => console.log("File Opened")}
-                  className="cursor-pointer"
-                ></AttachmentTrigger>
-              </Attachment>
+              {viewRequestState.version === null ||
+              viewRequestState.version.filePath === null ? (
+                <div></div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <h3>Uploaded File</h3>
+                  <Attachment className="w-full">
+                    <AttachmentMedia>
+                      <File />
+                    </AttachmentMedia>
+                    <AttachmentContent>
+                      <AttachmentTitle>
+                        {viewRequestState.version?.fileTitle ?? "Unknown file"}
+                      </AttachmentTitle>
+                      <AttachmentDescription>
+                        {viewRequestState.version?.fileType ?? "Unknown type"}
+                      </AttachmentDescription>
+                    </AttachmentContent>
+                    <AttachmentTrigger
+                      onClick={() =>
+                        console.log(
+                          "INFO | Opening file",
+                          viewRequestState.version?.filePath,
+                        )
+                      }
+                      className="cursor-pointer"
+                    ></AttachmentTrigger>
+                  </Attachment>
+                </div>
+              )}
             </SheetFooter>
           </div>
         </SheetContent>

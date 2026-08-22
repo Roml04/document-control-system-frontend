@@ -14,3 +14,21 @@ export enum REQUESTSTATUS {
   APPROVED = "approved",
   DENIED = "denied",
 }
+
+export enum REQUESTTYPE {
+  UPLOAD = "upl",
+  REVISION = "rev",
+  RESUBMISSION = "resub",
+}
+
+export enum FILETYPE {
+  DOCUMENT = "document",
+  CHECKLIST = "checklist",
+  FORM = "form",
+}
+
+export enum VERSIONSTATUS {
+  PENDING = "pending",
+  PUBLISHED = "published",
+  REJECTED = "rejected",
+}
