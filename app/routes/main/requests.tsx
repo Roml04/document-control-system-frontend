@@ -75,9 +75,9 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    */
   const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
 
-  console.log(`INFO | apiResponse.ok: ${ok}`);
-  console.log(`INFO | REQUESTS:`, data);
-  console.log(`INFO | ${message}`);
+  console.log(`INFO | RESPONSE OK: ${ok}`);
+  console.log(`INFO | RESPONSE DATA:`, data);
+  console.log(`INFO | RESPONSE MESSAGE ${message}`);
 
   /**
    * View request reducer
@@ -212,6 +212,8 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 {data.map((request) => {
                   let textStyle = "";
 
+                  console.log("INFO | REQUEST:", request);
+
                   switch (request.status) {
                     case "denied":
                       textStyle = "text-destructive";
@@ -319,7 +321,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                         <h3 className="py-2 col-span-2">Type</h3>
                         <p className="py-2 col-span-4">
                           {fallbackIfNull(
-                            viewRequestState.version.fileType,
+                            enumFormatter(viewRequestState.version.fileType),
                             "--",
                           )}
                         </p>
@@ -419,8 +421,8 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             </ScrollArea>
             <Separator />
             <SheetFooter>
-              {viewRequestState.version === null ||
-              viewRequestState.version.filePath === null ? (
+              {!viewRequestState.version ||
+              !viewRequestState.version?.filePath ? (
                 <div></div>
               ) : (
                 <div className="flex flex-col gap-2">

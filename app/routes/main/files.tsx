@@ -20,6 +20,7 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
+  FieldTitle,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -50,6 +51,8 @@ enum ACTION {
 type UploadFileStateType = {
   title: string;
   reason: string;
+  fileTitle: string;
+  fileType: string;
   originator: string;
   department: string;
   revisionNumber: string;
@@ -66,6 +69,7 @@ export default function files() {
   /**
    * Mock data
    */
+  const fileTypes = ["Document", "Checklist", "Form"];
   const files = [
     {
       id: 1,
@@ -103,6 +107,8 @@ export default function files() {
   const uploadFileInitialState = {
     title: "",
     reason: "",
+    fileTitle: "",
+    fileType: "",
     originator: "",
     department: "",
     revisionNumber: "",
@@ -157,24 +163,31 @@ export default function files() {
       console.log("uploadFileState:", uploadFileState);
       console.log("File:", file);
 
+      const formData = new FormData();
+
+      formData.append("type", "upl");
+      formData.append("title", uploadFileState.title);
+      formData.append("reason", uploadFileState.reason);
+      formData.append("fileTitle", uploadFileState.fileTitle);
+      formData.append("fileType", uploadFileState.fileType);
+      formData.append("originator", uploadFileState.originator);
+      formData.append("department", uploadFileState.department);
+      formData.append("revisionNumber", uploadFileState.revisionNumber);
+      formData.append("revisionDetails", uploadFileState.revisionDetails);
+      formData.append("approver", uploadFileState.approver);
+      formData.append("file", file);
+      // formData.append("fileId", "1");
+
       const apiResponse = await apiFetch("/request/create", {
         method: "POST",
-        body: JSON.stringify({
-          type: "upl",
-          title: uploadFileState.title,
-          reason: uploadFileState.reason,
-          originator: uploadFileState.originator,
-          department: uploadFileState.department,
-          revisionNumber: uploadFileState.revisionNumber,
-          revisionDetails: uploadFileState.revisionDetails,
-          approver: uploadFileState.approver,
-          fileName: file.name,
-          fileId: null,
-        }),
+        body: formData,
       });
 
+      console.log("INFO | RESPONSE OK", apiResponse.ok);
+      console.log("INFO | RESPONSE DATA", apiResponse.data);
+
       if (!apiResponse.ok) {
-        console.log();
+        console.log("INFO | MESSAGE", apiResponse.message);
         return toast.error("Submission failed", {
           description: apiResponse.message,
           position: "top-center",
@@ -341,6 +354,49 @@ export default function files() {
                 <FieldGroup className="grid grid-cols-2">
                   <h2>File Details</h2>
                   <Field className="col-span-2">
+                    <FieldLabel htmlFor="fileTitle">File Title</FieldLabel>
+                    <Input
+                      id="fileTitle"
+                      type="text"
+                      value={uploadFileState.fileTitle}
+                      onChange={(e) =>
+                        uploadFileDispatch({
+                          type: ACTION.SETFIELD,
+                          payload: { fileTitle: e.target.value },
+                        })
+                      }
+                      placeholder="e.g., Waste Management Procedure"
+                      required
+                    />
+                  </Field>
+                  <Field className="col-span-2">
+                    <FieldLabel htmlFor="fileType">File Type</FieldLabel>
+                    <Select
+                      value={uploadFileState.fileType}
+                      onValueChange={(value) =>
+                        uploadFileDispatch({
+                          type: ACTION.SETFIELD,
+                          payload: { fileType: value },
+                        })
+                      }
+                      required
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select the file type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          <SelectLabel>File Type</SelectLabel>
+                          {fileTypes.map((type, index) => (
+                            <SelectItem key={index} value={type.toLowerCase()}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                  <Field className="col-span-2">
                     <FieldLabel htmlFor="originator">Originator</FieldLabel>
                     <Input
                       id="originator"
@@ -464,7 +520,7 @@ export default function files() {
                   <Field className="col-span-2">
                     {file ? (
                       <>
-                        <FieldLabel htmlFor="">File</FieldLabel>
+                        <FieldLabel>File</FieldLabel>
                         <Attachment>
                           <AttachmentMedia>
                             <FileIcon />
