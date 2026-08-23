@@ -1,6 +1,6 @@
 import { useSessionStore } from "../../stores/sessionStore";
 
-const BASE_URL = "http://document-control-system-backend.test/api";
+export const BASE_URL = "http://document-control-system-backend.test/api";
 
 export const defaultHeaders: HeadersInit = {
   "Content-Type": "application/json",

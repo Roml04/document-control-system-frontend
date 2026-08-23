@@ -33,6 +33,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
+import { redirect } from "react-router";
+import { apiFileFetch } from "~/utils/apiFileFetch";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -162,6 +164,37 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             : "Something went wrong. Please try again in a moment",
       });
     }
+  };
+
+  const accessUploadedFile = async () => {
+    if (!viewRequestState.version) {
+      return;
+    }
+
+    const response = await apiFileFetch(
+      `/version/${viewRequestState.version.id}/file`,
+    );
+
+    if (!response.ok) {
+      const apiResponse = await response.json();
+      console.log("WOW", apiResponse);
+
+      toast.error("Could not open the file", {
+        position: "top-center",
+        description: apiResponse.message,
+      });
+
+      return;
+    }
+
+    console.log("INFO | RESPONSE", response);
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
+    window.open(url, "_blank");
+
+    URL.revokeObjectURL(url);
   };
 
   /**
@@ -413,9 +446,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       </EmptyDescription>
                     </EmptyHeader>
                   </Empty>
-                  // <div className="flex flex-1 w-full h-svh justify-center items-center">
-                  //   <p>This request does not have a version yet.</p>
-                  // </div>
                 )}
               </div>
             </ScrollArea>
@@ -423,7 +453,11 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             <SheetFooter>
               {!viewRequestState.version ||
               !viewRequestState.version?.filePath ? (
-                <div></div>
+                <div>
+                  <p className="text-muted-foreground">
+                    The uploaded file could not be found.
+                  </p>
+                </div>
               ) : (
                 <div className="flex flex-col gap-2">
                   <h3>Uploaded File</h3>
@@ -440,12 +474,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       </AttachmentDescription>
                     </AttachmentContent>
                     <AttachmentTrigger
-                      onClick={() =>
-                        console.log(
-                          "INFO | Opening file",
-                          viewRequestState.version?.filePath,
-                        )
-                      }
+                      onClick={accessUploadedFile}
                       className="cursor-pointer"
                     ></AttachmentTrigger>
                   </Attachment>
