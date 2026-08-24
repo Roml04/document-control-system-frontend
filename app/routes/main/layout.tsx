@@ -18,6 +18,7 @@ import {
 import { useSessionStore } from "../../../stores/sessionStore";
 import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 export default function layout() {
   const navigate = useNavigate();
@@ -80,16 +81,18 @@ export default function layout() {
                     Files
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      navigate("/requests");
-                    }}
-                  >
-                    <FileCheckCorner />
-                    Requests
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {allowedRoles("*") && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        navigate("/requests");
+                      }}
+                    >
+                      <FileCheckCorner />
+                      Requests
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>

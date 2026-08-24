@@ -6,6 +6,9 @@ import type {
   VERSIONSTATUS,
 } from "./enums";
 
+export type Role =
+  "originator" | "coordinator" | "superior" | "manager" | "sysadmin";
+
 export type UserType = {
   id: number;
   email: string;
@@ -33,7 +36,7 @@ export type VersionType = {
   revisionNumber: string;
   revisionDetails: string;
   uploadDate: string;
-  revisonDate: string;
+  revisionDate: string;
   approver: string;
   approvedDate: string;
   status: VERSIONSTATUS;

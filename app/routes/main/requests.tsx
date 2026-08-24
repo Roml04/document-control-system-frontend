@@ -14,7 +14,7 @@ import {
 } from "~/components/ui/sheet";
 import { useEffect, useReducer, useState } from "react";
 
-import { File, TriangleAlert } from "lucide-react";
+import { Ellipsis, File, PackageOpen, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import {
   Attachment,
@@ -33,8 +33,16 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-import { redirect } from "react-router";
 import { apiFileFetch } from "~/utils/apiFileFetch";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -61,7 +69,10 @@ export async function clientLoader() {
 
   return apiResponse as {
     ok: boolean;
-    data: ViewRequestStateType[];
+    data: {
+      myRequests: ViewRequestStateType[];
+      forApprovals: ViewRequestStateType[];
+    };
     message: string;
   };
 }
@@ -70,7 +81,27 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   /**
    * Data from server
    */
+  let myRequests: ViewRequestStateType[] = [];
+  let forApprovals: ViewRequestStateType[] = [];
+
   const { ok, data, message } = loaderData;
+
+  console.log("INFO | LOADER DATA", data);
+
+  if (data.myRequests) {
+    myRequests = data.myRequests;
+  }
+
+  if (data.forApprovals) {
+    forApprovals = data.forApprovals;
+  }
+
+  console.log("INFO | MY REQUESTS", myRequests);
+  console.log("INFO | FOR APPROVALS", forApprovals);
+  console.log(
+    "INFO | CHECK IF BOTH ARRAYS ARE EMPTY",
+    myRequests.length !== 0 || forApprovals.length !== 0,
+  );
 
   /**
    * Hook initialization
@@ -123,7 +154,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    */
   useEffect(() => {
     console.log("INFO | Set data to to reducer state");
-    console.log(viewRequestState);
+    console.log("INFO |", viewRequestState);
   }, [viewRequestState]);
 
   /**
@@ -131,11 +162,9 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    */
 
   const renderRequestOnSheet = async (request: ViewRequestStateType) => {
-    /**
-     * Fetch related version
-     */
-
     try {
+      console.log("INFO | RENDER REQUEST ON SHEET", request);
+
       if (!request.version) {
         return toast.success("Failed to show file details", {
           position: "top-center",
@@ -201,7 +230,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    * styling variables
    */
 
-  const gridStyling = "grid grid-cols-20";
+  const gridStyling = "grid grid-cols-21";
 
   const columnWidths = {
     title: "w-full px-2 col-span-5 content-center",
@@ -209,6 +238,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
     status: "w-full px-2 col-span-3 content-center",
     author: "w-full px-2 col-span-2 content-center",
     uploadDate: "w-full px-2 w-full col-span-3 content-center",
+    action: "w-full px-2 w-full col-span-1 content-center",
   };
 
   return (
@@ -216,84 +246,229 @@ export default function requests({ loaderData }: Route.ComponentProps) {
       <div className="flex flex-col gap-4">
         <h1>Requests</h1>
         <Separator />
-        <div className="flex-1">
-          <div>
-            {/* HEADER */}
-            <div className={`${gridStyling} place-items-center py-2`}>
-              <div className={`${columnWidths.title} `}>
-                <h3>Title</h3>
-              </div>
-              <div
-                className={`${columnWidths.reason} border-x border-gray-200`}
-              >
-                <h3>Reason</h3>
-              </div>
-              <div className={`${columnWidths.status}`}>
-                <h3>Status</h3>
-              </div>
-              <div
-                className={`${columnWidths.author} border-x border-gray-200`}
-              >
-                <h3>Author</h3>
-              </div>
-              <div className={`${columnWidths.uploadDate}`}>
-                <h3>Upload Date</h3>
-              </div>
+        <div className="h-[45em]">
+          {/* HEADER */}
+          <div className={`${gridStyling} place-items-center py-2 mb-2`}>
+            <div className={`${columnWidths.title} `}>
+              <h3>Title</h3>
             </div>
-            <ul>
-              <ScrollArea className="h-[52em]">
-                {data.map((request) => {
-                  let textStyle = "";
-
-                  console.log("INFO | REQUEST:", request);
-
-                  switch (request.status) {
-                    case "denied":
-                      textStyle = "text-destructive";
-                      break;
-
-                    case "approved":
-                      textStyle = "text-green-600";
-                      break;
-
-                    default:
-                      textStyle = "text-gray-500";
-                  }
-
-                  return (
-                    <li
-                      className={`${gridStyling} cursor-pointer py-3 border-t border-gray-200 rounded-lg hover:bg-accent`}
-                      key={request.id}
-                      onClick={() => renderRequestOnSheet(request)}
-                    >
-                      <div className={`${columnWidths.title} `}>
-                        <p>{request.title}</p>
-                      </div>
-                      <div className={`${columnWidths.reason}`}>
-                        <p>{request.reason}</p>
-                      </div>
-                      <div className={`${columnWidths.status} ${textStyle}`}>
-                        <p>
-                          {request.status
-                            ? enumFormatter(request.status)
-                            : "Unknown Status"}
-                        </p>
-                      </div>
-                      <div className={`${columnWidths.author}`}>
-                        <p>
-                          {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
-                            "Unknown User"}
-                        </p>
-                      </div>
-                      <div className={`${columnWidths.uploadDate}`}>
-                        <p>{request.uploadDate}</p>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ScrollArea>
-            </ul>
+            <div className={`${columnWidths.reason} border-x border-gray-200`}>
+              <h3>Reason</h3>
+            </div>
+            <div className={`${columnWidths.status}`}>
+              <h3>Status</h3>
+            </div>
+            <div className={`${columnWidths.author} border-x border-gray-200`}>
+              <h3>Author</h3>
+            </div>
+            <div className={`${columnWidths.uploadDate}`}>
+              <h3>Upload Date</h3>
+            </div>
+            <div className={`${columnWidths.action}`}>
+              {allowedRoles([
+                "coordinator",
+                "superior",
+                "manager",
+                "sysadmin",
+              ]) && <h3>Action</h3>}
+            </div>
           </div>
+          {myRequests.length !== 0 || forApprovals.length !== 0 ? (
+            <div>
+              <ul>
+                <ScrollArea className="h-[52em]">
+                  {/* MY REQUESTS */}
+                  {myRequests.length !== 0 && (
+                    <div className="px-2">
+                      <h3>My Requests</h3>
+                    </div>
+                  )}
+                  {myRequests.map((request, index) => {
+                    let textStyle = "";
+
+                    console.log("INFO | REQUEST:", request);
+
+                    switch (request.status) {
+                      case "denied":
+                        textStyle = "text-destructive";
+                        break;
+
+                      case "approved":
+                        textStyle = "text-green-600";
+                        break;
+
+                      default:
+                        textStyle = "text-gray-500";
+                    }
+
+                    return (
+                      <li
+                        className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
+                        key={request.id}
+                      >
+                        <div
+                          className={`col-span-20 py-5 grid grid-cols-20`}
+                          onClick={() => renderRequestOnSheet(request)}
+                        >
+                          <div className={`${columnWidths.title} `}>
+                            <p>{request.title}</p>
+                          </div>
+                          <div className={`${columnWidths.reason}`}>
+                            <p>{request.reason}</p>
+                          </div>
+                          <div
+                            className={`${columnWidths.status} ${textStyle}`}
+                          >
+                            <p>
+                              {request.status
+                                ? enumFormatter(request.status)
+                                : "Unknown Status"}
+                            </p>
+                          </div>
+                          <div className={`${columnWidths.author}`}>
+                            <p>
+                              {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
+                                "Unknown User"}
+                            </p>
+                          </div>
+                          <div className={`${columnWidths.uploadDate}`}>
+                            <p>{request.uploadDate}</p>
+                          </div>
+                        </div>
+                        {allowedRoles([
+                          "coordinator",
+                          "superior",
+                          "manager",
+                          "sysadmin",
+                        ]) && (
+                          <div className={`${columnWidths.action}`}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger onClick={() => {}}>
+                                <Button size={"icon"} variant={"ghost"}>
+                                  <Ellipsis />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuGroup>
+                                  {/* <DropdownMenuLabel>Title</DropdownMenuLabel> */}
+                                  <DropdownMenuItem
+                                    onClick={() => console.log("CLICKED")}
+                                  >
+                                    Review
+                                  </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+
+                  {forApprovals.length !== 0 && (
+                    <div className="px-2">
+                      <h3>For Approvals</h3>
+                    </div>
+                  )}
+                  {/* For Approvals */}
+                  {forApprovals.map((request, index) => {
+                    let textStyle = "";
+
+                    console.log("INFO | REQUEST:", request);
+
+                    switch (request.status) {
+                      case "denied":
+                        textStyle = "text-destructive";
+                        break;
+
+                      case "approved":
+                        textStyle = "text-green-600";
+                        break;
+
+                      default:
+                        textStyle = "text-gray-500";
+                    }
+
+                    return (
+                      <li
+                        className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
+                        key={request.id}
+                      >
+                        <div
+                          className={`col-span-20 py-5 grid grid-cols-20`}
+                          onClick={() => renderRequestOnSheet(request)}
+                        >
+                          <div className={`${columnWidths.title} `}>
+                            <p>{request.title}</p>
+                          </div>
+                          <div className={`${columnWidths.reason}`}>
+                            <p>{request.reason}</p>
+                          </div>
+                          <div
+                            className={`${columnWidths.status} ${textStyle}`}
+                          >
+                            <p>
+                              {request.status
+                                ? enumFormatter(request.status)
+                                : "Unknown Status"}
+                            </p>
+                          </div>
+                          <div className={`${columnWidths.author}`}>
+                            <p>
+                              {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
+                                "Unknown User"}
+                            </p>
+                          </div>
+                          <div className={`${columnWidths.uploadDate}`}>
+                            <p>{request.uploadDate}</p>
+                          </div>
+                        </div>
+                        {allowedRoles([
+                          "coordinator",
+                          "superior",
+                          "manager",
+                          "sysadmin",
+                        ]) && (
+                          <div className={`${columnWidths.action}`}>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger onClick={() => {}}>
+                                <Button size={"icon"} variant={"ghost"}>
+                                  <Ellipsis />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuGroup>
+                                  {/* <DropdownMenuLabel>Title</DropdownMenuLabel> */}
+                                  <DropdownMenuItem
+                                    onClick={() => console.log("CLICKED")}
+                                  >
+                                    Review
+                                  </DropdownMenuItem>
+                                </DropdownMenuGroup>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ScrollArea>
+              </ul>
+            </div>
+          ) : (
+            <Empty className="h-full border-dashed gap-1">
+              <EmptyMedia variant={"icon"}>
+                <PackageOpen />
+              </EmptyMedia>
+              <EmptyHeader className="gap-1">
+                <EmptyTitle>No requests to display</EmptyTitle>
+                <EmptyDescription className="text-pretty">
+                  There are currently no requests available for you to view or
+                  review.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          )}
         </div>
       </div>
       <Sheet open={openReqItemSheet} onOpenChange={setOpenReqItemSheet}>
@@ -408,7 +583,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                         <h3 className="py-2 col-span-2">Revision Date</h3>
                         <p className="py-2 col-span-4">
                           {fallbackIfNull(
-                            viewRequestState.version.revisionDetails,
+                            viewRequestState.version.revisionDate,
                             "--",
                           )}
                         </p>

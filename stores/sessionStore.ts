@@ -1,11 +1,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { Role } from "~/constants/types";
 
 export type SessionStateType = {
   userId: number | null;
   firstName: string;
   lastName: string;
-  role: string;
+  role: Role | null;
   token: string | null;
 };
 
@@ -19,7 +20,7 @@ export const useSessionStore = create<SessionStateType & SessionActionType>()(
       userId: null,
       firstName: "",
       lastName: "",
-      role: "user",
+      role: null,
       token: null,
       updateSession: (session) =>
         set((state) => ({
