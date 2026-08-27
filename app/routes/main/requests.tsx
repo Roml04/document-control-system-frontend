@@ -43,6 +43,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { allowedRoles } from "~/utils/allowedRoles";
+import { Outlet, useNavigate } from "react-router";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -99,7 +100,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   console.log("INFO | MY REQUESTS", myRequests);
   console.log("INFO | FOR APPROVALS", forApprovals);
   console.log(
-    "INFO | CHECK IF BOTH ARRAYS ARE EMPTY",
+    "INFO | CHECK IF EITHER OF THE ARRAYS ARE NOT EMPTY",
     myRequests.length !== 0 || forApprovals.length !== 0,
   );
 
@@ -107,6 +108,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    * Hook initialization
    */
   const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
+  const navigate = useNavigate();
 
   console.log(`INFO | RESPONSE OK: ${ok}`);
   console.log(`INFO | RESPONSE DATA:`, data);
@@ -185,7 +187,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
 
       setOpenReqItemSheet(true);
     } catch (error) {
-      toast.error("", {
+      toast.error("An error occurred", {
         position: "top-center",
         description:
           error instanceof Error
@@ -344,15 +346,19 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                           <div className={`${columnWidths.action}`}>
                             <DropdownMenu>
                               <DropdownMenuTrigger onClick={() => {}}>
-                                <Button size={"icon"} variant={"ghost"}>
-                                  <Ellipsis />
-                                </Button>
+                                <Ellipsis
+                                  size={16}
+                                  className="cursor-pointer"
+                                />
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuGroup>
-                                  {/* <DropdownMenuLabel>Title</DropdownMenuLabel> */}
                                   <DropdownMenuItem
-                                    onClick={() => console.log("CLICKED")}
+                                    onClick={() => {
+                                      navigate(
+                                        `/requests/${request.id}/review`,
+                                      );
+                                    }}
                                   >
                                     Review
                                   </DropdownMenuItem>
@@ -430,23 +436,37 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                           "sysadmin",
                         ]) && (
                           <div className={`${columnWidths.action}`}>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger onClick={() => {}}>
-                                <Button size={"icon"} variant={"ghost"}>
-                                  <Ellipsis />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuGroup>
-                                  {/* <DropdownMenuLabel>Title</DropdownMenuLabel> */}
-                                  <DropdownMenuItem
-                                    onClick={() => console.log("CLICKED")}
-                                  >
-                                    Review
-                                  </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                            {!request.version?.id ? (
+                              <div
+                                title="Missing version"
+                                className={`${columnWidths.action}`}
+                              >
+                                {/* NOTE: MAKE THE VALUES OF COLOR ENUM */}
+                                <TriangleAlert size={18} color="#e7000b" />
+                              </div>
+                            ) : (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger>
+                                  <Button size={"icon"} variant={"ghost"}>
+                                    <Ellipsis />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuGroup>
+                                    {/* <DropdownMenuLabel>Title</DropdownMenuLabel> */}
+                                    <DropdownMenuItem
+                                      onClick={() =>
+                                        navigate(
+                                          `/requests/${request.id}/review`,
+                                        )
+                                      }
+                                    >
+                                      Review
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </div>
                         )}
                       </li>
@@ -491,7 +511,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Reason</h3>
                       <p className="py-2 col-span-4">
-                        {viewRequestState.reason}{" "}
+                        {viewRequestState.reason}
                       </p>
                     </div>
                     <div className="py-4 grid grid-cols-6">
