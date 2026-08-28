@@ -19,6 +19,8 @@ import { useSessionStore } from "../../../stores/sessionStore";
 import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
 import { allowedRoles } from "~/utils/allowedRoles";
+import { formatUserName } from "~/utils/formatUserName";
+import avatarFallback from "~/utils/avatarFallback";
 
 export default function layout() {
   const navigate = useNavigate();
@@ -103,15 +105,11 @@ export default function layout() {
                   <Avatar>
                     <AvatarImage src="" />
                     <AvatarFallback>
-                      {`${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`}
+                      {avatarFallback(firstName, lastName)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <p>
-                      {firstName || lastName
-                        ? `${firstName ?? ""} ${lastName ?? ""}`.trim()
-                        : "Unknown User"}
-                    </p>
+                    <p>{formatUserName(firstName, lastName)}</p>
                     <h4>{role}</h4>
                   </div>
                 </SidebarMenuButton>

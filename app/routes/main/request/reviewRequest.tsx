@@ -19,20 +19,26 @@ import {
   Message,
   MessageAvatar,
   MessageContent,
-  MessageFooter,
+  MessageHeader,
 } from "~/components/ui/message";
 import { Bubble, BubbleContent, BubbleGroup } from "~/components/ui/bubble";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { toast } from "sonner";
+import type { CommentType, RequestType, VersionType } from "~/constants/types";
+import avatarFallback from "~/utils/avatarFallback";
+import { formatUserName } from "~/utils/formatUserName";
 
 export async function clientLoader({ params }: Route.ComponentProps) {
-  const apiResponse = await apiFetch(`/request/${params.id}/version`);
+  const apiResponse = await apiFetch(`/request/${params.id}`);
 
   console.log("INFO | REDIRECTED TO REVIEW REQUEST");
   console.log("INFO | PARAMS ID", params.id);
   console.log("INFO | API RESPONSE", apiResponse);
 
-  return apiResponse.data;
+  return apiResponse.data as RequestType & {
+    version: VersionType;
+    comment: CommentType[];
+  };
 }
 
 export default function reviewRequest({ loaderData }: Route.ComponentProps) {
@@ -42,7 +48,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
 
-  const { request } = loaderData;
+  const request = loaderData;
 
   console.log("INFO | REQUEST", request);
 
@@ -161,26 +167,41 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
           </div>
           <div className="flex flex-col p-4 gap-4">
             <p className="text-muted-foreground">Comments</p>
-            <div className="px-4 border-l">
-              <Message>
-                <MessageAvatar>
-                  <Avatar>
-                    <AvatarImage />
-                    <AvatarFallback>FH</AvatarFallback>
-                  </Avatar>
-                </MessageAvatar>
-                <MessageContent>
-                  <BubbleGroup className="gap-1">
-                    <Bubble variant={"muted"}>
-                      <BubbleContent>Test Comments</BubbleContent>
-                    </Bubble>
-                    <Bubble variant={"muted"}>
-                      <BubbleContent>Test Comments</BubbleContent>
-                    </Bubble>
-                  </BubbleGroup>
-                  <MessageFooter>{`Superior`}</MessageFooter>
-                </MessageContent>
-              </Message>
+            <div className="px-4 border-l flex flex-col gap-6">
+              {request.commenters.map((commenter, index) => {
+                return (
+                  <Message key={index}>
+                    <MessageAvatar
+                      title={formatUserName(
+                        commenter.firstName,
+                        commenter.lastName,
+                      )}
+                    >
+                      <Avatar>
+                        <AvatarImage />
+                        <AvatarFallback>
+                          {avatarFallback(
+                            commenter.firstName,
+                            commenter.lastName,
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
+                    </MessageAvatar>
+                    <MessageContent className="gap-0">
+                      <MessageHeader>{commenter.role}</MessageHeader>
+                      <BubbleGroup>
+                        {commenter.comments.map((comment, commentIndex) => {
+                          return (
+                            <Bubble variant={"muted"} key={commentIndex}>
+                              <BubbleContent>{comment.content}</BubbleContent>
+                            </Bubble>
+                          );
+                        })}
+                      </BubbleGroup>
+                    </MessageContent>
+                  </Message>
+                );
+              })}
             </div>
           </div>
         </div>

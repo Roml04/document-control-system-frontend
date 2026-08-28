@@ -68,6 +68,8 @@ type ViewRequestActionType = {
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
 
+  console.log("INFO | API REPONSE [/request]", apiResponse);
+
   return apiResponse as {
     ok: boolean;
     data: {
@@ -85,7 +87,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   let myRequests: ViewRequestStateType[] = [];
   let forApprovals: ViewRequestStateType[] = [];
 
-  const { ok, data, message } = loaderData;
+  const { data } = loaderData;
 
   console.log("INFO | LOADER DATA", data);
 
@@ -109,10 +111,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    */
   const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
   const navigate = useNavigate();
-
-  console.log(`INFO | RESPONSE OK: ${ok}`);
-  console.log(`INFO | RESPONSE DATA:`, data);
-  console.log(`INFO | RESPONSE MESSAGE ${message}`);
 
   /**
    * View request reducer
@@ -182,7 +180,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
       viewRequestDispatch({
         type: ACTION.SETDETAILS,
         payload: { ...request, version: apiResponse.data },
-        // payload: { ...request, version: apiResponse.data },
       });
 
       setOpenReqItemSheet(true);

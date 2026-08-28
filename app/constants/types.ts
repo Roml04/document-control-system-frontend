@@ -25,6 +25,7 @@ export type RequestType = {
   reason: string;
   status: REQUESTSTATUS;
   userId: number;
+  commenters: CommenterType[];
 };
 
 export type VersionType = {
@@ -43,5 +44,20 @@ export type VersionType = {
   fileName: string;
   filePath: string;
   fileId: number;
+  requestId: number;
+};
+
+export type CommenterType = {
+  userId: number;
+  firstName: string;
+  lastName: string;
+  role: string;
+  comments: CommentType[];
+};
+
+export type CommentType = {
+  id: number;
+  content: string;
+  userId: number;
   requestId: number;
 };

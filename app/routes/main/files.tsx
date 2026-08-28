@@ -178,7 +178,7 @@ export default function files() {
       formData.append("file", file);
       // formData.append("fileId", "1");
 
-      const apiResponse = await apiFetch("/request/create", {
+      const apiResponse = await apiFetch("/request", {
         method: "POST",
         body: formData,
       });
