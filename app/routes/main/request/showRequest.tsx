@@ -20,15 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Bubble, BubbleContent, BubbleGroup } from "~/components/ui/bubble";
 import avatarFallback from "~/utils/avatarFallback";
 import { formatUserName } from "~/utils/formatUserName";
-import {
-  Field,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from "~/components/ui/field";
-import { Textarea } from "~/components/ui/textarea";
 import { apiFetch } from "~/utils/apiFetch";
+import Header from "~/components/organisms/Header";
 
 export async function clientLoader({ params }: Route.ClientActionArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -42,17 +35,11 @@ export async function clientLoader({ params }: Route.ClientActionArgs) {
 }
 
 export default function showRequest({ loaderData }: Route.ComponentProps) {
-  const navigate = useNavigate();
-
   const request = loaderData;
 
   return (
     <div className="flex flex-col gap-2">
-      <header className="">
-        <Button variant={"ghost"} onClick={() => navigate(-1)}>
-          <ChevronLeft />
-        </Button>
-      </header>
+      <Header />
       <div className="flex gap-6 h-[55em]">
         <div className="flex flex-col gap-2 w-full">
           <div className="flex w-full justify-between items-center py-2">

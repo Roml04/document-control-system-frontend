@@ -485,11 +485,11 @@ export default function requests({ loaderData }: Route.ComponentProps) {
               </ul>
             </div>
           ) : (
-            <Empty className="h-full border-dashed gap-1">
-              <EmptyMedia variant={"icon"}>
-                <PackageOpen />
-              </EmptyMedia>
+            <Empty className="h-full">
               <EmptyHeader className="gap-1">
+                <EmptyMedia variant={"icon"}>
+                  <PackageOpen />
+                </EmptyMedia>
                 <EmptyTitle>No requests to display</EmptyTitle>
                 <EmptyDescription className="text-pretty">
                   There are currently no requests available for you to view or

@@ -61,3 +61,9 @@ export type CommentType = {
   userId: number;
   requestId: number;
 };
+
+export type FileType = {
+  id: number;
+  title: string;
+  type: FILETYPE;
+};

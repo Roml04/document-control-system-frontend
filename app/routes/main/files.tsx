@@ -42,6 +42,9 @@ import {
 } from "~/components/ui/sheet";
 import { Textarea } from "~/components/ui/textarea";
 import { apiFetch } from "~/utils/apiFetch";
+import type { Route } from "./+types/files";
+import type { FileType, UserType } from "~/constants/types";
+import { formatUserName } from "~/utils/formatUserName";
 
 enum ACTION {
   SETFIELD = "SETFIELD",
@@ -65,34 +68,46 @@ type UploadFileActionType = {
   payload: Partial<UploadFileStateType>;
 };
 
-export default function files() {
+export async function clientLoader() {
+  // const apiResponse = await apiFetch("/file");
+
+  const [fileResponse, userResponse] = await Promise.all([
+    apiFetch("/file"),
+    apiFetch("/user?role=superior"),
+  ]);
+
+  console.log("INFO | files.tsx clientLoader fileResponse", fileResponse);
+  console.log("INFO | files.tsx clientLoader userResponse", userResponse);
+
+  return {
+    files: fileResponse.data,
+    approvers: userResponse.data,
+  };
+}
+
+export default function files({ loaderData }: Route.ComponentProps) {
   /**
    * Mock data
    */
-  const fileTypes = ["Document", "Checklist", "Form"];
-  const files = [
-    {
-      id: 1,
-      title: "Waste Management Procedure",
-      type: "document",
-    },
-    {
-      id: 2,
-      title: "IT Checklist",
-      type: "checklist",
-    },
-    {
-      id: 3,
-      title: "Applicant Requirements",
-      type: "form",
-    },
-  ];
 
-  const approvers = [
-    { id: 1, name: "Haru Lumino" },
-    { id: 2, name: "Lia Huxley" },
-    { id: 3, name: "Ichirou Mitsuaki" },
-  ];
+  const fileTypes = ["Document", "Checklist", "Form"];
+
+  let files: FileType[] = [];
+  let approvers: UserType[] = [];
+
+  console.log("INFO | LOADER DATA", loaderData.files);
+
+  if (loaderData.files.length !== 0) {
+    files = loaderData.files;
+  }
+
+  console.log("INFO | FILES", files);
+
+  if (loaderData.approvers.length !== 0) {
+    approvers = loaderData.approvers;
+  }
+
+  console.log("INFO | APPROVERS", approvers);
 
   /**
    * Hook initialization
@@ -268,7 +283,7 @@ export default function files() {
         <Separator />
         <ul className="grid grid-cols-5 gap-4">
           {files.map((file) => (
-            <Card>
+            <Card key={file.id}>
               <img
                 src="https://avatar.vercel.sh/shadcn1"
                 className="aspect-video"
@@ -499,11 +514,20 @@ export default function files() {
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>Approvers</SelectLabel>
-                          {approvers.map((approver) => (
-                            <SelectItem key={approver.id} value={approver.name}>
-                              {approver.name}
-                            </SelectItem>
-                          ))}
+                          {approvers.map((approver) => {
+                            const approverName = formatUserName(
+                              approver.firstName,
+                              approver.lastName,
+                            );
+                            return (
+                              <SelectItem
+                                key={approver.id}
+                                value={approverName}
+                              >
+                                {approverName}
+                              </SelectItem>
+                            );
+                          })}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
