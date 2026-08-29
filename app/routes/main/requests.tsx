@@ -237,7 +237,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
     status: "w-full px-2 col-span-3 content-center",
     author: "w-full px-2 col-span-2 content-center",
     uploadDate: "w-full px-2 w-full col-span-3 content-center",
-    action: "w-full px-2 w-full col-span-1 content-center",
+    action: "w-full px-2 col-span-1 content-center",
   };
 
   return (
@@ -264,12 +264,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
               <h3>Upload Date</h3>
             </div>
             <div className={`${columnWidths.action}`}>
-              {allowedRoles([
-                "coordinator",
-                "superior",
-                "manager",
-                "sysadmin",
-              ]) && <h3>Action</h3>}
+              <h3>Action</h3>
             </div>
           </div>
           {myRequests.length !== 0 || forApprovals.length !== 0 ? (
@@ -334,22 +329,33 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                             <p>{request.uploadDate}</p>
                           </div>
                         </div>
-                        {allowedRoles([
-                          "coordinator",
-                          "superior",
-                          "manager",
-                          "sysadmin",
-                        ]) && (
-                          <div className={`${columnWidths.action}`}>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger onClick={() => {}}>
+
+                        <div className={`${columnWidths.action}`}>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger onClick={() => {}}>
+                              <Button size={"icon"} variant={"ghost"}>
                                 <Ellipsis
                                   size={16}
                                   className="cursor-pointer"
                                 />
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuGroup>
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuGroup>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    navigate(`/requests/${request.id}`);
+                                  }}
+                                >
+                                  View
+                                </DropdownMenuItem>
+
+                                {allowedRoles([
+                                  "coordinator",
+                                  "superior",
+                                  "manager",
+                                  "sysadmin",
+                                ]) && (
                                   <DropdownMenuItem
                                     onClick={() => {
                                       navigate(
@@ -359,11 +365,11 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                                   >
                                     Review
                                   </DropdownMenuItem>
-                                </DropdownMenuGroup>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </div>
-                        )}
+                                )}
+                              </DropdownMenuGroup>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </div>
                       </li>
                     );
                   })}
@@ -450,7 +456,13 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
                                   <DropdownMenuGroup>
-                                    {/* <DropdownMenuLabel>Title</DropdownMenuLabel> */}
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        navigate(`/requests/${request.id}`);
+                                      }}
+                                    >
+                                      View
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={() =>
                                         navigate(
