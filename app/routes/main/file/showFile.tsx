@@ -48,6 +48,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   };
 
   const gridCols = 16;
+  const grid = "grid grid-cols-16";
   // const gridCols = 8;
 
   return (
@@ -146,16 +147,12 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
         </div>
         <Separator />
         {file.versions.length !== 0 ? (
-          <ul className="flex flex-col h-[34em]">
-            <ScrollArea className="">
+          <ul className="flex flex-col">
+            <ScrollArea className="h-[34em]">
               {file.versions.map((version, index) => (
                 <li key={index} className={`hover:bg-accent`}>
-                  <div
-                    className={`p-4 grid grid-cols-${gridCols} flex items-center `}
-                  >
-                    <div
-                      className={`col-span-${gridCols - 1} grid grid-cols-${gridCols - 1}`}
-                    >
+                  <div className={`p-4 grid grid-cols-16 `}>
+                    <div className={`col-span-15 grid grid-cols-15`}>
                       <p className={`${colSpan.revisionNumber}`}>
                         {version.revisionNumber}
                       </p>
