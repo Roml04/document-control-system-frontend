@@ -5,16 +5,15 @@ import type { UserType, VersionType } from "~/constants/types";
 import enumFormatter from "~/utils/enumFormatter";
 import { REQUESTSTATUS } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
-
 import {
   Sheet,
   SheetContent,
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";
-import { useEffect, useReducer, useState } from "react";
+import { useReducer, useState } from "react";
 
-import { Ellipsis, File, PackageOpen, TriangleAlert } from "lucide-react";
+import { File, PackageOpen, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import {
   Attachment,
@@ -25,7 +24,6 @@ import {
   AttachmentTrigger,
 } from "~/components/ui/attachment";
 import { toast } from "sonner";
-import fallbackIfNull from "~/utils/fallbackIfNull";
 import {
   Empty,
   EmptyDescription,
@@ -34,23 +32,18 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 import { apiFileFetch } from "~/utils/apiFileFetch";
-import { Button } from "~/components/ui/button";
+
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
-import { allowedRoles } from "~/utils/allowedRoles";
-import { Outlet, useNavigate } from "react-router";
+  RequestListHeader,
+  RequestListItem,
+} from "~/components/organisms/RequestList";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
   RESETDETAILS = "RESETDETAILS",
 }
 
-type ViewRequestStateType = {
+export type ViewRequestStateType = {
   id: number | null;
   title: string;
   reason: string;
@@ -67,8 +60,6 @@ type ViewRequestActionType = {
 
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
-
-  console.log("INFO | API REPONSE [/request]", apiResponse);
 
   return apiResponse as {
     ok: boolean;
@@ -89,8 +80,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
 
   const { data } = loaderData;
 
-  console.log("INFO | LOADER DATA", data);
-
   if (data.myRequests) {
     myRequests = data.myRequests;
   }
@@ -99,18 +88,10 @@ export default function requests({ loaderData }: Route.ComponentProps) {
     forApprovals = data.forApprovals;
   }
 
-  console.log("INFO | MY REQUESTS", myRequests);
-  console.log("INFO | FOR APPROVALS", forApprovals);
-  console.log(
-    "INFO | CHECK IF EITHER OF THE ARRAYS ARE NOT EMPTY",
-    myRequests.length !== 0 || forApprovals.length !== 0,
-  );
-
   /**
    * Hook initialization
    */
   const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
-  const navigate = useNavigate();
 
   /**
    * View request reducer
@@ -150,17 +131,8 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   );
 
   /**
-   * useEffect (dev)
-   */
-  useEffect(() => {
-    console.log("INFO | Set data to to reducer state");
-    console.log("INFO |", viewRequestState);
-  }, [viewRequestState]);
-
-  /**
    * Functions
    */
-
   const renderRequestOnSheet = async (request: ViewRequestStateType) => {
     try {
       console.log("INFO | RENDER REQUEST ON SHEET", request);
@@ -225,21 +197,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
     URL.revokeObjectURL(url);
   };
 
-  /**
-   * styling variables
-   */
-
-  const gridStyling = "grid grid-cols-21";
-
-  const columnWidths = {
-    title: "w-full px-2 col-span-5 content-center",
-    reason: "w-full px-2 col-span-7 content-center",
-    status: "w-full px-2 col-span-3 content-center",
-    author: "w-full px-2 col-span-2 content-center",
-    uploadDate: "w-full px-2 w-full col-span-3 content-center",
-    action: "w-full px-2 col-span-1 content-center",
-  };
-
   return (
     <>
       <div className="flex flex-col gap-4">
@@ -247,26 +204,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
         <Separator />
         <div className="h-[45em]">
           {/* HEADER */}
-          <div className={`${gridStyling} place-items-center py-2 mb-2`}>
-            <div className={`${columnWidths.title} `}>
-              <h3>Title</h3>
-            </div>
-            <div className={`${columnWidths.reason} border-x border-gray-200`}>
-              <h3>Reason</h3>
-            </div>
-            <div className={`${columnWidths.status}`}>
-              <h3>Status</h3>
-            </div>
-            <div className={`${columnWidths.author} border-x border-gray-200`}>
-              <h3>Author</h3>
-            </div>
-            <div className={`${columnWidths.uploadDate}`}>
-              <h3>Upload Date</h3>
-            </div>
-            <div className={`${columnWidths.action}`}>
-              <h3>Action</h3>
-            </div>
-          </div>
+          <RequestListHeader />
           {myRequests.length !== 0 || forApprovals.length !== 0 ? (
             <div>
               <ul>
@@ -278,99 +216,13 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                     </div>
                   )}
                   {myRequests.map((request, index) => {
-                    let textStyle = "";
-
-                    console.log("INFO | REQUEST:", request);
-
-                    switch (request.status) {
-                      case "denied":
-                        textStyle = "text-destructive";
-                        break;
-
-                      case "approved":
-                        textStyle = "text-green-600";
-                        break;
-
-                      default:
-                        textStyle = "text-gray-500";
-                    }
-
                     return (
-                      <li
-                        className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
-                        key={request.id}
-                      >
-                        <div
-                          className={`col-span-20 py-5 grid grid-cols-20`}
-                          onClick={() => renderRequestOnSheet(request)}
-                        >
-                          <div className={`${columnWidths.title} `}>
-                            <p>{request.title}</p>
-                          </div>
-                          <div className={`${columnWidths.reason}`}>
-                            <p>{request.reason}</p>
-                          </div>
-                          <div
-                            className={`${columnWidths.status} ${textStyle}`}
-                          >
-                            <p>
-                              {request.status
-                                ? enumFormatter(request.status)
-                                : "Unknown Status"}
-                            </p>
-                          </div>
-                          <div className={`${columnWidths.author}`}>
-                            <p>
-                              {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
-                                "Unknown User"}
-                            </p>
-                          </div>
-                          <div className={`${columnWidths.uploadDate}`}>
-                            <p>{request.uploadDate}</p>
-                          </div>
-                        </div>
-
-                        <div className={`${columnWidths.action}`}>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger onClick={() => {}}>
-                              <Button size={"icon"} variant={"ghost"}>
-                                <Ellipsis
-                                  size={16}
-                                  className="cursor-pointer"
-                                />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuGroup>
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    navigate(`/requests/${request.id}`);
-                                  }}
-                                >
-                                  View
-                                </DropdownMenuItem>
-
-                                {allowedRoles([
-                                  "coordinator",
-                                  "superior",
-                                  "manager",
-                                  "sysadmin",
-                                ]) && (
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      navigate(
-                                        `/requests/${request.id}/review`,
-                                      );
-                                    }}
-                                  >
-                                    Review
-                                  </DropdownMenuItem>
-                                )}
-                              </DropdownMenuGroup>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </div>
-                      </li>
+                      <RequestListItem
+                        key={index}
+                        request={request}
+                        onClick={() => renderRequestOnSheet(request)}
+                        isOwned={true}
+                      />
                     );
                   })}
 
@@ -381,104 +233,12 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   )}
                   {/* For Approvals */}
                   {forApprovals.map((request, index) => {
-                    let textStyle = "";
-
-                    console.log("INFO | REQUEST:", request);
-
-                    switch (request.status) {
-                      case "denied":
-                        textStyle = "text-destructive";
-                        break;
-
-                      case "approved":
-                        textStyle = "text-green-600";
-                        break;
-
-                      default:
-                        textStyle = "text-gray-500";
-                    }
-
                     return (
-                      <li
-                        className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
-                        key={request.id}
-                      >
-                        <div
-                          className={`col-span-20 py-5 grid grid-cols-20`}
-                          onClick={() => renderRequestOnSheet(request)}
-                        >
-                          <div className={`${columnWidths.title} `}>
-                            <p>{request.title}</p>
-                          </div>
-                          <div className={`${columnWidths.reason}`}>
-                            <p>{request.reason}</p>
-                          </div>
-                          <div
-                            className={`${columnWidths.status} ${textStyle}`}
-                          >
-                            <p>
-                              {request.status
-                                ? enumFormatter(request.status)
-                                : "Unknown Status"}
-                            </p>
-                          </div>
-                          <div className={`${columnWidths.author}`}>
-                            <p>
-                              {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
-                                "Unknown User"}
-                            </p>
-                          </div>
-                          <div className={`${columnWidths.uploadDate}`}>
-                            <p>{request.uploadDate}</p>
-                          </div>
-                        </div>
-                        {allowedRoles([
-                          "coordinator",
-                          "superior",
-                          "manager",
-                          "sysadmin",
-                        ]) && (
-                          <div className={`${columnWidths.action}`}>
-                            {!request.version?.id ? (
-                              <div
-                                title="Missing version"
-                                className={`${columnWidths.action}`}
-                              >
-                                {/* NOTE: MAKE THE VALUES OF COLOR ENUM */}
-                                <TriangleAlert size={18} color="#e7000b" />
-                              </div>
-                            ) : (
-                              <DropdownMenu>
-                                <DropdownMenuTrigger>
-                                  <Button size={"icon"} variant={"ghost"}>
-                                    <Ellipsis />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuGroup>
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        navigate(`/requests/${request.id}`);
-                                      }}
-                                    >
-                                      View
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() =>
-                                        navigate(
-                                          `/requests/${request.id}/review`,
-                                        )
-                                      }
-                                    >
-                                      Review
-                                    </DropdownMenuItem>
-                                  </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            )}
-                          </div>
-                        )}
-                      </li>
+                      <RequestListItem
+                        key={index}
+                        request={request}
+                        onClick={() => renderRequestOnSheet(request)}
+                      />
                     );
                   })}
                 </ScrollArea>
@@ -548,91 +308,62 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Title</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.fileTitle,
-                            "--",
-                          )}
+                          {viewRequestState.version.fileTitle ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Type</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            enumFormatter(viewRequestState.version.fileType),
-                            "--",
-                          )}
+                          {enumFormatter(viewRequestState.version.fileType) ??
+                            "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Originator</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.originator,
-                            "--",
-                          )}
+                          {viewRequestState.version.originator ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Department</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.department,
-                            "--",
-                          )}
+                          {viewRequestState.version.department ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Revision Number</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.revisionNumber,
-                            "--",
-                          )}
+                          {viewRequestState.version.revisionNumber ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Revision Details</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.revisionDetails,
-                            "--",
-                          )}
+                          {viewRequestState.version.revisionDetails ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Upload Date</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.uploadDate,
-                            "--",
-                          )}
+                          {viewRequestState.version.uploadDate ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Revision Date</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.revisionDate,
-                            "--",
-                          )}
+                          {viewRequestState.version.revisionDate ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Approver</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.approver,
-                            "--",
-                          )}
+                          {viewRequestState.version.approver ?? "--"}
                         </p>
                       </div>
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Approved Date</h3>
                         <p className="py-2 col-span-4">
-                          {fallbackIfNull(
-                            viewRequestState.version.approvedDate,
-                            "--",
-                          )}
+                          {viewRequestState.version.approvedDate ?? "--"}
                         </p>
                       </div>
                     </div>

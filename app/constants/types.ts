@@ -24,7 +24,8 @@ export type RequestType = {
   title: string;
   reason: string;
   status: REQUESTSTATUS;
-  userId: number;
+  user: UserType | null;
+  version: VersionType | null;
   commenters: CommenterType[];
 };
 

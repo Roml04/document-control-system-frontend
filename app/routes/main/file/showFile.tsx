@@ -127,10 +127,13 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
       </div>
       {/* VERSIONS */}
       <div className="flex flex-col border rounded-lg justify-center">
+        <div className="flex flex-col">
+          <h3 className="p-4">Version History</h3>
+          <Separator />
+        </div>
         {/* HEADER */}
-        <div className="flex flex-col pt-4">
-          <h3 className="px-4">Version History</h3>
-          <div className={`grid grid-cols-${gridCols} p-4 mb-2`}>
+        <div className="flex flex-col">
+          <div className={`grid grid-cols-${gridCols} p-4`}>
             <div className={`${colSpan.revisionNumber}`}>
               <h3>Revision Number</h3>
             </div>
@@ -145,14 +148,16 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         </div>
-        <Separator />
+        {/* <Separator /> */}
         {file.versions.length !== 0 ? (
           <ul className="flex flex-col">
             <ScrollArea className="h-[34em]">
               {file.versions.map((version, index) => (
                 <li key={index} className={`hover:bg-accent`}>
                   <div className={`p-4 grid grid-cols-16 `}>
-                    <div className={`col-span-15 grid grid-cols-15`}>
+                    <div
+                      className={`col-span-15 grid grid-cols-15 content-center`}
+                    >
                       <p className={`${colSpan.revisionNumber}`}>
                         {version.revisionNumber}
                       </p>
