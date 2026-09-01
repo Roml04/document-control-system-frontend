@@ -11,7 +11,7 @@ import {
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";
-import { useReducer, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
 import { File, PackageOpen, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
@@ -37,6 +37,7 @@ import {
   RequestListHeader,
   RequestListItem,
 } from "~/components/organisms/RequestList";
+import { formatUserName } from "~/utils/formatUserName";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -60,6 +61,8 @@ type ViewRequestActionType = {
 
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
+
+  console.log("INFO | apiResponse", apiResponse);
 
   return apiResponse as {
     ok: boolean;
@@ -136,10 +139,12 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   const renderRequestOnSheet = async (request: ViewRequestStateType) => {
     try {
       console.log("INFO | RENDER REQUEST ON SHEET", request);
+      console.log("INFO | REQUEST VERSION", request.version);
 
       if (!request.version) {
         return toast.success("Failed to show file details", {
           position: "top-center",
+          description: "No version associated with this request",
         });
       }
 
@@ -266,9 +271,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             <SheetHeader>
               <h1>{viewRequestState.title}</h1>
               <Badge title="Authored by" className="cursor-pointer">
-                {viewRequestState.status
-                  ? enumFormatter(viewRequestState.status)
-                  : "Unknown Status"}
+                {enumFormatter(viewRequestState.status) ?? "--"}
               </Badge>
             </SheetHeader>
             <Separator />
@@ -280,22 +283,23 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Reason</h3>
                       <p className="py-2 col-span-4">
-                        {viewRequestState.reason}
+                        {viewRequestState.reason ?? "--"}
                       </p>
                     </div>
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Author</h3>
                       <p className="py-2 col-span-4">
-                        {`${viewRequestState.user?.firstName ?? ""} ${
-                          viewRequestState.user?.lastName ?? ""
-                        }`.trim() ?? "Unknown User"}
+                        {formatUserName(
+                          viewRequestState.user?.firstName,
+                          viewRequestState.user?.lastName,
+                        )}
                       </p>
                     </div>
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Upload Date</h3>
 
                       <p className="py-2 col-span-4">
-                        {viewRequestState.uploadDate}
+                        {viewRequestState.uploadDate ?? "--"}
                       </p>
                     </div>
                   </div>

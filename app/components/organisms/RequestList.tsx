@@ -65,6 +65,9 @@ export function RequestListItem({
 }: RequestListItemPropType) {
   const navigate = useNavigate();
 
+  console.log("INFO | RequestListItem Title", request.title);
+  console.log("INFO | RequestListItem", request);
+
   let styleRequestStatus = "";
 
   switch (request.status) {
@@ -104,7 +107,7 @@ export function RequestListItem({
           </p>
         </div>
         <div className={`${columnWidths.uploadDate}`}>
-          <p>{request.uploadDate ?? "--"}</p>
+          <p>{request.version?.uploadDate ?? "--"}</p>
         </div>
       </div>
 
