@@ -206,10 +206,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
         <Separator orientation="vertical" />
-        <form
-          // onSubmit={handleSubmitReview}
-          className="flex flex-col w-2/5 gap-2"
-        >
+        <form className="flex flex-col w-2/5 gap-2">
           <h2>Review Request</h2>
           <FieldSet>
             <FieldGroup>
@@ -225,9 +222,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
                   required
                 />
                 <FieldDescription>
-                  Comment is required only when denying a request. After a
-                  request is approved, it will be sent back to the originator
-                  for actual editing.
+                  Comment is required only when denying a request.
                 </FieldDescription>
               </Field>
               <Field>

@@ -24,8 +24,6 @@ import { apiFetch } from "~/utils/apiFetch";
 import Header from "~/components/organisms/Header";
 import {
   Empty,
-  EmptyContent,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
