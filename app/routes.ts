@@ -12,9 +12,11 @@ export default [
   layout("./routes/main/layout.tsx", [
     route("/dashboard", "./routes/main/dashboard.tsx"),
 
-    route("/requests", "./routes/main/requests.tsx"),
-    route("/requests/:id", "./routes/main/request/showRequest.tsx"),
-    route("/requests/:id/review", "./routes/main/request/reviewRequest.tsx"),
+    ...prefix("/requests", [
+      route("/", "./routes/main/requests.tsx"),
+      route("/:id", "./routes/main/request/showRequest.tsx"),
+      route("/:id/review", "./routes/main/request/reviewRequest.tsx"),
+    ]),
 
     ...prefix("/files", [
       index("./routes/main/files.tsx"),
