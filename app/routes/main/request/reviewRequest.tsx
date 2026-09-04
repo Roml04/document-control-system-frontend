@@ -1,7 +1,7 @@
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/reviewRequest";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, PackageOpen } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Badge } from "~/components/ui/badge";
 import enumFormatter from "~/utils/enumFormatter";
@@ -27,6 +27,12 @@ import { toast } from "sonner";
 import type { CommentType, RequestType, VersionType } from "~/constants/types";
 import avatarFallback from "~/utils/avatarFallback";
 import { formatUserName } from "~/utils/formatUserName";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
 
 export async function clientLoader({ params }: Route.ComponentProps) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -167,42 +173,54 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
           </div>
           <div className="flex flex-col p-4 gap-4">
             <p className="text-muted-foreground">Comments</p>
-            <div className="px-4 border-l flex flex-col gap-6">
-              {request.commenters.map((commenter, index) => {
-                return (
-                  <Message key={index}>
-                    <MessageAvatar
-                      title={formatUserName(
-                        commenter.firstName,
-                        commenter.lastName,
-                      )}
-                    >
-                      <Avatar>
-                        <AvatarImage />
-                        <AvatarFallback>
-                          {avatarFallback(
-                            commenter.firstName,
-                            commenter.lastName,
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                    </MessageAvatar>
-                    <MessageContent className="gap-0">
-                      <MessageHeader>{commenter.role}</MessageHeader>
-                      <BubbleGroup>
-                        {commenter.comments.map((comment, commentIndex) => {
-                          return (
-                            <Bubble variant={"muted"} key={commentIndex}>
-                              <BubbleContent>{comment.content}</BubbleContent>
-                            </Bubble>
-                          );
-                        })}
-                      </BubbleGroup>
-                    </MessageContent>
-                  </Message>
-                );
-              })}
-            </div>
+            {request.commenters.length > 0 ? (
+              <div className="px-4 border-l flex flex-col gap-6">
+                {request.commenters.map((commenter, index) => {
+                  return (
+                    <Message key={index}>
+                      <MessageAvatar
+                        title={formatUserName(
+                          commenter.firstName,
+                          commenter.lastName,
+                        )}
+                      >
+                        <Avatar>
+                          <AvatarImage />
+                          <AvatarFallback>
+                            {avatarFallback(
+                              commenter.firstName,
+                              commenter.lastName,
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                      </MessageAvatar>
+                      <MessageContent className="gap-0">
+                        <MessageHeader>{commenter.role}</MessageHeader>
+                        <BubbleGroup>
+                          {commenter.comments.map((comment, commentIndex) => {
+                            return (
+                              <Bubble variant={"muted"} key={commentIndex}>
+                                <BubbleContent>{comment.content}</BubbleContent>
+                              </Bubble>
+                            );
+                          })}
+                        </BubbleGroup>
+                      </MessageContent>
+                    </Message>
+                  );
+                })}
+              </div>
+            ) : (
+              <Empty>
+                <EmptyHeader className="gap-1">
+                  <EmptyMedia variant={"icon"}>
+                    <PackageOpen />
+                  </EmptyMedia>
+                  <EmptyTitle>No comments available</EmptyTitle>
+                  {/* <EmptyDescription></EmptyDescription> */}
+                </EmptyHeader>
+              </Empty>
+            )}
           </div>
         </div>
         <Separator orientation="vertical" />
