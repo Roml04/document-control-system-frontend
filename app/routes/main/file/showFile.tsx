@@ -240,7 +240,12 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
         </div>
       </div>
       <Sheet open={openReviseSheet} onOpenChange={setOpenReviseSheet}>
-        <SheetContent className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0">
+        <SheetContent
+          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
+          onInteractOutside={(event) => {
+            event.preventDefault();
+          }}
+        >
           <form
             onSubmit={handleReviseRequest}
             className="flex h-full min-h-0 flex-col"

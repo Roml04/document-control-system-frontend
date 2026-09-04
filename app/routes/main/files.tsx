@@ -318,7 +318,12 @@ export default function files({ loaderData }: Route.ComponentProps) {
           }
         }}
       >
-        <SheetContent className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0">
+        <SheetContent
+          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
+          onInteractOutside={(event) => {
+            event.preventDefault();
+          }}
+        >
           <form
             onSubmit={handleUploadRequest}
             className="flex h-full min-h-0 flex-col"
