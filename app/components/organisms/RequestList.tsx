@@ -1,4 +1,4 @@
-import { REQUESTSTATUS } from "~/constants/enums";
+import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 
 import {
   DropdownMenu,
@@ -127,6 +127,19 @@ export function RequestListItem({
               >
                 View
               </DropdownMenuItem>
+              {allowedRoles(["originator", "sysadmin"]) &&
+              request.type === REQUESTTYPE.REVISION &&
+              request.status === REQUESTSTATUS.ORIGINATOREDIT ? (
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate(`/requests/${request.id}/edit`);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+              ) : (
+                <></>
+              )}
               {allowedRoles([
                 "coordinator",
                 "superior",

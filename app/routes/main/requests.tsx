@@ -1,9 +1,8 @@
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
-import type { Route } from "./+types/requests";
 import type { UserType, VersionType } from "~/constants/types";
 import enumFormatter from "~/utils/enumFormatter";
-import { REQUESTSTATUS } from "~/constants/enums";
+import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sheet,
@@ -11,7 +10,7 @@ import {
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";
-import { useEffect, useReducer, useState } from "react";
+import { useReducer, useState } from "react";
 
 import { File, PackageOpen, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
@@ -38,6 +37,7 @@ import {
   RequestListItem,
 } from "~/components/organisms/RequestList";
 import { formatUserName } from "~/utils/formatUserName";
+import type { Route } from "./+types/requests";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -46,6 +46,7 @@ enum ACTION {
 
 export type ViewRequestStateType = {
   id: number | null;
+  type: REQUESTTYPE | null;
   title: string;
   reason: string;
   status: REQUESTSTATUS | null;
@@ -101,6 +102,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    */
   const viewRequestInitialState: ViewRequestStateType = {
     id: null,
+    type: null,
     title: "",
     reason: "",
     status: null,

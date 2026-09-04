@@ -13,7 +13,7 @@ export default [
     route("/dashboard", "./routes/main/dashboard.tsx"),
 
     ...prefix("/requests", [
-      route("/", "./routes/main/requests.tsx"),
+      index("./routes/main/requests.tsx"),
       route("/:id", "./routes/main/request/showRequest.tsx"),
       route("/:id/review", "./routes/main/request/reviewRequest.tsx"),
     ]),
@@ -22,5 +22,6 @@ export default [
       index("./routes/main/files.tsx"),
       route("/:id", "./routes/main/file/showFile.tsx"),
     ]),
+    ...prefix("/versions", [index("./routes/main/version/editVersion.tsx")]),
   ]),
 ] satisfies RouteConfig;
