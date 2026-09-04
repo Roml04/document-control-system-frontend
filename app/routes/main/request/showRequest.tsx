@@ -29,7 +29,7 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 
-export async function clientLoader({ params }: Route.ClientActionArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
   console.log("INFO | request.tsx cientLoader(),", apiResponse);

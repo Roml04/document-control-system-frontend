@@ -34,7 +34,7 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 
-export async function clientLoader({ params }: Route.ComponentProps) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
   console.log("INFO | REDIRECTED TO REVIEW REQUEST");
