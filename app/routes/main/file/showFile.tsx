@@ -32,6 +32,8 @@ import { useState, type SubmitEventHandler } from "react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
+import LoadingButton from "~/components/primitives/LoadingButton";
+import { toast } from "sonner";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -50,6 +52,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   const [requestTitle, setRequestTitle] = useState("");
   const [requestReason, setRequestReason] = useState("");
 
+  const [isSpinning, setIsSpinning] = useState(false);
   console.log("INFO | loaderData", file);
   /**
    * Functions
@@ -57,17 +60,43 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   const handleReviseRequest: SubmitEventHandler<HTMLFormElement> = async (
     event,
   ) => {
-    event.preventDefault();
+    try {
+      event.preventDefault();
+      setIsSpinning(true);
 
-    const apiResponse = await apiFetch("", {
-      method: "POST",
-      body: JSON.stringify({
-        title: requestTitle,
-        reason: requestReason,
-      }),
-    });
+      const apiResponse = await apiFetch("/request", {
+        method: "POST",
+        body: JSON.stringify({
+          type: "rev",
+          title: requestTitle,
+          reason: requestReason,
+          latestVersionId: latestVersion.id,
+        }),
+      });
 
-    console.log("INFO | apiResponse", apiResponse);
+      if (!apiResponse.ok) {
+        return toast.error("Failed to submit revise request", {
+          position: "top-center",
+          description: apiResponse.message,
+        });
+      }
+
+      console.log("INFO | apiResponse", apiResponse);
+
+      setRequestTitle("");
+      setRequestReason("");
+      setOpenReviseSheet(false);
+    } catch (error) {
+      toast.error("An error occurred", {
+        position: "top-center",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again in a moment",
+      });
+    } finally {
+      setIsSpinning(false);
+    }
   };
 
   const latestVersion = file.latestVersion;
@@ -286,7 +315,12 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
             </ScrollArea>
             <Separator />
             <SheetFooter>
-              <Button type="submit">Submit Request</Button>
+              <LoadingButton
+                displayText="Submit Request"
+                loadingDisplayText="Submitting request..."
+                isSpinning={isSpinning}
+              />
+              {/* <Button type="submit">Submit Request</Button> */}
             </SheetFooter>
           </form>
         </SheetContent>
