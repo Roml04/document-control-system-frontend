@@ -26,7 +26,8 @@ const gridStyling = "grid grid-cols-21";
 const columnWidths = {
   title: "w-full px-2 col-span-5 content-center",
   reason: "w-full px-2 col-span-7 content-center",
-  status: "w-full px-2 col-span-3 content-center",
+  type: "w-full px-2 col-span-1 content-center",
+  status: "w-full px-2 col-span-2 content-center truncate",
   author: "w-full px-2 col-span-2 content-center",
   uploadDate: "w-full px-2 w-full col-span-3 content-center",
   action: "w-full px-2 col-span-1 content-center",
@@ -41,13 +42,16 @@ export function RequestListHeader() {
       <div className={`${columnWidths.reason} border-x border-gray-200`}>
         <h3>Reason</h3>
       </div>
-      <div className={`${columnWidths.status}`}>
+      <div className={`${columnWidths.type}`}>
+        <h3>Type</h3>
+      </div>
+      <div className={`${columnWidths.status} border-x border-gray-200`}>
         <h3>Status</h3>
       </div>
-      <div className={`${columnWidths.author} border-x border-gray-200`}>
+      <div className={`${columnWidths.author}`}>
         <h3>Author</h3>
       </div>
-      <div className={`${columnWidths.uploadDate}`}>
+      <div className={`${columnWidths.uploadDate} border-x border-gray-200`}>
         <h3>Upload Date</h3>
       </div>
       <div className={`${columnWidths.action}`}>
@@ -98,6 +102,9 @@ export function RequestListItem({
         </div>
         <div className={`${columnWidths.reason}`}>
           <p>{request.reason}</p>
+        </div>
+        <div className={`${columnWidths.type}`}>
+          <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
         </div>
         <div className={`${columnWidths.status} ${styleRequestStatus}`}>
           <p>
