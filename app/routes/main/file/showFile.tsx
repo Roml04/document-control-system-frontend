@@ -34,6 +34,7 @@ import { Textarea } from "~/components/ui/textarea";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { toast } from "sonner";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
+import { apiFileFetch } from "~/utils/apiFileFetch";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -48,12 +49,15 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 
 export default function showFile({ loaderData }: Route.ComponentProps) {
   const file = loaderData;
+  const latestVersion = file.latestVersion;
+
   const [openReviseSheet, setOpenReviseSheet] = useState(false);
   const [requestTitle, setRequestTitle] = useState("");
   const [requestReason, setRequestReason] = useState("");
 
   const [isSpinning, setIsSpinning] = useState(false);
   console.log("INFO | loaderData", file);
+
   /**
    * Functions
    */
@@ -99,7 +103,16 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
     }
   };
 
-  const latestVersion = file.latestVersion;
+  const handleDownloadFile = async () => {
+    const response = await apiFileFetch(`/version/${latestVersion.id}/file`);
+
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+
+    window.open(url, "_blank");
+
+    URL.revokeObjectURL(url);
+  };
 
   const colSpan = {
     revisionNumber: "col-span-5",
@@ -127,11 +140,16 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
             <div className="flex items-center">
-              <Button size={"icon-lg"} variant={"ghost"} title="Download">
+              <Button
+                size={"icon-lg"}
+                variant={"ghost"}
+                title="Download"
+                onClick={handleDownloadFile}
+              >
                 <Download size={18} />
               </Button>
               <DropdownMenu>
-                <DropdownMenuTrigger>
+                <DropdownMenuTrigger asChild>
                   <Button variant={"ghost"} size={"icon-lg"}>
                     <Ellipsis size={18} />
                   </Button>
@@ -268,7 +286,17 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           )}
         </div>
       </div>
-      <Sheet open={openReviseSheet} onOpenChange={setOpenReviseSheet}>
+      <Sheet
+        open={openReviseSheet}
+        onOpenChange={(open) => {
+          setOpenReviseSheet(open);
+
+          if (!open) {
+            setRequestTitle("");
+            setRequestReason("");
+          }
+        }}
+      >
         <SheetContent
           className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
           onInteractOutside={(event) => {
