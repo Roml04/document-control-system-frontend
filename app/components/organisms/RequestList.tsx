@@ -79,6 +79,10 @@ export function RequestListItem({
       styleRequestStatus = "text-green-600";
       break;
 
+    case REQUESTSTATUS.ORIGINATOREDIT:
+      styleRequestStatus = "text-amber-500";
+      break;
+
     default:
       styleRequestStatus = "text-gray-500";
   }
