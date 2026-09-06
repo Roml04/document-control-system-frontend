@@ -1,9 +1,7 @@
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/showRequest";
-import { useNavigate } from "react-router";
 import enumFormatter from "~/utils/enumFormatter";
-import { ChevronLeft, PackageOpen } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import { Box, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type {
   CommenterType,
@@ -28,6 +26,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
+import { REQUESTTYPE } from "~/constants/enums";
+import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -51,9 +51,11 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
           <div className="flex w-full justify-between items-center py-2">
             <div className="flex flex-col">
               <h1>{request.title}</h1>
-              <p className="text-muted-foreground"></p>
             </div>
-            <Badge>{enumFormatter(request.status)}</Badge>
+            <div className="flex items-center gap-1">
+              <RequestTypeBadge type={request.type} />
+              <Badge>{enumFormatter(request.status)}</Badge>
+            </div>
           </div>
           <div className="border rounded-lg">
             <div className="grid grid-cols-4 gap-y-4 p-4">

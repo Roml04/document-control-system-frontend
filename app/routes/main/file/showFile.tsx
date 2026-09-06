@@ -5,7 +5,6 @@ import type { FileType, VersionType } from "~/constants/types";
 import { Download, Ellipsis, PackageOpen } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
-import TypeBadge from "~/components/primitives/TypeBadge";
 import enumFormatter from "~/utils/enumFormatter";
 import {
   DropdownMenu,
@@ -34,6 +33,7 @@ import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { toast } from "sonner";
+import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -119,7 +119,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           <div className="flex justify-between">
             <div className="flex gap-2 items-center">
               <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-12">
-                <TypeBadge type={file.type} size={22} />
+                <FileTypeBadge type={file.type} size={22} />
               </div>
               <div className="flex flex-col">
                 <h1>{file.title}</h1>
