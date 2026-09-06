@@ -22,6 +22,9 @@ export default [
       index("./routes/main/files.tsx"),
       route("/:id", "./routes/main/file/showFile.tsx"),
     ]),
-    ...prefix("/versions", [index("./routes/main/version/editVersion.tsx")]),
+    ...prefix("/versions", [
+      route("/:id/edit", "./routes/main/version/editVersion.tsx"),
+    ]),
   ]),
+  route("/onlyoffice/edit/:id", "./routes/onlyoffice/editor.tsx"),
 ] satisfies RouteConfig;

@@ -132,7 +132,7 @@ export function RequestListItem({
               request.status === REQUESTSTATUS.ORIGINATOREDIT ? (
                 <DropdownMenuItem
                   onClick={() => {
-                    navigate(`/requests/${request.id}/edit`);
+                    navigate(`/versions/${request.version?.id}/edit`);
                   }}
                 >
                   Edit
