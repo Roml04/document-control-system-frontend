@@ -1,6 +1,6 @@
 import type { Route } from "./+types/editVersion";
 import { apiFetch } from "~/utils/apiFetch";
-import type { VersionType } from "~/constants/types";
+import type { UserType, VersionType } from "~/constants/types";
 import {
   Field,
   FieldDescription,
@@ -27,17 +27,93 @@ import {
 } from "~/components/ui/alert-dialog";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { Textarea } from "~/components/ui/textarea";
-import type { SubmitEventHandler } from "react";
+import { useEffect, useReducer, type SubmitEventHandler } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import { FILETYPE } from "~/constants/enums";
+import enumFormatter from "~/utils/enumFormatter";
+import { formatUserName } from "~/utils/formatUserName";
+
+enum ACTION {
+  SETDETAILS = "SETDETAILS",
+  RESETDETAILS = "RESETDETAILS",
+}
+
+type EditVersionStateType = Omit<
+  {
+    [K in keyof VersionType]: VersionType[K] | null;
+  },
+  "fileId" | "requestId" | "status"
+>;
+
+type EditVersionActionType = {
+  type: ACTION;
+  payload: Partial<EditVersionStateType>;
+};
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const apiResponse = await apiFetch(`/version/${params.id}`);
-  console.log("INFO | VERSION", apiResponse);
-  return { version: apiResponse.data } as { version: VersionType };
+  const [versionResponse, userResponse] = await Promise.all([
+    apiFetch(`/version/${params.id}`),
+    apiFetch(`/user?role=superior`),
+  ]);
+
+  console.log("CLIENTLOADER:", versionResponse);
+
+  return { version: versionResponse.data, superiors: userResponse.data } as {
+    version: VersionType;
+    superiors: UserType[];
+  };
 }
 
 export default function editVersion({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
-  const { version } = loaderData;
+
+  const { version, superiors } = loaderData;
+
+  const editVersionInitialState = {
+    id: version.id,
+    fileTitle: version.fileTitle,
+    fileType: version.fileType,
+    originator: version.originator,
+    department: version.department,
+    revisionNumber: version.revisionNumber,
+    revisionDetails: version.revisionDetails,
+    uploadDate: version.uploadDate,
+    revisionDate: version.revisionDate,
+    approver: version.approver,
+    approvedDate: version.approvedDate,
+    fileName: version.fileName,
+    filePath: version.filePath,
+  };
+
+  function editVersionReducer(
+    state: EditVersionStateType,
+    action: EditVersionActionType,
+  ) {
+    switch (action.type) {
+      case ACTION.SETDETAILS:
+        return {
+          ...state,
+          ...action.payload,
+        };
+
+      case ACTION.RESETDETAILS:
+        return editVersionInitialState;
+      default:
+        return state;
+    }
+  }
+
+  const [editVersionState, dispatchEditVersion] = useReducer(
+    editVersionReducer,
+    editVersionInitialState,
+  );
 
   /**
    * Functions
@@ -46,7 +122,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
     event,
   ) => {
     event.preventDefault();
-    console.log("Submitted!");
+    console.log("Submitted!", editVersionState);
   };
 
   return (
@@ -77,7 +153,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
         <div className="flex gap-1">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant={"ghost"}>
+              <Button type="button" variant={"ghost"}>
                 <RotateCcw />
                 Reset
               </Button>
@@ -92,7 +168,16 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Keep editing</AlertDialogCancel>
-                <AlertDialogAction onClick={() => {}}>Reset</AlertDialogAction>
+                <AlertDialogAction
+                  onClick={() => {
+                    dispatchEditVersion({
+                      type: ACTION.RESETDETAILS,
+                      payload: {},
+                    });
+                  }}
+                >
+                  Reset
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -108,11 +193,17 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
         <div className="flex flex-col border rounded-lg p-4 justify-center gap-4">
           <div className="flex justify-between">
             <div className="flex gap-2 items-center">
-              <FileTypeBadge type={version.fileType} size={22} />
-              <h2>{version.fileTitle}</h2>
+              <FileTypeBadge
+                type={editVersionState.fileType ?? FILETYPE.DOCUMENT}
+                size={22}
+              />
+              <h2>{editVersionState.fileTitle}</h2>
             </div>
             <div className="flex items-center">
-              <NavLink to={`/onlyoffice/edit/${version.id}`} target="_blank">
+              <NavLink
+                to={`/onlyoffice/edit/${editVersionState.id}`}
+                target="_blank"
+              >
                 <Button type="button" variant={"ghost"}>
                   Open in editor
                 </Button>
@@ -135,17 +226,39 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                 <FieldLabel>Title</FieldLabel>
                 <Input
                   type="text"
-                  value={version.fileTitle}
-                  onChange={() => {}}
+                  value={editVersionState.fileTitle ?? ""}
+                  onChange={(e) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { fileTitle: e.target.value },
+                    });
+                  }}
                 />
               </Field>
               <Field>
                 <FieldLabel>Type</FieldLabel>
-                <Input
-                  type="text"
-                  value={version.fileType}
-                  onChange={() => {}}
-                />
+                <Select
+                  defaultValue={editVersionState.fileType ?? undefined}
+                  onValueChange={(value: FILETYPE) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { fileType: value },
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Choose file type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {Object.values(FILETYPE).map((type, index) => (
+                        <SelectItem key={index} value={type}>
+                          {enumFormatter(type)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
             </FieldGroup>
           </FieldSet>
@@ -157,55 +270,113 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                 <FieldLabel>Originator</FieldLabel>
                 <Input
                   type="text"
-                  value={version.originator}
-                  onChange={() => {}}
+                  value={editVersionState.originator ?? undefined}
+                  onChange={(e) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { originator: e.target.value },
+                    });
+                  }}
                 />
               </Field>
               <Field>
                 <FieldLabel>Department</FieldLabel>
                 <Input
                   type="text"
-                  value={version.department}
-                  onChange={() => {}}
+                  value={editVersionState.department ?? undefined}
+                  onChange={(e) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { department: e.target.value },
+                    });
+                  }}
                 />
               </Field>
               <Field>
                 <FieldLabel>Revision Number</FieldLabel>
                 <Input
                   type="text"
-                  value={version.revisionNumber}
-                  onChange={() => {}}
+                  value={editVersionState.revisionNumber ?? undefined}
+                  onChange={(e) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { revisionNumber: e.target.value },
+                    });
+                  }}
                 />
               </Field>
               <Field className="col-span-2">
                 <FieldLabel>Revision Detail</FieldLabel>
-                <Textarea value={version.revisionDetails} onChange={() => {}} />
+                <Textarea
+                  value={editVersionState.revisionDetails ?? undefined}
+                  onChange={(e) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { revisionDetails: e.target.value },
+                    });
+                  }}
+                />
               </Field>
               <Field>
                 <FieldLabel>Upload Date</FieldLabel>
-                <Input type="text" value={version.uploadDate} disabled />
+                <Input
+                  type="text"
+                  value={editVersionState.uploadDate ?? ""}
+                  disabled
+                />
                 <FieldDescription>
                   No action is needed. This field is filled in automatically.
                 </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel>Revision Date</FieldLabel>
-                <Input type="text" value={version.revisionDate} disabled />
+                <Input
+                  type="text"
+                  value={editVersionState.revisionDate ?? undefined}
+                  disabled
+                />
                 <FieldDescription>
                   No action is needed. This field is filled in automatically.
                 </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
-                <Input
-                  type="text"
-                  value={version.approver}
-                  onChange={() => {}}
-                />
+                <Select
+                  defaultValue={editVersionState.approver ?? undefined}
+                  onValueChange={(value) => {
+                    dispatchEditVersion({
+                      type: ACTION.SETDETAILS,
+                      payload: { approver: value },
+                    });
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {superiors.map((superior, index) => {
+                        const superiorName = formatUserName(
+                          superior.firstName,
+                          superior.lastName,
+                        );
+                        return (
+                          <SelectItem key={index} value={superiorName}>
+                            {superiorName}
+                          </SelectItem>
+                        );
+                      })}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
               <Field>
                 <FieldLabel>Approved Date</FieldLabel>
-                <Input type="text" value={version.approvedDate} disabled />
+                <Input
+                  type="text"
+                  value={editVersionState.approvedDate ?? ""}
+                  disabled
+                />
                 <FieldDescription>
                   No action is needed. This field is filled in automatically.
                 </FieldDescription>
