@@ -2,28 +2,29 @@ import {
   type RouteConfig,
   index,
   layout,
+  prefix,
   route,
 } from "@react-router/dev/routes";
 
 export default [
   index("routes/home.tsx"),
-  layout("./routes/layout.tsx", [
-    route("/documents", "./routes/Documents.tsx"),
-    route("/forms", "./routes/Forms.tsx"),
-    route("/checklist", "./routes/Checklist.tsx"),
-    route("/requests", "./routes/Requests.tsx"),
-    route("/documents/update", "./routes/documents/UpdateDocument.tsx"),
-  ]),
+  route("/register", "./routes/register.tsx"),
+  layout("./routes/main/layout.tsx", [
+    route("/dashboard", "./routes/main/dashboard.tsx"),
 
-  layout("./routes/documents/layout.tsx", [
-    route(
-      "/document/waste-management-procedure",
-      "./routes/documents/WasteManagement.tsx",
-    ),
-    route("/document/hr-procedure", "./routes/documents/HRProcedure.tsx"),
-    route(
-      "/document/document-control-procedure",
-      "./routes/documents/DocumentControl.tsx",
-    ),
+    ...prefix("/requests", [
+      index("./routes/main/requests.tsx"),
+      route("/:id", "./routes/main/request/showRequest.tsx"),
+      route("/:id/review", "./routes/main/request/reviewRequest.tsx"),
+    ]),
+
+    ...prefix("/files", [
+      index("./routes/main/files.tsx"),
+      route("/:id", "./routes/main/file/showFile.tsx"),
+    ]),
+    ...prefix("/versions", [
+      route("/:id/edit", "./routes/main/version/editVersion.tsx"),
+    ]),
   ]),
+  route("/onlyoffice/edit/:id", "./routes/onlyoffice/editor.tsx"),
 ] satisfies RouteConfig;

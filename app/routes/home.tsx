@@ -1,70 +1,135 @@
-import { useNavigate } from "react-router";
-import type { Route } from "./+types/home";
-import { useState } from "react";
-
-export function meta({}: Route.MetaArgs) {
-  return [
-    { title: "New React Router App" },
-    { name: "description", content: "Welcome to React Router!" },
-  ];
-}
+import { useState, type SubmitEventHandler } from "react";
+import { NavLink, useNavigate } from "react-router";
+import { Button } from "~/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui/card";
+import { Field, FieldLabel } from "~/components/ui/field";
+import { Input } from "~/components/ui/input";
+import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
+import { Spinner } from "~/components/ui/spinner";
+import { useSessionStore } from "../../stores/sessionStore";
 
 export default function Home() {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSpinning, setIsSpinning] = useState(false);
 
-  // use the reducer hook
-  const [emailValue, setEmailValue] = useState("");
-  const [passwordValue, setPasswordValue] = useState("");
+  /**
+   * Session Store
+   */
+  const updateSession = useSessionStore((state) => state.updateSession);
 
-  const isValid = true;
+  const handleLogin: SubmitEventHandler<HTMLFormElement> = async (event) => {
+    try {
+      event.preventDefault();
 
-  function handleLogin() {
-    console.log("email:", emailValue);
-    console.log("password:", passwordValue);
+      setIsSpinning(true);
 
-    if (!isValid) throw Error("Invalid auth details");
+      const apiResponse = await apiFetch("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({
+          email: email,
+          password: password,
+        }),
+      });
 
-    navigate("/documents");
-  }
+      if (!apiResponse.ok) {
+        return toast.error("Login failed", {
+          description: apiResponse.message,
+          position: "top-right",
+        });
+      }
+
+      const { userId, firstName, lastName, role, token } = apiResponse.data;
+
+      console.log(apiResponse.data);
+
+      updateSession({
+        userId: userId,
+        firstName: firstName,
+        lastName: lastName,
+        role: role,
+        token: token,
+      });
+
+      toast.success("Login successful!", {
+        position: "top-right",
+      });
+
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error("Login failed", {
+        position: "top-right",
+        description:
+          "We could not complete your log in request right now. Please try again in a moment.",
+      });
+    } finally {
+      setIsSpinning(false);
+    }
+  };
 
   return (
-    <div className="flex h-full flex-col items-center justify-center px-4 py-2">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleLogin();
-        }}
-        className="flex flex-col justify-center items-center border border-gray-400 rounded-lg p-4 gap-4"
-      >
-        <div className="flex flex-col items-center">
-          <h1>Login</h1>
-          <div className="flex flex-col">
-            <label htmlFor="email">Email</label>
-            <input
-              value={emailValue}
-              onChange={(e) => setEmailValue(e.target.value)}
-              className="border border-gray-400 rounded-md outline-none px-2 py-1"
-              type="email"
-            />
+    <form
+      onSubmit={handleLogin}
+      className="w-full h-full flex justify-center items-center"
+    >
+      <Card className="w-md">
+        <CardHeader>
+          <CardTitle>Login to your DCS Account</CardTitle>
+          <CardDescription>Sign in to your DCS account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col gap-6">
+            <Field>
+              <FieldLabel htmlFor="email">Email</FieldLabel>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email..."
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                }}
+                required
+              />
+            </Field>
+            <Field>
+              <FieldLabel htmlFor="password">Password</FieldLabel>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password..."
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+                required
+              />
+            </Field>
+
+            <Button type="submit" disabled={isSpinning}>
+              {isSpinning && <Spinner />}
+              {isSpinning ? "Logging in..." : "Login"}
+            </Button>
           </div>
-          <div className="flex flex-col">
-            <label htmlFor="password">Password</label>
-            <input
-              value={passwordValue}
-              onChange={(e) => setPasswordValue(e.target.value)}
-              className="border border-gray-400 rounded-md outline-none px-2 py-1"
-              type="password"
-            />
+        </CardContent>
+        <CardFooter>
+          <div className="flex w-full justify-center">
+            <p>
+              Don't have an account yet?{" "}
+              <span className="hover:underline">
+                <NavLink to={"/register"}>Register</NavLink>
+              </span>
+            </p>
           </div>
-        </div>
-        <button
-          type="submit"
-          className="px-4 py-2 border border-gray-400 rounded-lg cursor-pointer"
-        >
-          Login
-          {/* <p className="px-4 py-2 border border-gray-400 rounded-lg">Login</p> */}
-        </button>
-      </form>
-    </div>
+        </CardFooter>
+      </Card>
+    </form>
   );
 }
