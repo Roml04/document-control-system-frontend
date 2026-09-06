@@ -27,7 +27,12 @@ import {
 } from "~/components/ui/alert-dialog";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { Textarea } from "~/components/ui/textarea";
-import { useEffect, useReducer, type SubmitEventHandler } from "react";
+import {
+  useEffect,
+  useReducer,
+  useState,
+  type SubmitEventHandler,
+} from "react";
 import {
   Select,
   SelectContent,
@@ -39,6 +44,7 @@ import {
 import { FILETYPE } from "~/constants/enums";
 import enumFormatter from "~/utils/enumFormatter";
 import { formatUserName } from "~/utils/formatUserName";
+import { toast } from "sonner";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -74,8 +80,13 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function editVersion({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
+  const [isSpinning, setIsSpinning] = useState(false);
+
   const { version, superiors } = loaderData;
 
+  /**
+   * Reducer
+   */
   const editVersionInitialState = {
     id: version.id,
     fileTitle: version.fileTitle,
@@ -121,8 +132,43 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
   const handleEditSubmit: SubmitEventHandler<HTMLFormElement> = async (
     event,
   ) => {
-    event.preventDefault();
-    console.log("Submitted!", editVersionState);
+    try {
+      setIsSpinning(true);
+      event.preventDefault();
+
+      const apiResponse = await apiFetch(`/version/${editVersionState.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          id: editVersionState.id,
+          fileTitle: editVersionState.fileTitle,
+          fileType: editVersionState.fileType,
+          originator: editVersionState.originator,
+          department: editVersionState.department,
+          revisionNumber: editVersionState.revisionNumber,
+          revisionDetails: editVersionState.revisionDetails,
+          approver: editVersionState.approver,
+        }),
+      });
+
+      if (!apiResponse.ok) {
+        return toast.error("Submission failed", {
+          position: "top-center",
+          description: apiResponse.message,
+        });
+      }
+
+      navigate(-1);
+    } catch (error) {
+      toast.error("An error occurred", {
+        position: "top-center",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Something went wrong. Please try again in a moment",
+      });
+    } finally {
+      setIsSpinning(false);
+    }
   };
 
   return (
@@ -185,7 +231,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
             type="submit"
             displayText="Submit"
             loadingDisplayText="Submitting revision..."
-            isSpinning={false}
+            isSpinning={isSpinning}
           />
         </div>
       </header>
@@ -306,7 +352,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                 />
               </Field>
               <Field className="col-span-2">
-                <FieldLabel>Revision Detail</FieldLabel>
+                <FieldLabel>Revision Details</FieldLabel>
                 <Textarea
                   value={editVersionState.revisionDetails ?? undefined}
                   onChange={(e) => {
