@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
 import { useNavigate } from "react-router";
 import { allowedRoles } from "~/utils/allowedRoles";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import type { ViewRequestStateType } from "~/routes/main/requests";
 
 type RequestListItemPropType = {
@@ -88,7 +88,7 @@ export function RequestListItem({
       break;
 
     default:
-      styleRequestStatus = "text-gray-500";
+      styleRequestStatus = "";
   }
 
   return (
@@ -103,12 +103,12 @@ export function RequestListItem({
         <div className={`${columnWidths.reason}`}>
           <p>{request.reason}</p>
         </div>
-        <div className={`${columnWidths.type}`}>
+        <div className={`${columnWidths.type} `}>
           <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
         </div>
         <div className={`${columnWidths.status} ${styleRequestStatus}`}>
           <p>
-            {request.status ? enumFormatter(request.status) : "Unknown Status"}
+            {request.status ? formatEnum(request.status) : "Unknown Status"}
           </p>
         </div>
         <div className={`${columnWidths.author}`}>

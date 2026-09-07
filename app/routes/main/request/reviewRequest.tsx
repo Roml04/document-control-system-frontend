@@ -4,7 +4,7 @@ import { Button } from "~/components/ui/button";
 import { ChevronLeft, PackageOpen } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Badge } from "~/components/ui/badge";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import { Separator } from "~/components/ui/separator";
 import {
   Field,
@@ -126,7 +126,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
               <h1>{request.title}</h1>
               <p className="text-muted-foreground"></p>
             </div>
-            <Badge>{enumFormatter(request.status)}</Badge>
+            <Badge>{formatEnum(request.status)}</Badge>
           </div>
           <div className="border rounded-lg">
             <div className="grid grid-cols-4 gap-y-4 p-4">

@@ -42,7 +42,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { FILETYPE } from "~/constants/enums";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
 import { toast } from "sonner";
 
@@ -299,7 +299,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                     <SelectGroup>
                       {Object.values(FILETYPE).map((type, index) => (
                         <SelectItem key={index} value={type}>
-                          {enumFormatter(type)}
+                          {formatEnum(type)}
                         </SelectItem>
                       ))}
                     </SelectGroup>

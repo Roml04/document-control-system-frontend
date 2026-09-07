@@ -5,7 +5,7 @@ import type { FileType, VersionType } from "~/constants/types";
 import { Download, Ellipsis, PackageOpen } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -136,7 +136,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               </div>
               <div className="flex flex-col">
                 <h1>{file.title}</h1>
-                <p>{enumFormatter(file.type)}</p>
+                <p>{formatEnum(file.type)}</p>
               </div>
             </div>
             <div className="flex items-center">
