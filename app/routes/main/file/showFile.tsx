@@ -2,7 +2,7 @@ import Header from "~/components/organisms/Header";
 import type { Route } from "./+types/showFile";
 import { apiFetch } from "~/utils/apiFetch";
 import type { FileType, VersionType } from "~/constants/types";
-import { Download, Ellipsis, PackageOpen, Scroll } from "lucide-react";
+import { Download, Ellipsis, PackageOpen } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
 import formatEnum from "~/utils/formatEnum";
@@ -27,15 +27,15 @@ import {
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";
-import { useState, type SubmitEventHandler } from "react";
+import React, { useState } from "react";
 import { Field, FieldGroup, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Textarea } from "~/components/ui/textarea";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { toast } from "sonner";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
-import { apiFileFetch } from "~/utils/apiFileFetch";
 import { downloadFile } from "~/utils/downloadFile";
+import { REQUESTTYPE } from "~/constants/enums";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -63,8 +63,9 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   /**
    * Functions
    */
-  const handleReviseRequest: SubmitEventHandler<HTMLFormElement> = async (
-    event,
+  const handleSubmitRequest = async (
+    event: React.SubmitEvent<HTMLFormElement>,
+    type: REQUESTTYPE.REVISION | REQUESTTYPE.DELETE,
   ) => {
     try {
       event.preventDefault();
@@ -73,7 +74,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
       const apiResponse = await apiFetch("/request", {
         method: "POST",
         body: JSON.stringify({
-          type: "rev",
+          type: type,
           title: requestTitle,
           reason: requestReason,
           latestVersionId: latestVersion.id,
@@ -81,7 +82,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
       });
 
       if (!apiResponse.ok) {
-        return toast.error("Failed to submit revise request", {
+        return toast.error(`Failed to submit request`, {
           position: "top-center",
           description: apiResponse.message,
         });
@@ -92,6 +93,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
       setRequestTitle("");
       setRequestReason("");
       setOpenReviseSheet(false);
+      setOpenDeleteSheet(false);
     } catch (error) {
       toast.error("An error occurred", {
         position: "top-center",
@@ -103,12 +105,6 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
     } finally {
       setIsSpinning(false);
     }
-  };
-
-  const handleDeleteRequest: SubmitEventHandler<HTMLFormElement> = async (
-    event,
-  ) => {
-    event.preventDefault();
   };
 
   const colSpan = {
@@ -252,7 +248,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                       </div>
                       <div className={`${colSpan.action}`}>
                         <DropdownMenu>
-                          <DropdownMenuTrigger>
+                          <DropdownMenuTrigger asChild>
                             <Button variant={"ghost"} size={"icon"}>
                               <Ellipsis />
                             </Button>
@@ -306,7 +302,9 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           }}
         >
           <form
-            onSubmit={handleReviseRequest}
+            onSubmit={(event) => {
+              handleSubmitRequest(event, REQUESTTYPE.REVISION);
+            }}
             className="flex h-full min-h-0 flex-col"
           >
             <SheetHeader>
@@ -359,6 +357,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
         open={openDeleteSheet}
         onOpenChange={(open) => {
           setOpenDeleteSheet(open);
+
           if (!open) {
             setRequestTitle("");
             setRequestReason("");
@@ -372,7 +371,9 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           }}
         >
           <form
-            onSubmit={handleDeleteRequest}
+            onSubmit={(event) => {
+              handleSubmitRequest(event, REQUESTTYPE.DELETE);
+            }}
             className="flex h-full min-h-0 flex-col"
           >
             <SheetHeader>
