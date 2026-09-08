@@ -2,7 +2,7 @@ import Header from "~/components/organisms/Header";
 import type { Route } from "./+types/showFile";
 import { apiFetch } from "~/utils/apiFetch";
 import type { FileType, VersionType } from "~/constants/types";
-import { Download, Ellipsis, PackageOpen } from "lucide-react";
+import { Download, Ellipsis, PackageOpen, Scroll } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
 import formatEnum from "~/utils/formatEnum";
@@ -53,6 +53,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   const latestVersion = file.latestVersion;
 
   const [openReviseSheet, setOpenReviseSheet] = useState(false);
+  const [openDeleteSheet, setOpenDeleteSheet] = useState(false);
   const [requestTitle, setRequestTitle] = useState("");
   const [requestReason, setRequestReason] = useState("");
 
@@ -104,6 +105,12 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
     }
   };
 
+  const handleDeleteRequest: SubmitEventHandler<HTMLFormElement> = async (
+    event,
+  ) => {
+    event.preventDefault();
+  };
+
   const colSpan = {
     revisionNumber: "col-span-5",
     author: "col-span-5",
@@ -151,7 +158,10 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                     <DropdownMenuItem onClick={() => setOpenReviseSheet(true)}>
                       Revise
                     </DropdownMenuItem>
-                    <DropdownMenuItem variant="destructive">
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setOpenDeleteSheet(true)}
+                    >
                       Delete
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
@@ -341,6 +351,69 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                 isSpinning={isSpinning}
               />
               {/* <Button type="submit">Submit Request</Button> */}
+            </SheetFooter>
+          </form>
+        </SheetContent>
+      </Sheet>
+      <Sheet
+        open={openDeleteSheet}
+        onOpenChange={(open) => {
+          setOpenDeleteSheet(open);
+          if (!open) {
+            setRequestTitle("");
+            setRequestReason("");
+          }
+        }}
+      >
+        <SheetContent
+          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
+          onInteractOutside={(event) => {
+            event.preventDefault();
+          }}
+        >
+          <form
+            onSubmit={handleDeleteRequest}
+            className="flex h-full min-h-0 flex-col"
+          >
+            <SheetHeader>
+              <h1>Delete a file</h1>
+              <p>Submit a delete file request</p>
+            </SheetHeader>
+            <ScrollArea className="flex-1 min-h-0 px-4 py-4">
+              <FieldSet>
+                <FieldGroup>
+                  <h2>Request Details</h2>
+                  <Field>
+                    <FieldLabel htmlFor="title">Title</FieldLabel>
+                    <Input
+                      id="title"
+                      value={requestTitle}
+                      onChange={(e) => setRequestTitle(e.target.value)}
+                      type="text"
+                      placeholder="e.g., Request for document upload"
+                      required
+                    />
+                  </Field>
+                  <Field>
+                    <FieldLabel htmlFor="reason">Reason</FieldLabel>
+                    <Textarea
+                      id="reason"
+                      value={requestReason}
+                      onChange={(e) => setRequestReason(e.target.value)}
+                      placeholder="Describe the purpose or reason for submitting this request..."
+                      required
+                    />
+                  </Field>
+                </FieldGroup>
+              </FieldSet>
+            </ScrollArea>
+            <Separator />
+            <SheetFooter>
+              <LoadingButton
+                displayText="Submit Request"
+                loadingDisplayText="Submitting request..."
+                isSpinning={isSpinning}
+              />
             </SheetFooter>
           </form>
         </SheetContent>
