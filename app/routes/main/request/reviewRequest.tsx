@@ -35,6 +35,7 @@ import {
 } from "~/components/ui/empty";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
+import { downloadFile } from "~/utils/downloadFile";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -104,8 +105,6 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
     }
   };
 
-  const downloadFile = async () => {};
-
   return (
     <div className="flex flex-col gap-2">
       <header className="">
@@ -142,7 +141,13 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
               >
                 <Button variant={"ghost"}>Open in editor</Button>
               </NavLink>
-              <Button variant={"ghost"} size={"icon"}>
+              <Button
+                variant={"ghost"}
+                size={"icon"}
+                onClick={() =>
+                  downloadFile(request.version.id, request.version.fileName)
+                }
+              >
                 <Download />
               </Button>
             </div>

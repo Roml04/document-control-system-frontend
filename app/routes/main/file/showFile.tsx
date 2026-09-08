@@ -135,7 +135,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                 variant={"ghost"}
                 title="Download"
                 onClick={() => {
-                  downloadFile(latestVersion.id);
+                  downloadFile(latestVersion.id, latestVersion.fileName);
                 }}
               >
                 <Download size={18} />
