@@ -5,7 +5,7 @@ import type { FileType, VersionType } from "~/constants/types";
 import { Download, Ellipsis, PackageOpen } from "lucide-react";
 import { Separator } from "~/components/ui/separator";
 import { Button } from "~/components/ui/button";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,6 +35,7 @@ import LoadingButton from "~/components/primitives/LoadingButton";
 import { toast } from "sonner";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { apiFileFetch } from "~/utils/apiFileFetch";
+import { downloadFile } from "~/utils/downloadFile";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -103,17 +104,6 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
     }
   };
 
-  const handleDownloadFile = async () => {
-    const response = await apiFileFetch(`/version/${latestVersion.id}/file`);
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-
-    window.open(url, "_blank");
-
-    URL.revokeObjectURL(url);
-  };
-
   const colSpan = {
     revisionNumber: "col-span-5",
     author: "col-span-5",
@@ -136,7 +126,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               </div>
               <div className="flex flex-col">
                 <h1>{file.title}</h1>
-                <p>{enumFormatter(file.type)}</p>
+                <p>{formatEnum(file.type)}</p>
               </div>
             </div>
             <div className="flex items-center">
@@ -144,7 +134,9 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                 size={"icon-lg"}
                 variant={"ghost"}
                 title="Download"
-                onClick={handleDownloadFile}
+                onClick={() => {
+                  downloadFile(latestVersion.id, latestVersion.fileName);
+                }}
               >
                 <Download size={18} />
               </Button>

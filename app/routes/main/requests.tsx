@@ -1,7 +1,7 @@
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
 import type { UserType, VersionType } from "~/constants/types";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
@@ -273,7 +273,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             <SheetHeader>
               <h1>{viewRequestState.title}</h1>
               <Badge title="Authored by" className="cursor-pointer">
-                {enumFormatter(viewRequestState.status) ?? "--"}
+                {formatEnum(viewRequestState.status) ?? "--"}
               </Badge>
             </SheetHeader>
             <Separator />
@@ -320,7 +320,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Type</h3>
                         <p className="py-2 col-span-4">
-                          {enumFormatter(viewRequestState.version.fileType) ??
+                          {formatEnum(viewRequestState.version.fileType) ??
                             "--"}
                         </p>
                       </div>

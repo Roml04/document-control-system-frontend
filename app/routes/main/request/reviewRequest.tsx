@@ -1,10 +1,10 @@
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/reviewRequest";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, PackageOpen } from "lucide-react";
-import { useNavigate } from "react-router";
+import { ChevronLeft, Download, PackageOpen } from "lucide-react";
+import { NavLink, useNavigate } from "react-router";
 import { Badge } from "~/components/ui/badge";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import { Separator } from "~/components/ui/separator";
 import {
   Field,
@@ -33,13 +33,12 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
+import FileTypeBadge from "~/components/primitives/FileTypeBadge";
+import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
+import { downloadFile } from "~/utils/downloadFile";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
-
-  console.log("INFO | REDIRECTED TO REVIEW REQUEST");
-  console.log("INFO | PARAMS ID", params.id);
-  console.log("INFO | API RESPONSE", apiResponse);
 
   return apiResponse.data as RequestType & {
     version: VersionType;
@@ -73,12 +72,6 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
           description: "A comment is required when denying a request.",
         });
       }
-
-      console.log("INFO | SENDING THESE TO BACKEND", {
-        isApproved: isApproved,
-        requestId: requestId,
-        comment: comment,
-      });
 
       const apiResponse = await apiFetch(`/request/${request.id}`, {
         method: "PATCH",
@@ -126,8 +119,40 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
               <h1>{request.title}</h1>
               <p className="text-muted-foreground"></p>
             </div>
-            <Badge>{enumFormatter(request.status)}</Badge>
+            <div className="flex items-center gap-1">
+              <RequestTypeBadge type={request.type} />
+              <Badge>{formatEnum(request.status)}</Badge>
+            </div>
           </div>
+
+          {/* FILE COMPONENT */}
+          <div className="p-4 border rounded-l items-center flex justify-between">
+            <div className="flex items-center gap-2">
+              <FileTypeBadge type={request.version.fileType} />
+              <div className="flex flex-col">
+                <h3>{request.version.fileTitle}</h3>
+                <p>{request.version.fileType}</p>
+              </div>
+            </div>
+            <div className="flex gap-1">
+              <NavLink
+                to={`/onlyoffice/${request.version.id}?mode=view`}
+                target="_blank"
+              >
+                <Button variant={"ghost"}>Open in editor</Button>
+              </NavLink>
+              <Button
+                variant={"ghost"}
+                size={"icon"}
+                onClick={() =>
+                  downloadFile(request.version.id, request.version.fileName)
+                }
+              >
+                <Download />
+              </Button>
+            </div>
+          </div>
+
           <div className="border rounded-lg">
             <div className="grid grid-cols-4 gap-y-4 p-4">
               <div>

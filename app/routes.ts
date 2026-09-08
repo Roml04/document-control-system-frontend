@@ -26,5 +26,5 @@ export default [
       route("/:id/edit", "./routes/main/version/editVersion.tsx"),
     ]),
   ]),
-  route("/onlyoffice/edit/:id", "./routes/onlyoffice/editor.tsx"),
+  route("/onlyoffice/:id", "./routes/onlyoffice/editor.tsx"),
 ] satisfies RouteConfig;

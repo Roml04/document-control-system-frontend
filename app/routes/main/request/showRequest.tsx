@@ -1,6 +1,6 @@
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/showRequest";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import { Box, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type {
@@ -54,7 +54,7 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
             </div>
             <div className="flex items-center gap-1">
               <RequestTypeBadge type={request.type} />
-              <Badge>{enumFormatter(request.status)}</Badge>
+              <Badge>{formatEnum(request.status)}</Badge>
             </div>
           </div>
           <div className="border rounded-lg">
