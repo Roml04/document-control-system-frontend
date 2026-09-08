@@ -247,7 +247,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
             </div>
             <div className="flex items-center">
               <NavLink
-                to={`/onlyoffice/edit/${editVersionState.id}`}
+                to={`/onlyoffice/${editVersionState.id}?mode=edit`}
                 target="_blank"
               >
                 <Button type="button" variant={"ghost"}>
