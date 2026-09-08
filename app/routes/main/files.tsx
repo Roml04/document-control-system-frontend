@@ -1,4 +1,4 @@
-import { FileIcon, FileUp, Plus, XIcon } from "lucide-react";
+import { FileIcon, FileUp, PackageOpen, Plus, XIcon } from "lucide-react";
 import { useReducer, useState, type SubmitEventHandler } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -44,6 +44,12 @@ import type { Route } from "./+types/files";
 import type { FileType, UserType, VersionType } from "~/constants/types";
 import { formatUserName } from "~/utils/formatUserName";
 import FileCard from "~/components/primitives/FileCard";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
 
 enum ACTION {
   SETFIELD = "SETFIELD",
@@ -238,7 +244,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 h-[55em]">
         <div className="flex justify-between">
           <h1>Files</h1>
           <Button
@@ -251,11 +257,24 @@ export default function files({ loaderData }: Route.ComponentProps) {
           </Button>
         </div>
         <Separator />
-        <ul className="grid grid-cols-4 gap-4">
-          {files.map((file) => (
-            <FileCard file={file} />
-          ))}
-        </ul>
+        {files.length > 0 ? (
+          <ScrollArea className="h-[52em] w-full ">
+            <ul className="grid grid-cols-4 gap-x-4 gap-y-2">
+              {files.map((file) => (
+                <FileCard file={file} />
+              ))}
+            </ul>
+          </ScrollArea>
+        ) : (
+          <Empty>
+            <EmptyHeader className="gap-1">
+              <EmptyMedia variant={"icon"}>
+                <PackageOpen />
+              </EmptyMedia>
+              <EmptyTitle>No files published at the moment</EmptyTitle>
+            </EmptyHeader>
+          </Empty>
+        )}
       </div>
       <Sheet
         open={openCreateSheet}

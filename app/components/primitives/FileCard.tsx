@@ -1,4 +1,3 @@
-import { FILETYPE } from "~/constants/enums";
 import FileTypeBadge from "./FileTypeBadge";
 import { Separator } from "../ui/separator";
 import type { FileType, VersionType } from "~/constants/types";
