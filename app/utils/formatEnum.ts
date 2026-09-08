@@ -1,5 +1,5 @@
 // coordinator_approval
-export default function enumFormatter(str: string) {
+export default function formatEnum(str: string | null) {
   if (!str) {
     return null;
   }

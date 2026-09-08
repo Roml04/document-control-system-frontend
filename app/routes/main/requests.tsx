@@ -1,9 +1,8 @@
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
-import type { Route } from "./+types/requests";
 import type { UserType, VersionType } from "~/constants/types";
-import enumFormatter from "~/utils/enumFormatter";
-import { REQUESTSTATUS } from "~/constants/enums";
+import formatEnum from "~/utils/formatEnum";
+import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sheet,
@@ -37,6 +36,8 @@ import {
   RequestListHeader,
   RequestListItem,
 } from "~/components/organisms/RequestList";
+import { formatUserName } from "~/utils/formatUserName";
+import type { Route } from "./+types/requests";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -45,6 +46,7 @@ enum ACTION {
 
 export type ViewRequestStateType = {
   id: number | null;
+  type: REQUESTTYPE | null;
   title: string;
   reason: string;
   status: REQUESTSTATUS | null;
@@ -60,6 +62,8 @@ type ViewRequestActionType = {
 
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
+
+  console.log("INFO | apiResponse", apiResponse);
 
   return apiResponse as {
     ok: boolean;
@@ -98,6 +102,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
    */
   const viewRequestInitialState: ViewRequestStateType = {
     id: null,
+    type: null,
     title: "",
     reason: "",
     status: null,
@@ -136,10 +141,12 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   const renderRequestOnSheet = async (request: ViewRequestStateType) => {
     try {
       console.log("INFO | RENDER REQUEST ON SHEET", request);
+      console.log("INFO | REQUEST VERSION", request.version);
 
       if (!request.version) {
         return toast.success("Failed to show file details", {
           position: "top-center",
+          description: "No version associated with this request",
         });
       }
 
@@ -266,9 +273,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             <SheetHeader>
               <h1>{viewRequestState.title}</h1>
               <Badge title="Authored by" className="cursor-pointer">
-                {viewRequestState.status
-                  ? enumFormatter(viewRequestState.status)
-                  : "Unknown Status"}
+                {formatEnum(viewRequestState.status) ?? "--"}
               </Badge>
             </SheetHeader>
             <Separator />
@@ -280,22 +285,23 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Reason</h3>
                       <p className="py-2 col-span-4">
-                        {viewRequestState.reason}
+                        {viewRequestState.reason ?? "--"}
                       </p>
                     </div>
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Author</h3>
                       <p className="py-2 col-span-4">
-                        {`${viewRequestState.user?.firstName ?? ""} ${
-                          viewRequestState.user?.lastName ?? ""
-                        }`.trim() ?? "Unknown User"}
+                        {formatUserName(
+                          viewRequestState.user?.firstName,
+                          viewRequestState.user?.lastName,
+                        )}
                       </p>
                     </div>
                     <div className="py-4 grid grid-cols-6">
                       <h3 className="py-2 col-span-2">Upload Date</h3>
 
                       <p className="py-2 col-span-4">
-                        {viewRequestState.uploadDate}
+                        {viewRequestState.uploadDate ?? "--"}
                       </p>
                     </div>
                   </div>
@@ -314,7 +320,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       <div className="py-4 grid grid-cols-6">
                         <h3 className="py-2 col-span-2">Type</h3>
                         <p className="py-2 col-span-4">
-                          {enumFormatter(viewRequestState.version.fileType) ??
+                          {formatEnum(viewRequestState.version.fileType) ??
                             "--"}
                         </p>
                       </div>

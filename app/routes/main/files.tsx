@@ -11,9 +11,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
 } from "~/components/ui/attachment";
-import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
-import { Card, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Field,
   FieldDescription,
@@ -43,8 +41,9 @@ import {
 import { Textarea } from "~/components/ui/textarea";
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/files";
-import type { FileType, UserType } from "~/constants/types";
+import type { FileType, UserType, VersionType } from "~/constants/types";
 import { formatUserName } from "~/utils/formatUserName";
+import FileCard from "~/components/primitives/FileCard";
 
 enum ACTION {
   SETFIELD = "SETFIELD",
@@ -68,6 +67,8 @@ type UploadFileActionType = {
   payload: Partial<UploadFileStateType>;
 };
 
+type FetchFileType = FileType & { latestVersion: VersionType };
+
 export async function clientLoader() {
   // const apiResponse = await apiFetch("/file");
 
@@ -82,6 +83,9 @@ export async function clientLoader() {
   return {
     files: fileResponse.data,
     approvers: userResponse.data,
+  } as {
+    files: FetchFileType[];
+    approvers: UserType[];
   };
 }
 
@@ -92,7 +96,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
 
   const fileTypes = ["Document", "Checklist", "Form"];
 
-  let files: FileType[] = [];
+  let files: FetchFileType[] = [];
   let approvers: UserType[] = [];
 
   console.log("INFO | LOADER DATA", loaderData.files);
@@ -223,40 +227,6 @@ export default function files({ loaderData }: Route.ComponentProps) {
     }
   };
 
-  const renderBadge = (type: string) => {
-    switch (type) {
-      case "document":
-        return (
-          <Badge
-            className="bg-amber-100 text-amber-600 border-amber-600"
-            variant={"outline"}
-          >
-            {type}
-          </Badge>
-        );
-
-      case "checklist":
-        return (
-          <Badge
-            className="bg-green-100 text-green-600 border-green-600"
-            variant={"outline"}
-          >
-            {type}
-          </Badge>
-        );
-
-      case "form":
-        return (
-          <Badge
-            className="bg-blue-100 text-blue-600 border-blue-600"
-            variant={"outline"}
-          >
-            {type}
-          </Badge>
-        );
-    }
-  };
-
   const resetForm = () => {
     uploadFileDispatch({
       type: ACTION.RESETFORM,
@@ -281,30 +251,9 @@ export default function files({ loaderData }: Route.ComponentProps) {
           </Button>
         </div>
         <Separator />
-        <ul className="grid grid-cols-5 gap-4">
+        <ul className="grid grid-cols-4 gap-4">
           {files.map((file) => (
-            <Card key={file.id}>
-              <img
-                src="https://avatar.vercel.sh/shadcn1"
-                className="aspect-video"
-              />
-              <CardHeader className="flex justify-between gap-8">
-                <CardTitle className="truncate" title={file.title}>
-                  {file.title}
-                </CardTitle>
-                {renderBadge(file.type)}
-              </CardHeader>
-              <CardFooter>
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    navigate(`/files/${file.id}`);
-                  }}
-                >
-                  View File
-                </Button>
-              </CardFooter>
-            </Card>
+            <FileCard file={file} />
           ))}
         </ul>
       </div>
@@ -318,7 +267,12 @@ export default function files({ loaderData }: Route.ComponentProps) {
           }
         }}
       >
-        <SheetContent className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0">
+        <SheetContent
+          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
+          onInteractOutside={(event) => {
+            event.preventDefault();
+          }}
+        >
           <form
             onSubmit={handleUploadRequest}
             className="flex h-full min-h-0 flex-col"

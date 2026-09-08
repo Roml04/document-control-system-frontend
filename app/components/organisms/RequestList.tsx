@@ -1,4 +1,4 @@
-import { REQUESTSTATUS } from "~/constants/enums";
+import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
 import { useNavigate } from "react-router";
 import { allowedRoles } from "~/utils/allowedRoles";
-import enumFormatter from "~/utils/enumFormatter";
+import formatEnum from "~/utils/formatEnum";
 import type { ViewRequestStateType } from "~/routes/main/requests";
 
 type RequestListItemPropType = {
@@ -26,7 +26,8 @@ const gridStyling = "grid grid-cols-21";
 const columnWidths = {
   title: "w-full px-2 col-span-5 content-center",
   reason: "w-full px-2 col-span-7 content-center",
-  status: "w-full px-2 col-span-3 content-center",
+  type: "w-full px-2 col-span-1 content-center",
+  status: "w-full px-2 col-span-2 content-center truncate",
   author: "w-full px-2 col-span-2 content-center",
   uploadDate: "w-full px-2 w-full col-span-3 content-center",
   action: "w-full px-2 col-span-1 content-center",
@@ -41,13 +42,16 @@ export function RequestListHeader() {
       <div className={`${columnWidths.reason} border-x border-gray-200`}>
         <h3>Reason</h3>
       </div>
-      <div className={`${columnWidths.status}`}>
+      <div className={`${columnWidths.type}`}>
+        <h3>Type</h3>
+      </div>
+      <div className={`${columnWidths.status} border-x border-gray-200`}>
         <h3>Status</h3>
       </div>
-      <div className={`${columnWidths.author} border-x border-gray-200`}>
+      <div className={`${columnWidths.author}`}>
         <h3>Author</h3>
       </div>
-      <div className={`${columnWidths.uploadDate}`}>
+      <div className={`${columnWidths.uploadDate} border-x border-gray-200`}>
         <h3>Upload Date</h3>
       </div>
       <div className={`${columnWidths.action}`}>
@@ -65,6 +69,9 @@ export function RequestListItem({
 }: RequestListItemPropType) {
   const navigate = useNavigate();
 
+  console.log("INFO | RequestListItem Title", request.title);
+  console.log("INFO | RequestListItem", request);
+
   let styleRequestStatus = "";
 
   switch (request.status) {
@@ -76,8 +83,12 @@ export function RequestListItem({
       styleRequestStatus = "text-green-600";
       break;
 
+    case REQUESTSTATUS.ORIGINATOREDIT:
+      styleRequestStatus = "text-amber-500";
+      break;
+
     default:
-      styleRequestStatus = "text-gray-500";
+      styleRequestStatus = "";
   }
 
   return (
@@ -92,9 +103,12 @@ export function RequestListItem({
         <div className={`${columnWidths.reason}`}>
           <p>{request.reason}</p>
         </div>
+        <div className={`${columnWidths.type} `}>
+          <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
+        </div>
         <div className={`${columnWidths.status} ${styleRequestStatus}`}>
           <p>
-            {request.status ? enumFormatter(request.status) : "Unknown Status"}
+            {request.status ? formatEnum(request.status) : "Unknown Status"}
           </p>
         </div>
         <div className={`${columnWidths.author}`}>
@@ -104,7 +118,7 @@ export function RequestListItem({
           </p>
         </div>
         <div className={`${columnWidths.uploadDate}`}>
-          <p>{request.uploadDate ?? "--"}</p>
+          <p>{request.version?.uploadDate ?? "--"}</p>
         </div>
       </div>
 
@@ -124,6 +138,19 @@ export function RequestListItem({
               >
                 View
               </DropdownMenuItem>
+              {allowedRoles(["originator", "sysadmin"]) &&
+              request.type === REQUESTTYPE.REVISION &&
+              request.status === REQUESTSTATUS.ORIGINATOREDIT ? (
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate(`/versions/${request.version?.id}/edit`);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+              ) : (
+                <></>
+              )}
               {allowedRoles([
                 "coordinator",
                 "superior",

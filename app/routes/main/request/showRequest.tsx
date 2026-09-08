@@ -1,9 +1,7 @@
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/showRequest";
-import { useNavigate } from "react-router";
-import enumFormatter from "~/utils/enumFormatter";
-import { ChevronLeft } from "lucide-react";
-import { Button } from "~/components/ui/button";
+import formatEnum from "~/utils/formatEnum";
+import { Box, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type {
   CommenterType,
@@ -22,8 +20,16 @@ import avatarFallback from "~/utils/avatarFallback";
 import { formatUserName } from "~/utils/formatUserName";
 import { apiFetch } from "~/utils/apiFetch";
 import Header from "~/components/organisms/Header";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
+import { REQUESTTYPE } from "~/constants/enums";
+import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 
-export async function clientLoader({ params }: Route.ClientActionArgs) {
+export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
   console.log("INFO | request.tsx cientLoader(),", apiResponse);
@@ -45,9 +51,11 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
           <div className="flex w-full justify-between items-center py-2">
             <div className="flex flex-col">
               <h1>{request.title}</h1>
-              <p className="text-muted-foreground"></p>
             </div>
-            <Badge>{enumFormatter(request.status)}</Badge>
+            <div className="flex items-center gap-1">
+              <RequestTypeBadge type={request.type} />
+              <Badge>{formatEnum(request.status)}</Badge>
+            </div>
           </div>
           <div className="border rounded-lg">
             <div className="grid grid-cols-4 gap-y-4 p-4">
@@ -94,42 +102,54 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
           </div>
           <div className="flex flex-col p-4 gap-4">
             <p className="text-muted-foreground">Comments</p>
-            <div className="px-4 border-l flex flex-col gap-6">
-              {request.commenters.map((commenter, index) => {
-                return (
-                  <Message key={index}>
-                    <MessageAvatar
-                      title={formatUserName(
-                        commenter.firstName,
-                        commenter.lastName,
-                      )}
-                    >
-                      <Avatar>
-                        <AvatarImage />
-                        <AvatarFallback>
-                          {avatarFallback(
-                            commenter.firstName,
-                            commenter.lastName,
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                    </MessageAvatar>
-                    <MessageContent className="gap-0">
-                      <MessageHeader>{commenter.role}</MessageHeader>
-                      <BubbleGroup>
-                        {commenter.comments.map((comment, commentIndex) => {
-                          return (
-                            <Bubble variant={"muted"} key={commentIndex}>
-                              <BubbleContent>{comment.content}</BubbleContent>
-                            </Bubble>
-                          );
-                        })}
-                      </BubbleGroup>
-                    </MessageContent>
-                  </Message>
-                );
-              })}
-            </div>
+            {request.commenters.length > 0 ? (
+              <div className="px-4 border-l flex flex-col gap-6">
+                {request.commenters.map((commenter, index) => {
+                  return (
+                    <Message key={index}>
+                      <MessageAvatar
+                        title={formatUserName(
+                          commenter.firstName,
+                          commenter.lastName,
+                        )}
+                      >
+                        <Avatar>
+                          <AvatarImage />
+                          <AvatarFallback>
+                            {avatarFallback(
+                              commenter.firstName,
+                              commenter.lastName,
+                            )}
+                          </AvatarFallback>
+                        </Avatar>
+                      </MessageAvatar>
+                      <MessageContent className="gap-0">
+                        <MessageHeader>{commenter.role}</MessageHeader>
+                        <BubbleGroup>
+                          {commenter.comments.map((comment, commentIndex) => {
+                            return (
+                              <Bubble variant={"muted"} key={commentIndex}>
+                                <BubbleContent>{comment.content}</BubbleContent>
+                              </Bubble>
+                            );
+                          })}
+                        </BubbleGroup>
+                      </MessageContent>
+                    </Message>
+                  );
+                })}
+              </div>
+            ) : (
+              <Empty>
+                <EmptyHeader className="gap-1">
+                  <EmptyMedia variant={"icon"}>
+                    <PackageOpen />
+                  </EmptyMedia>
+                  <EmptyTitle>No comments available</EmptyTitle>
+                  {/* <EmptyDescription></EmptyDescription> */}
+                </EmptyHeader>
+              </Empty>
+            )}
           </div>
         </div>
       </div>
