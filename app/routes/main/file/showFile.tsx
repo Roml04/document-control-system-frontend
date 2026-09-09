@@ -71,14 +71,19 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
       event.preventDefault();
       setIsSpinning(true);
 
+      const data = {
+        type: type,
+        title: requestTitle,
+        reason: requestReason,
+        latestVersionId: latestVersion.id,
+        ...(type === "del" && { fileId: file.id }),
+      };
+
+      console.log("INFO | DATA", data);
+
       const apiResponse = await apiFetch("/request", {
         method: "POST",
-        body: JSON.stringify({
-          type: type,
-          title: requestTitle,
-          reason: requestReason,
-          latestVersionId: latestVersion.id,
-        }),
+        body: JSON.stringify(data),
       });
 
       if (!apiResponse.ok) {
