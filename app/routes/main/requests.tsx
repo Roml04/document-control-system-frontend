@@ -225,6 +225,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   {myRequests.map((request, index) => {
                     return (
                       <RequestListItem
+                        index={index}
                         key={index}
                         request={request}
                         onClick={() => renderRequestOnSheet(request)}
@@ -242,6 +243,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   {forApprovals.map((request, index) => {
                     return (
                       <RequestListItem
+                        index={index}
                         key={index}
                         request={request}
                         onClick={() => renderRequestOnSheet(request)}
