@@ -19,6 +19,7 @@ export enum REQUESTTYPE {
   UPLOAD = "upl",
   REVISION = "rev",
   RESUBMISSION = "resub",
+  DELETE = "del",
 }
 
 export enum FILETYPE {
