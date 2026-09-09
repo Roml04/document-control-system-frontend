@@ -14,13 +14,6 @@ import { allowedRoles } from "~/utils/allowedRoles";
 import formatEnum from "~/utils/formatEnum";
 import type { ViewRequestStateType } from "~/routes/main/requests";
 
-type RequestListItemPropType = {
-  key: number;
-  request: ViewRequestStateType;
-  onClick: () => void;
-  isOwned?: boolean;
-};
-
 const gridStyling = "grid grid-cols-21";
 
 const columnWidths = {
@@ -61,8 +54,15 @@ export function RequestListHeader() {
   );
 }
 
+type RequestListItemPropType = {
+  index: number;
+  request: ViewRequestStateType;
+  onClick: () => void;
+  isOwned?: boolean;
+};
+
 export function RequestListItem({
-  key,
+  index,
   request,
   onClick,
   isOwned = false,
@@ -93,8 +93,8 @@ export function RequestListItem({
 
   return (
     <li
-      className={`grid grid-cols-21 cursor-pointer ${key !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
-      key={key}
+      className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
+      key={index}
     >
       <div className={`col-span-20 py-5 grid grid-cols-20`} onClick={onClick}>
         <div className={`${columnWidths.title} `}>
@@ -118,13 +118,13 @@ export function RequestListItem({
           </p>
         </div>
         <div className={`${columnWidths.uploadDate}`}>
-          <p>{request.version?.uploadDate ?? "--"}</p>
+          <p>{request.uploadDate ?? "--"}</p>
         </div>
       </div>
 
       <div className={`${columnWidths.action}`}>
         <DropdownMenu>
-          <DropdownMenuTrigger onClick={() => {}}>
+          <DropdownMenuTrigger onClick={() => {}} asChild>
             <Button size={"icon"} variant={"ghost"}>
               <Ellipsis size={16} className="cursor-pointer" />
             </Button>
