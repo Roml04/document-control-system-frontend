@@ -1,4 +1,4 @@
-import { ArrowUpFromLine, Pen, RotateCcw } from "lucide-react";
+import { ArrowUpFromLine, Pen, RotateCcw, X } from "lucide-react";
 import { REQUESTTYPE } from "~/constants/enums";
 import { Badge } from "../ui/badge";
 
@@ -32,6 +32,14 @@ export default function RequestTypeBadge({ type }: RequestTypeBadgePropType) {
         <Badge>
           <RotateCcw color="#ffffff" />
           Resubmission
+        </Badge>
+      );
+
+    case REQUESTTYPE.DELETE:
+      return (
+        <Badge>
+          <X color="#ffffff" />
+          Delete
         </Badge>
       );
 
