@@ -63,6 +63,8 @@ type EditVersionActionType = {
   payload: Partial<EditVersionStateType>;
 };
 
+type PhaseType = "idle" | "saving" | "submitting";
+
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const [versionResponse, userResponse] = await Promise.all([
     apiFetch(`/version/${params.id}`),
@@ -80,7 +82,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function editVersion({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
-  const [isSpinning, setIsSpinning] = useState(false);
+  const [phase, setPhase] = useState<PhaseType>("idle");
 
   const { version, superiors } = loaderData;
 
@@ -129,11 +131,37 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
   /**
    * Functions
    */
+
+  const sendCheckRequest = async (): Promise<boolean> => {
+    const apiResponse = await apiFetch(
+      `/version/${editVersionState.id}/status`,
+    );
+
+    console.log(
+      `INFO | RESPONSE FROM /version/${editVersionState.id}/status`,
+      apiResponse,
+    );
+
+    return apiResponse.saved;
+  };
+
+  const checkFileSaveStatus = async () => {
+    let isSaved = false;
+
+    while (!isSaved) {
+      console.log("INFO | IS FILE SAVED", isSaved);
+      isSaved = await sendCheckRequest();
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+
+    setPhase("idle");
+  };
+
   const handleEditSubmit: SubmitEventHandler<HTMLFormElement> = async (
     event,
   ) => {
     try {
-      setIsSpinning(true);
+      setPhase("submitting");
       event.preventDefault();
 
       const apiResponse = await apiFetch(`/version/${editVersionState.id}`, {
@@ -167,7 +195,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
             : "Something went wrong. Please try again in a moment",
       });
     } finally {
-      setIsSpinning(false);
+      setPhase("idle");
     }
   };
 
@@ -230,8 +258,8 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
           <LoadingButton
             type="submit"
             displayText="Submit"
-            loadingDisplayText="Submitting revision..."
-            isSpinning={isSpinning}
+            loadingDisplayText={`${formatEnum(phase)}...`}
+            isSpinning={phase === "saving" || phase === "submitting"}
           />
         </div>
       </header>
@@ -249,6 +277,10 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               <NavLink
                 to={`/onlyoffice/${editVersionState.id}?mode=edit`}
                 target="_blank"
+                onClick={() => {
+                  setPhase("saving");
+                  checkFileSaveStatus();
+                }}
               >
                 <Button type="button" variant={"ghost"}>
                   Open in editor
