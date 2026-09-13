@@ -166,6 +166,16 @@ export function RequestListItem({
                     Review
                   </DropdownMenuItem>
                 )}
+              {allowedRoles(["originator", "sysadmin"]) &&
+                request.status === REQUESTSTATUS.DENIED && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate(`/requests/${request.id}/resubmit`);
+                    }}
+                  >
+                    Resubmit
+                  </DropdownMenuItem>
+                )}
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
