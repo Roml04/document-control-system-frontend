@@ -1,7 +1,7 @@
 import { Separator } from "~/components/ui/separator";
 import type { Route } from "./+types/showRequest";
 import formatEnum from "~/utils/formatEnum";
-import { Box, PackageOpen } from "lucide-react";
+import { Box, Download, Ellipsis, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type {
   CommenterType,
@@ -28,6 +28,10 @@ import {
 } from "~/components/ui/empty";
 import { REQUESTTYPE } from "~/constants/enums";
 import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
+import FileTypeBadge from "~/components/primitives/FileTypeBadge";
+import { NavLink } from "react-router";
+import { Button } from "~/components/ui/button";
+import { downloadFile } from "~/utils/downloadFile";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -57,6 +61,38 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
               <Badge>{formatEnum(request.status)}</Badge>
             </div>
           </div>
+
+          {/* DEV-NOTE: Turn this into a component */}
+          <div className="flex justify-between border p-4 rounded-lg">
+            <div className="flex gap-2 items-center">
+              <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-12">
+                <FileTypeBadge type={request.version.fileType} size={22} />
+              </div>
+              <div className="flex flex-col">
+                <h3>{request.version.fileTitle}</h3>
+                <p>{formatEnum(request.version.fileType)}</p>
+              </div>
+            </div>
+            <div className="flex items-center">
+              <NavLink
+                to={`/onlyoffice/${request.version.id}?mode=view`}
+                target="_blank"
+              >
+                <Button variant={"ghost"}>Open in editor</Button>
+              </NavLink>
+              <Button
+                size={"icon-lg"}
+                variant={"ghost"}
+                title="Download"
+                onClick={() => {
+                  downloadFile(request.version.id, request.version.fileName);
+                }}
+              >
+                <Download size={18} />
+              </Button>
+            </div>
+          </div>
+
           <div className="border rounded-lg">
             <div className="grid grid-cols-4 gap-y-4 p-4">
               <div>
