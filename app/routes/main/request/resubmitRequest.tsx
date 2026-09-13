@@ -39,14 +39,33 @@ import {
 } from "~/components/ui/select";
 import { FILETYPE } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
-import type { RequestType, UserType } from "~/constants/types";
+import type { RequestType, UserType, VersionType } from "~/constants/types";
 import { formatUserName } from "~/utils/formatUserName";
+import { useReducer, useState, type SubmitEventHandler } from "react";
+
+enum ACTION {
+  SETDETAILS = "SETDETAILS",
+  RESETDETAILS = "RESETDETAILS",
+}
+
+type ResubRequestStateType = Omit<
+  {
+    [K in keyof RequestType]: RequestType[K] | null;
+  },
+  "commenters"
+>;
+
+type ResubRequestActionType = {
+  type: ACTION;
+  payload: Partial<ResubRequestStateType>;
+};
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const [apiResponse, superiorResponse] = await Promise.all([
     apiFetch(`/request/${params.id}`),
     apiFetch(`/user?role=superior`),
   ]);
+
   return {
     request: apiResponse.data,
     superiors: superiorResponse.data,
@@ -61,14 +80,59 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
 
   const { request, superiors } = loaderData;
 
-  console.log("INFO | SUPERIORS", superiors);
+  /**
+   * Reducer function
+   */
+  const resubRequestInitialState = {
+    id: request.id,
+    type: request.type,
+    title: request.title,
+    reason: request.reason,
+    status: request.status,
+    user: request.user,
+    version: request.version,
+  };
 
-  console.log("INFO | LOADER DATA", loaderData);
+  function resubRequestReducer(
+    state: ResubRequestStateType,
+    action: ResubRequestActionType,
+  ) {
+    switch (action.type) {
+      case ACTION.SETDETAILS:
+        return {
+          ...state,
+          ...action.payload,
+        };
+
+      case ACTION.RESETDETAILS:
+        return resubRequestInitialState;
+
+      default:
+        return state;
+    }
+  }
+
+  const [resubRequestState, dispatchResubRequest] = useReducer(
+    resubRequestReducer,
+    resubRequestInitialState,
+  );
+
+  /**
+   * Functions
+   */
+
+  console.log("RELOAD");
+
+  const handleResubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
+    event.preventDefault();
+    console.log("SUBMITTED");
+  };
+
   return (
-    <div className="flex flex-col gap-2">
+    <form onSubmit={handleResubmit} className="flex flex-col gap-2">
       <header className="flex justify-between">
         <AlertDialog>
-          <AlertDialogTrigger asChild>
+          <AlertDialogTrigger type="button" asChild>
             <Button type="button" variant={"ghost"}>
               <ChevronLeft />
             </Button>
@@ -91,7 +155,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
         </AlertDialog>
         <div className="flex gap-1">
           <AlertDialog>
-            <AlertDialogTrigger asChild>
+            <AlertDialogTrigger type="button" asChild>
               <Button type="button" variant={"ghost"}>
                 <RotateCcw />
                 Reset
@@ -109,10 +173,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                 <AlertDialogCancel>Keep editing</AlertDialogCancel>
                 <AlertDialogAction
                   onClick={() => {
-                    // dispatchEditVersion({
-                    //   type: ACTION.RESETDETAILS,
-                    //   payload: {},
-                    // });
+                    dispatchResubRequest({
+                      type: ACTION.RESETDETAILS,
+                      payload: {},
+                    });
                   }}
                 >
                   Reset
@@ -141,11 +205,35 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               <FieldGroup>
                 <Field>
                   <FieldLabel>Title</FieldLabel>
-                  <Input type="text" placeholder="Enter title..." />
+                  <Input
+                    type="text"
+                    placeholder="Enter request title"
+                    value={resubRequestState.title ?? ""}
+                    onChange={(e) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          title: e.target.value,
+                        },
+                      });
+                    }}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Reason</FieldLabel>
-                  <Input type="text" placeholder="Enter reason..." />
+                  <Input
+                    type="text"
+                    placeholder="Enter request reason"
+                    value={resubRequestState.reason ?? ""}
+                    onChange={(e) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          reason: e.target.value,
+                        },
+                      });
+                    }}
+                  />
                 </Field>
               </FieldGroup>
             </FieldSet>
@@ -156,12 +244,42 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               <FieldGroup className="grid grid-cols-2">
                 <Field>
                   <FieldLabel>Title</FieldLabel>
-                  <Input type="text" placeholder="Enter file title" />
+                  <Input
+                    type="text"
+                    value={resubRequestState.version?.fileTitle}
+                    placeholder="Enter file title..."
+                    onChange={(e) =>
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          version: {
+                            ...resubRequestState.version,
+                            fileTitle: e.target.value,
+                          } as VersionType,
+                        },
+                      })
+                    }
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Type</FieldLabel>
-                  <Select>
-                    <SelectTrigger>
+                  <Select
+                    defaultValue={
+                      resubRequestState.version?.fileType ?? undefined
+                    }
+                    onValueChange={(value: FILETYPE) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          version: {
+                            ...resubRequestState.version,
+                            fileType: value,
+                          } as VersionType,
+                        },
+                      });
+                    }}
+                  >
+                    <SelectTrigger type="button">
                       <SelectValue placeholder="Select file type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -181,39 +299,107 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               <FieldGroup className="grid grid-cols-2">
                 <Field>
                   <FieldLabel>Originator</FieldLabel>
-                  <Input type="text" placeholder="Enter title..." />
+                  <Input
+                    type="text"
+                    placeholder="Enter originator..."
+                    value={resubRequestState.version?.originator}
+                    onChange={(e) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          version: {
+                            ...resubRequestState.version,
+                            originator: e.target.value,
+                          } as VersionType,
+                        },
+                      });
+                    }}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Department</FieldLabel>
-                  <Input type="text" placeholder="Enter reason..." />
+                  <Input
+                    type="text"
+                    placeholder="Enter department..."
+                    value={resubRequestState.version?.department}
+                    onChange={(e) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          version: {
+                            ...resubRequestState.version,
+                            department: e.target.value,
+                          } as VersionType,
+                        },
+                      });
+                    }}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Revision Number</FieldLabel>
-                  <Input type="text" placeholder="Enter reason..." />
+                  <Input
+                    type="text"
+                    placeholder="Enter revision number..."
+                    value={resubRequestState.version?.revisionNumber}
+                    onChange={(e) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          version: {
+                            ...resubRequestState.version,
+                            revisionNumber: e.target.value,
+                          } as VersionType,
+                        },
+                      });
+                    }}
+                  />
                 </Field>
                 <Field className="col-span-2">
                   <FieldLabel>Revision Detail</FieldLabel>
-                  <Textarea placeholder="Enter reason..." />
+                  <Textarea
+                    placeholder="Enter revision detail..."
+                    value={resubRequestState.version?.revisionDetails}
+                    onChange={(e) => {
+                      dispatchResubRequest({
+                        type: ACTION.SETDETAILS,
+                        payload: {
+                          version: {
+                            ...resubRequestState.version,
+                            revisionDetails: e.target.value,
+                          } as VersionType,
+                        },
+                      });
+                    }}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Upload Date</FieldLabel>
-                  <Input type="text" placeholder="Enter reason..." disabled />
+                  <Input
+                    type="text"
+                    disabled
+                    value={resubRequestState.version?.uploadDate}
+                    onChange={(e) => {}}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Revision Date</FieldLabel>
-                  <Input type="text" placeholder="Enter reason..." disabled />
+                  <Input
+                    type="text"
+                    disabled
+                    value={resubRequestState.version?.revisionDate}
+                    onChange={() => {}}
+                  />
                 </Field>
                 <Field>
                   <FieldLabel>Approver</FieldLabel>
-                  <Select>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select Approver" />
+                  <Select defaultValue={resubRequestState.version?.approver}>
+                    <SelectTrigger type="button">
+                      <SelectValue placeholder="Select an approver" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectGroup>
                         <SelectLabel>Approver</SelectLabel>
                         {superiors.map((superior, index) => {
-                          console.log("SUPERIOR", superior);
                           return (
                             <SelectItem
                               key={index}
@@ -221,6 +407,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                                 superior.firstName,
                                 superior.lastName,
                               )}
+                              onChange={() => {}}
                             >
                               {formatUserName(
                                 superior.firstName,
@@ -235,13 +422,18 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                 </Field>
                 <Field>
                   <FieldLabel>Approved Date</FieldLabel>
-                  <Input type="text" placeholder="Enter reason..." disabled />
+                  <Input
+                    type="text"
+                    disabled
+                    value={resubRequestState.version?.approvedDate}
+                    onChange={() => {}}
+                  />
                 </Field>
               </FieldGroup>
             </FieldSet>
           </div>
         </div>
       </ScrollArea>
-    </div>
+    </form>
   );
 }
