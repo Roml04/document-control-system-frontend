@@ -126,7 +126,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
           </div>
 
           {/* FILE COMPONENT */}
-          <div className="p-4 border rounded-l items-center flex justify-between">
+          <div className="p-4 border rounded-lg items-center flex justify-between">
             <div className="flex items-center gap-2">
               <FileTypeBadge type={request.version.fileType} />
               <div className="flex flex-col">

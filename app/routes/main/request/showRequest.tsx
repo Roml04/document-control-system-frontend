@@ -26,7 +26,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-import { REQUESTTYPE } from "~/constants/enums";
 import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { NavLink } from "react-router";
