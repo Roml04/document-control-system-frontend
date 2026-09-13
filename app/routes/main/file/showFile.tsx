@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { REQUESTTYPE } from "~/constants/enums";
+import { NavLink } from "react-router";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -138,6 +139,12 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
             <div className="flex items-center">
+              <NavLink
+                to={`/onlyoffice/${latestVersion.id}?mode=view`}
+                target="_blank"
+              >
+                <Button variant={"ghost"}>Open in editor</Button>
+              </NavLink>
               <Button
                 size={"icon-lg"}
                 variant={"ghost"}
