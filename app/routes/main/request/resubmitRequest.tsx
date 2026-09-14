@@ -42,6 +42,7 @@ import formatEnum from "~/utils/formatEnum";
 import type { RequestType, UserType, VersionType } from "~/constants/types";
 import { formatUserName } from "~/utils/formatUserName";
 import { useReducer, useState, type SubmitEventHandler } from "react";
+import { toast } from "sonner";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -50,7 +51,7 @@ enum ACTION {
 
 type ResubRequestStateType = Omit<
   {
-    [K in keyof RequestType]: RequestType[K] | null;
+    [K in keyof RequestType]: RequestType[K];
   },
   "commenters"
 >;
@@ -79,6 +80,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
   const { request, superiors } = loaderData;
+  const [isSpinning, setIsSpinning] = useState(false);
 
   /**
    * Reducer function
@@ -124,8 +126,78 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
   console.log("RELOAD");
 
   const handleResubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
-    event.preventDefault();
-    console.log("SUBMITTED");
+    try {
+      setIsSpinning(true);
+      event.preventDefault();
+      console.log("SUBMITTED");
+
+      if (!resubRequestState.version) {
+        toast.error("Failed to resubmit request", {
+          position: "top-center",
+          description: "The version associated with the request is missing",
+        });
+
+        setIsSpinning(false);
+
+        return;
+      }
+
+      const formData = new FormData();
+
+      formData.append("requestId", resubRequestState.id.toString());
+      formData.append("type", "resub");
+      formData.append("title", resubRequestState.title);
+      formData.append("reason", resubRequestState.reason);
+      formData.append("versionId", resubRequestState.version.id.toString());
+      formData.append("fileTitle", resubRequestState.version.fileTitle);
+      formData.append("fileType", resubRequestState.version.fileType);
+      formData.append("originator", resubRequestState.version.originator);
+      formData.append("department", resubRequestState.version.department);
+      formData.append(
+        "revisionNumber",
+        resubRequestState.version.revisionNumber,
+      );
+      formData.append(
+        "revisionDetails",
+        resubRequestState.version.revisionDetails,
+      );
+      // formData.append("uploadDate", resubRequestState.version.uploadDate);
+      // formData.append("revisionDate", resubRequestState.version.revisionDate);
+      formData.append("approver", resubRequestState.version.approver);
+      // formData.append("approvedDate", resubRequestState.version.approvedDate);
+      /**
+       * File
+       */
+
+      const apiResponse = await apiFetch("/request", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!apiResponse.ok) {
+        toast.error("Failed to resubmit request", {
+          position: "top-center",
+          description: apiResponse.message,
+        });
+
+        setIsSpinning(false);
+        return;
+      }
+
+      toast.success("Successfully resubmitted request", {
+        position: "top-center",
+      });
+
+      navigate(-1);
+    } catch (error) {
+      toast.error("Failed to resubmit request", {
+        position: "top-center",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+      });
+    } finally {
+      setIsSpinning(false);
+    }
   };
 
   return (
@@ -188,7 +260,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             type="submit"
             displayText="Resubmit"
             loadingDisplayText="Resubmit"
-            isSpinning={false}
+            isSpinning={isSpinning}
           />
         </div>
       </header>
