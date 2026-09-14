@@ -20,9 +20,12 @@ export default function FileItem({ version }: { version: VersionType }) {
       </div>
       <div className="flex items-center">
         <NavLink to={`/onlyoffice/${version.id}?mode=view`} target="_blank">
-          <Button variant={"ghost"}>Open in editor</Button>
+          <Button variant={"ghost"} type="button">
+            Open in editor
+          </Button>
         </NavLink>
         <Button
+          type="button"
           size={"icon-lg"}
           variant={"ghost"}
           title="Download"
