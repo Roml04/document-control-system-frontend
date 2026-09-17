@@ -541,6 +541,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     ) : (
                       <>
                         <FieldLabel>File</FieldLabel>
+                        {/* DEV-NOTE: Make this into a component */}
                         <label
                           htmlFor="file"
                           className="flex flex-col border border-gray-200 rounded-lg bg-gray-100 items-center py-8 gap-2"

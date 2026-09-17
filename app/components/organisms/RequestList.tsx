@@ -170,7 +170,9 @@ export function RequestListItem({
                 request.status === REQUESTSTATUS.DENIED && (
                   <DropdownMenuItem
                     onClick={() => {
-                      navigate(`/requests/${request.id}/resubmit`);
+                      navigate(
+                        `/requests/${request.id}/resubmit?type=${request.type}`,
+                      );
                     }}
                   >
                     Resubmit
