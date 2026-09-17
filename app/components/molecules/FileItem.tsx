@@ -6,7 +6,9 @@ import { downloadFile } from "~/utils/downloadFile";
 import { Download } from "lucide-react";
 import type { VersionType } from "~/constants/types";
 
-export default function FileItem({ version }: { version: VersionType }) {
+type FileItemType = { version: VersionType; mode: "view" | "edit" };
+
+export default function FileItem({ version, mode }: FileItemType) {
   return (
     <div className="flex justify-between border p-4 rounded-lg">
       <div className="flex gap-2 items-center">
@@ -19,7 +21,7 @@ export default function FileItem({ version }: { version: VersionType }) {
         </div>
       </div>
       <div className="flex items-center">
-        <NavLink to={`/onlyoffice/${version.id}?mode=view`} target="_blank">
+        <NavLink to={`/onlyoffice/${version.id}?mode=${mode}`} target="_blank">
           <Button variant={"ghost"} type="button">
             Open in editor
           </Button>
