@@ -4,10 +4,8 @@ import { apiFileFetch } from "./apiFileFetch";
 export async function downloadFile(versionId: number, fileName: string) {
   const apiFileResponse = await apiFileFetch(`/version/${versionId}/file`);
 
-  const response = await apiFileResponse;
-
-  if (!response.ok) {
-    return toast.error("Could not open file", {
+  if (!apiFileResponse.ok) {
+    return toast.error("Could not download file", {
       position: "top-center",
     });
   }
