@@ -82,6 +82,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
   const [isSpinning, setIsSpinning] = useState(false);
 
   console.log("INFO | request was edited", request);
+
+  const canEditVersion =
+    request.type === REQUESTTYPE.UPLOAD ||
+    (request.type === REQUESTTYPE.REVISION && !!request.wasEdited === true);
   /**
    * Reducer function
    */
@@ -123,8 +127,6 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
   /**
    * Functions
    */
-
-  console.log("RELOAD");
 
   const handleResubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
     try {
@@ -168,10 +170,9 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
         resubRequestState.version.revisionDetails,
       );
       formData.append("approver", resubRequestState.version.approver);
-
-      /**
-       * File
-       */
+      if (file) {
+        formData.append("file", file);
+      }
 
       const apiResponse = await apiFetch("/request", {
         method: "POST",
@@ -202,12 +203,6 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
     } finally {
       setIsSpinning(false);
     }
-  };
-
-  const handleRevResubmit: SubmitEventHandler<HTMLFormElement> = async (
-    event,
-  ) => {
-    event.preventDefault();
   };
 
   switch (requestType) {
@@ -717,18 +712,13 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               )}
             </div>
           </ScrollArea>
-          {request.version ? (
-            <FileItem version={request.version} mode="edit" />
-          ) : (
-            <label
-              htmlFor="file"
-              className="cursor-pointer flex flex-col border border-gray-200 rounded-lg bg-gray-50 items-center py-8 gap-2"
-            >
-              <FileUp />
-              <p>Upload a file</p>
-              <Input className="sr-only" type="file" id="file" />
-            </label>
-          )}
+          <FileItem
+            version={request.version}
+            mode={request.wasEdited ? "edit" : "view"}
+            isReplaceable={canEditVersion}
+            file={file}
+            setFile={setFile}
+          />
         </form>
       );
 
