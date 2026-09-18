@@ -1,15 +1,8 @@
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/resubmitRequest";
 import { useNavigate } from "react-router";
-import FileCard from "~/components/primitives/FileCard";
 import FileItem from "~/components/molecules/FileItem";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldLegend,
-  FieldSet,
-} from "~/components/ui/field";
+import { Field, FieldGroup, FieldLabel, FieldSet } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { Separator } from "~/components/ui/separator";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -25,12 +18,11 @@ import {
 } from "~/components/ui/select";
 import { FILETYPE, REQUESTTYPE } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
-import type { RequestType, UserType, VersionType } from "~/constants/types";
+import type { RequestType, UserType } from "~/constants/types";
 import { formatUserName } from "~/utils/formatUserName";
-import { useReducer, useRef, useState, type SubmitEventHandler } from "react";
+import { useEffect, useRef, useState, type SubmitEventHandler } from "react";
 import { toast } from "sonner";
 import StrictHeader from "~/components/organisms/StrictHeader";
-import { FileUp } from "lucide-react";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -74,25 +66,75 @@ export async function clientLoader({
   };
 }
 
+type SubmitPhaseType = "idle" | "saving" | "submitting";
+
 export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
+  const [phase, setPhase] = useState<SubmitPhaseType>("idle");
 
   const formRef = useRef<HTMLFormElement>(null);
 
   const { request, superiors, requestType } = loaderData;
-  const [isSpinning, setIsSpinning] = useState(false);
 
   const canEditVersion =
     request.type === REQUESTTYPE.UPLOAD ||
     (request.type === REQUESTTYPE.REVISION && !!request.wasEdited === true);
 
+  useEffect(() => {
+    if (!request.version) return;
+
+    let cancelled = false;
+
+    async function resumeIfNeeded() {
+      const status = await sendCheckRequest();
+      if (cancelled) return;
+      if (!status) {
+        setPhase("saving");
+        checkFileSaveStatus();
+      }
+    }
+
+    resumeIfNeeded();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [request.version?.id]);
+
   /**
    * Functions
    */
+
+  const sendCheckRequest = async (): Promise<boolean> => {
+    if (!request.version) {
+      throw Error("The associated version is missing");
+    }
+
+    const apiResponse = await apiFetch(`/version/${request.version.id}/status`);
+
+    console.log(
+      `INFO | RESPONSE FROM /version/${request.version.id}/status`,
+      apiResponse,
+    );
+
+    return apiResponse.saved;
+  };
+
+  const checkFileSaveStatus = async () => {
+    let isSaved = false;
+
+    while (!isSaved) {
+      console.log("INFO | IS FILE SAVED", isSaved);
+      isSaved = await sendCheckRequest();
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+
+    setPhase("idle");
+  };
+
   const handleResubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
     try {
-      setIsSpinning(true);
       event.preventDefault();
       console.log("SUBMITTED");
 
@@ -115,6 +157,8 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
 
       console.log("INFO | Form Data", Object.fromEntries(formData.entries()));
 
+      setPhase("submitting");
+
       const apiResponse = await apiFetch("/request", {
         method: "POST",
         body: formData,
@@ -126,7 +170,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
           description: apiResponse.message,
         });
 
-        setIsSpinning(false);
+        setPhase("idle");
         return;
       }
 
@@ -142,7 +186,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
           error instanceof Error ? error.message : "An error occurred",
       });
     } finally {
-      setIsSpinning(false);
+      setPhase("idle");
     }
   };
 
@@ -154,7 +198,9 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             resetOnCLick={() => {
               formRef.current?.reset();
             }}
-            isSpinning={isSpinning}
+            buttonText="Resubmit"
+            buttonLoadingText={phase}
+            buttonIsSpinning={phase === "saving" || phase === "submitting"}
           />
           <ScrollArea className="h-[49em]">
             <div className="flex flex-col gap-2">
@@ -323,6 +369,11 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               mode="edit"
               file={file}
               setFile={setFile}
+              setPhase={setPhase}
+              openEditorOnClick={() => {
+                setPhase("saving");
+                checkFileSaveStatus();
+              }}
             />
           ) : (
             <p>No file available</p>
@@ -341,7 +392,9 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             resetOnCLick={() => {
               formRef.current?.reset();
             }}
-            isSpinning={isSpinning}
+            buttonText="Resubmit"
+            buttonLoadingText={formatEnum(phase) ?? ""}
+            buttonIsSpinning={phase === "saving" || phase === "submitting"}
           />
           <ScrollArea className="h-[49em]">
             <div className="flex flex-col gap-2">
@@ -516,6 +569,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             isReplaceable={canEditVersion}
             file={file}
             setFile={setFile}
+            openEditorOnClick={() => {
+              setPhase("saving");
+              checkFileSaveStatus();
+            }}
           />
         </form>
       );
@@ -527,10 +584,19 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             resetOnCLick={() => {
               formRef.current?.reset();
             }}
-            isSpinning={isSpinning}
+            buttonText="Resubmit"
+            buttonLoadingText={phase}
+            buttonIsSpinning={phase === "saving" || phase === "submitting"}
           />
           {request.version ? (
-            <FileItem version={request.version} mode="edit" />
+            <FileItem
+              version={request.version}
+              mode="edit"
+              openEditorOnClick={() => {
+                setPhase("saving");
+                checkFileSaveStatus();
+              }}
+            />
           ) : (
             <p>No file available</p>
           )}

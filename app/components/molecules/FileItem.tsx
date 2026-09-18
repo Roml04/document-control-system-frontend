@@ -14,6 +14,8 @@ type FileItemType = {
   isReplaceable?: boolean;
   file?: File | null;
   setFile?: (file: File | null) => void;
+  setPhase?: (phase: "idle" | "saving" | "submitting") => void;
+  openEditorOnClick?: () => void;
 };
 
 export default function FileItem({
@@ -22,6 +24,8 @@ export default function FileItem({
   isReplaceable,
   file,
   setFile,
+  setPhase,
+  openEditorOnClick,
 }: FileItemType) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -105,7 +109,14 @@ export default function FileItem({
       </div>
       <div className="flex items-center">
         <NavLink to={`/onlyoffice/${version.id}?mode=${mode}`} target="_blank">
-          <Button variant={"ghost"} type="button">
+          <Button
+            variant={"ghost"}
+            type="button"
+            onClick={() => {
+              setPhase?.("saving");
+              openEditorOnClick?.();
+            }}
+          >
             Open in editor
           </Button>
         </NavLink>

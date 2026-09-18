@@ -16,12 +16,16 @@ import { useNavigate } from "react-router";
 
 type StrictHeaderPropType = {
   resetOnCLick: () => void;
-  isSpinning: boolean;
+  buttonLoadingText: string;
+  buttonText: string;
+  buttonIsSpinning: boolean;
 };
 
 export default function StrictHeader({
   resetOnCLick,
-  isSpinning,
+  buttonText,
+  buttonLoadingText,
+  buttonIsSpinning,
 }: StrictHeaderPropType) {
   const navigate = useNavigate();
   return (
@@ -74,9 +78,9 @@ export default function StrictHeader({
         </AlertDialog>
         <LoadingButton
           type="submit"
-          displayText="Resubmit"
-          loadingDisplayText="Resubmit"
-          isSpinning={isSpinning}
+          displayText={buttonText}
+          loadingDisplayText={buttonLoadingText}
+          isSpinning={buttonIsSpinning}
         />
       </div>
     </header>
