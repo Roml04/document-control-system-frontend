@@ -81,27 +81,6 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
     request.type === REQUESTTYPE.UPLOAD ||
     (request.type === REQUESTTYPE.REVISION && !!request.wasEdited === true);
 
-  useEffect(() => {
-    if (!request.version) return;
-
-    let cancelled = false;
-
-    async function resumeIfNeeded() {
-      const status = await sendCheckRequest();
-      if (cancelled) return;
-      if (!status) {
-        setPhase("saving");
-        checkFileSaveStatus();
-      }
-    }
-
-    resumeIfNeeded();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [request.version?.id]);
-
   /**
    * Functions
    */
@@ -199,7 +178,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               formRef.current?.reset();
             }}
             buttonText="Resubmit"
-            buttonLoadingText={phase}
+            buttonLoadingText={formatEnum(phase) ?? ""}
             buttonIsSpinning={phase === "saving" || phase === "submitting"}
           />
           <ScrollArea className="h-[49em]">
@@ -585,7 +564,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               formRef.current?.reset();
             }}
             buttonText="Resubmit"
-            buttonLoadingText={phase}
+            buttonLoadingText={formatEnum(phase) ?? ""}
             buttonIsSpinning={phase === "saving" || phase === "submitting"}
           />
           {request.version ? (
