@@ -128,7 +128,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
 
       const formData = new FormData(event.currentTarget);
 
-      if (!request.wasEdited && request.type === REQUESTTYPE.REVISION) {
+      if (
+        (!request.wasEdited && request.type === REQUESTTYPE.REVISION) ||
+        request.type === REQUESTTYPE.DELETE
+      ) {
         formData.append("fileTitle", request.version.fileTitle);
         formData.append("fileType", request.version.fileType);
         formData.append("originator", request.version.originator);
@@ -568,7 +571,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
 
     case "del":
       return (
-        <form className="flex flex-col gap-2">
+        <form onSubmit={handleResubmit} className="flex flex-col gap-2">
           <StrictHeader
             resetOnCLick={() => {
               formRef.current?.reset();
@@ -577,18 +580,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             buttonLoadingText={formatEnum(phase) ?? ""}
             buttonIsSpinning={phase === "saving" || phase === "submitting"}
           />
-          {request.version ? (
-            <FileItem
-              version={request.version}
-              mode="edit"
-              openEditorOnClick={() => {
-                setPhase("saving");
-                checkFileSaveStatus();
-              }}
-            />
-          ) : (
-            <p>No file available</p>
-          )}
+
           <ScrollArea className="h-[49em]">
             <div className="flex flex-col gap-2">
               <FieldSet className="border p-4 flex flex-col rounded-lg gap-4">
@@ -616,6 +608,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               </FieldSet>
             </div>
           </ScrollArea>
+          <FileItem version={request.version} mode="view" />
         </form>
       );
   }
