@@ -128,6 +128,16 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
 
       const formData = new FormData(event.currentTarget);
 
+      if (!request.wasEdited && request.type === REQUESTTYPE.REVISION) {
+        formData.append("fileTitle", request.version.fileTitle);
+        formData.append("fileType", request.version.fileType);
+        formData.append("originator", request.version.originator);
+        formData.append("department", request.version.department);
+        formData.append("revisionNumber", request.version.revisionNumber);
+        formData.append("revisionDetails", request.version.revisionDetails);
+        formData.append("approver", request.version.approver);
+      }
+
       formData.append("requestId", `${request.id}`);
       formData.append("versionId", `${request.version.id}`);
       formData.append("type", "resub");
