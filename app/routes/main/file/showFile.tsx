@@ -193,7 +193,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                 <p>{latestVersion.revisionNumber}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Revision Detail</p>
+                <p className="text-muted-foreground">Revision Details</p>
                 <p>{latestVersion.revisionDetails}</p>
               </div>
               <div>

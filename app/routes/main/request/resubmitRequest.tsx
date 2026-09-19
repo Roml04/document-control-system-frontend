@@ -270,9 +270,9 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                     />
                   </Field>
                   <Field className="col-span-2">
-                    <FieldLabel>Revision Detail</FieldLabel>
+                    <FieldLabel>Revision Details</FieldLabel>
                     <Textarea
-                      placeholder="Enter revision detail..."
+                      placeholder="Enter revision details..."
                       name="revisionDetails"
                       defaultValue={request.version?.revisionDetails}
                     />
@@ -468,9 +468,9 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                       />
                     </Field>
                     <Field className="col-span-2">
-                      <FieldLabel>Revision Detail</FieldLabel>
+                      <FieldLabel>Revision Details</FieldLabel>
                       <Textarea
-                        placeholder="Enter revision detail..."
+                        placeholder="Enter revision details..."
                         name="revisionDetails"
                         defaultValue={request.version?.revisionDetails}
                       />

@@ -107,7 +107,7 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
                 <p>{request.version.revisionNumber ?? "--"}</p>
               </div>
               <div>
-                <p className="text-muted-foreground">Revision Detail</p>
+                <p className="text-muted-foreground">Revision Details</p>
                 <p>{request.version.revisionDetails ?? "--"}</p>
               </div>
               <div>
