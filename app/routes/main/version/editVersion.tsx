@@ -45,18 +45,16 @@ import { FILETYPE } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
 import { toast } from "sonner";
+import FileItem from "~/components/molecules/FileItem";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
   RESETDETAILS = "RESETDETAILS",
 }
 
-type EditVersionStateType = Omit<
-  {
-    [K in keyof VersionType]: VersionType[K] | null;
-  },
-  "fileId" | "requestId" | "status"
->;
+type EditVersionStateType = {
+  [K in keyof VersionType]: VersionType[K];
+};
 
 type EditVersionActionType = {
   type: ACTION;
@@ -82,6 +80,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function editVersion({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
+  const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<PhaseType>("idle");
 
   const { version, superiors } = loaderData;
@@ -101,6 +100,9 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
     revisionDate: version.revisionDate,
     approver: version.approver,
     approvedDate: version.approvedDate,
+    status: version.status,
+    fileId: version.fileId,
+    requestId: version.requestId,
     fileName: version.fileName,
     filePath: version.filePath,
   };
@@ -263,42 +265,9 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
           />
         </div>
       </header>
-      <div className="flex flex-col gap-2 h-[50em]">
-        <div className="flex flex-col border rounded-lg p-4 justify-center gap-4">
-          <div className="flex justify-between">
-            <div className="flex gap-2 items-center">
-              <FileTypeBadge
-                type={editVersionState.fileType ?? FILETYPE.DOCUMENT}
-                size={22}
-              />
-              <h2>{editVersionState.fileTitle}</h2>
-            </div>
-            <div className="flex items-center">
-              <NavLink
-                to={`/onlyoffice/${editVersionState.id}?mode=edit`}
-                target="_blank"
-                onClick={() => {
-                  setPhase("saving");
-                  checkFileSaveStatus();
-                }}
-              >
-                <Button type="button" variant={"ghost"}>
-                  Open in editor
-                </Button>
-              </NavLink>
-              <Button
-                type="button"
-                size={"icon-lg"}
-                variant={"ghost"}
-                title="Download"
-              >
-                <Download size={18} />
-              </Button>
-            </div>
-          </div>
-        </div>
-        <div className="p-4 w-full border rounded-lg">
-          <FieldSet>
+      <ScrollArea className="h-[49em]">
+        <div className="flex flex-col gap-2">
+          <FieldSet className="border p-4 rounded-lg">
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Title</FieldLabel>
@@ -340,9 +309,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
             </FieldGroup>
           </FieldSet>
-        </div>
-        <ScrollArea className="border p-4 rounded-lg h-[43em]">
-          <FieldSet>
+          <FieldSet className="border p-4 rounded-lg">
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Originator</FieldLabel>
@@ -461,8 +428,15 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
             </FieldGroup>
           </FieldSet>
-        </ScrollArea>
-      </div>
+        </div>
+      </ScrollArea>
+      <FileItem
+        version={editVersionState}
+        mode="edit"
+        isReplaceable={true}
+        file={file}
+        setFile={setFile}
+      />
     </form>
   );
 }
