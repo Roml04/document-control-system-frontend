@@ -30,7 +30,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-import { apiFileFetch } from "~/utils/apiFileFetch";
 
 import {
   RequestListHeader,
@@ -38,6 +37,7 @@ import {
 } from "~/components/organisms/RequestList";
 import { formatUserName } from "~/utils/formatUserName";
 import type { Route } from "./+types/requests";
+import { downloadFile } from "~/utils/downloadFile";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -171,37 +171,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
             : "Something went wrong. Please try again in a moment",
       });
     }
-  };
-
-  const accessUploadedFile = async () => {
-    if (!viewRequestState.version) {
-      return;
-    }
-
-    const response = await apiFileFetch(
-      `/version/${viewRequestState.version.id}/file`,
-    );
-
-    if (!response.ok) {
-      const apiResponse = await response.json();
-      console.log("WOW", apiResponse);
-
-      toast.error("Could not open the file", {
-        position: "top-center",
-        description: apiResponse.message,
-      });
-
-      return;
-    }
-
-    console.log("INFO | RESPONSE", response);
-
-    const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-
-    window.open(url, "_blank");
-
-    URL.revokeObjectURL(url);
   };
 
   return (
@@ -417,7 +386,23 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       </AttachmentDescription>
                     </AttachmentContent>
                     <AttachmentTrigger
-                      onClick={accessUploadedFile}
+                      onClick={() => {
+                        if (!viewRequestState.version) {
+                          return toast.error("Failed to open file", {
+                            position: "top-center",
+                          });
+                        }
+
+                        console.log(
+                          "INFO | FILE NAME",
+                          viewRequestState.version.fileName,
+                        );
+
+                        downloadFile(
+                          viewRequestState.version.id,
+                          viewRequestState.version.fileName,
+                        );
+                      }}
                       className="cursor-pointer"
                     ></AttachmentTrigger>
                   </Attachment>

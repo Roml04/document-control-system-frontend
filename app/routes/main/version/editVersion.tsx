@@ -30,6 +30,7 @@ import { Textarea } from "~/components/ui/textarea";
 import {
   useEffect,
   useReducer,
+  useRef,
   useState,
   type SubmitEventHandler,
 } from "react";
@@ -45,23 +46,23 @@ import { FILETYPE } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
 import { toast } from "sonner";
+import FileItem from "~/components/molecules/FileItem";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
   RESETDETAILS = "RESETDETAILS",
 }
 
-type EditVersionStateType = Omit<
-  {
-    [K in keyof VersionType]: VersionType[K] | null;
-  },
-  "fileId" | "requestId" | "status"
->;
+type EditVersionStateType = {
+  [K in keyof VersionType]: VersionType[K];
+};
 
 type EditVersionActionType = {
   type: ACTION;
   payload: Partial<EditVersionStateType>;
 };
+
+type PhaseType = "idle" | "saving" | "submitting";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const [versionResponse, userResponse] = await Promise.all([
@@ -80,75 +81,61 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function editVersion({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
-  const [isSpinning, setIsSpinning] = useState(false);
+  const [file, setFile] = useState<File | null>(null);
+  const [phase, setPhase] = useState<PhaseType>("idle");
+
+  const formRef = useRef<HTMLFormElement>(null);
 
   const { version, superiors } = loaderData;
 
   /**
-   * Reducer
-   */
-  const editVersionInitialState = {
-    id: version.id,
-    fileTitle: version.fileTitle,
-    fileType: version.fileType,
-    originator: version.originator,
-    department: version.department,
-    revisionNumber: version.revisionNumber,
-    revisionDetails: version.revisionDetails,
-    uploadDate: version.uploadDate,
-    revisionDate: version.revisionDate,
-    approver: version.approver,
-    approvedDate: version.approvedDate,
-    fileName: version.fileName,
-    filePath: version.filePath,
-  };
-
-  function editVersionReducer(
-    state: EditVersionStateType,
-    action: EditVersionActionType,
-  ) {
-    switch (action.type) {
-      case ACTION.SETDETAILS:
-        return {
-          ...state,
-          ...action.payload,
-        };
-
-      case ACTION.RESETDETAILS:
-        return editVersionInitialState;
-      default:
-        return state;
-    }
-  }
-
-  const [editVersionState, dispatchEditVersion] = useReducer(
-    editVersionReducer,
-    editVersionInitialState,
-  );
-
-  /**
    * Functions
    */
+
+  const sendCheckRequest = async (): Promise<boolean> => {
+    const apiResponse = await apiFetch(`/version/${version.id}/status`);
+
+    console.log(
+      `INFO | RESPONSE FROM /version/${version.id}/status`,
+      apiResponse,
+    );
+
+    return apiResponse.saved;
+  };
+
+  const checkFileSaveStatus = async () => {
+    let isSaved = false;
+
+    while (!isSaved) {
+      console.log("INFO | IS FILE SAVED", isSaved);
+      isSaved = await sendCheckRequest();
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+
+    setPhase("idle");
+  };
+
   const handleEditSubmit: SubmitEventHandler<HTMLFormElement> = async (
     event,
   ) => {
     try {
-      setIsSpinning(true);
+      setPhase("submitting");
       event.preventDefault();
 
-      const apiResponse = await apiFetch(`/version/${editVersionState.id}`, {
+      const formData = new FormData(event.currentTarget);
+
+      formData.append("id", version.id.toString());
+
+      if (file) formData.append("file", file);
+
+      console.log("FORM DATA |", Object.fromEntries(formData.entries()));
+
+      const apiResponse = await apiFetch(`/version/${version.id}`, {
         method: "PATCH",
-        body: JSON.stringify({
-          id: editVersionState.id,
-          fileTitle: editVersionState.fileTitle,
-          fileType: editVersionState.fileType,
-          originator: editVersionState.originator,
-          department: editVersionState.department,
-          revisionNumber: editVersionState.revisionNumber,
-          revisionDetails: editVersionState.revisionDetails,
-          approver: editVersionState.approver,
-        }),
+        body: formData,
       });
+
+      console.log("APIRESPONSE", apiResponse);
 
       if (!apiResponse.ok) {
         return toast.error("Submission failed", {
@@ -167,12 +154,16 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
             : "Something went wrong. Please try again in a moment",
       });
     } finally {
-      setIsSpinning(false);
+      setPhase("idle");
     }
   };
 
   return (
-    <form onSubmit={handleEditSubmit} className="flex flex-col gap-2">
+    <form
+      ref={formRef}
+      onSubmit={handleEditSubmit}
+      className="flex flex-col gap-2"
+    >
       <header className="flex justify-between">
         <AlertDialog>
           <AlertDialogTrigger asChild>
@@ -214,14 +205,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </AlertDialogHeader>
               <AlertDialogFooter>
                 <AlertDialogCancel>Keep editing</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={() => {
-                    dispatchEditVersion({
-                      type: ACTION.RESETDETAILS,
-                      payload: {},
-                    });
-                  }}
-                >
+                <AlertDialogAction onClick={() => formRef.current?.click()}>
                   Reset
                 </AlertDialogAction>
               </AlertDialogFooter>
@@ -230,68 +214,26 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
           <LoadingButton
             type="submit"
             displayText="Submit"
-            loadingDisplayText="Submitting revision..."
-            isSpinning={isSpinning}
+            loadingDisplayText={`${formatEnum(phase)}...`}
+            isSpinning={phase === "saving" || phase === "submitting"}
           />
         </div>
       </header>
-      <div className="flex flex-col gap-2 h-[50em]">
-        <div className="flex flex-col border rounded-lg p-4 justify-center gap-4">
-          <div className="flex justify-between">
-            <div className="flex gap-2 items-center">
-              <FileTypeBadge
-                type={editVersionState.fileType ?? FILETYPE.DOCUMENT}
-                size={22}
-              />
-              <h2>{editVersionState.fileTitle}</h2>
-            </div>
-            <div className="flex items-center">
-              <NavLink
-                to={`/onlyoffice/${editVersionState.id}?mode=edit`}
-                target="_blank"
-              >
-                <Button type="button" variant={"ghost"}>
-                  Open in editor
-                </Button>
-              </NavLink>
-              <Button
-                type="button"
-                size={"icon-lg"}
-                variant={"ghost"}
-                title="Download"
-              >
-                <Download size={18} />
-              </Button>
-            </div>
-          </div>
-        </div>
-        <div className="p-4 w-full border rounded-lg">
-          <FieldSet>
+      <ScrollArea className="h-[49em]">
+        <div className="flex flex-col gap-2">
+          <FieldSet className="border p-4 rounded-lg">
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Title</FieldLabel>
                 <Input
+                  defaultValue={version.fileTitle}
                   type="text"
-                  value={editVersionState.fileTitle ?? ""}
-                  onChange={(e) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { fileTitle: e.target.value },
-                    });
-                  }}
+                  name="fileTitle"
                 />
               </Field>
               <Field>
                 <FieldLabel>Type</FieldLabel>
-                <Select
-                  defaultValue={editVersionState.fileType ?? undefined}
-                  onValueChange={(value: FILETYPE) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { fileType: value },
-                    });
-                  }}
-                >
+                <Select name="fileType" defaultValue={version.fileType}>
                   <SelectTrigger>
                     <SelectValue placeholder="Choose file type" />
                   </SelectTrigger>
@@ -308,66 +250,45 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
             </FieldGroup>
           </FieldSet>
-        </div>
-        <ScrollArea className="border p-4 rounded-lg h-[43em]">
-          <FieldSet>
+          <FieldSet className="border p-4 rounded-lg">
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Originator</FieldLabel>
                 <Input
                   type="text"
-                  value={editVersionState.originator ?? undefined}
-                  onChange={(e) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { originator: e.target.value },
-                    });
-                  }}
+                  name="originator"
+                  defaultValue={version.originator}
                 />
               </Field>
               <Field>
                 <FieldLabel>Department</FieldLabel>
                 <Input
                   type="text"
-                  value={editVersionState.department ?? undefined}
-                  onChange={(e) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { department: e.target.value },
-                    });
-                  }}
+                  name="department"
+                  defaultValue={version.department}
                 />
               </Field>
               <Field>
                 <FieldLabel>Revision Number</FieldLabel>
                 <Input
                   type="text"
-                  value={editVersionState.revisionNumber ?? undefined}
-                  onChange={(e) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { revisionNumber: e.target.value },
-                    });
-                  }}
+                  name="revisionNumber"
+                  defaultValue={version.revisionNumber}
                 />
               </Field>
               <Field className="col-span-2">
                 <FieldLabel>Revision Details</FieldLabel>
                 <Textarea
-                  value={editVersionState.revisionDetails ?? undefined}
-                  onChange={(e) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { revisionDetails: e.target.value },
-                    });
-                  }}
+                  name="revisionDetails"
+                  defaultValue={version.revisionDetails}
                 />
               </Field>
               <Field>
                 <FieldLabel>Upload Date</FieldLabel>
                 <Input
                   type="text"
-                  value={editVersionState.uploadDate ?? ""}
+                  defaultValue={version.uploadDate ?? ""}
+                  name="uploadDate"
                   disabled
                 />
                 <FieldDescription>
@@ -378,7 +299,8 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                 <FieldLabel>Revision Date</FieldLabel>
                 <Input
                   type="text"
-                  value={editVersionState.revisionDate ?? undefined}
+                  defaultValue={version.revisionDate ?? ""}
+                  name="revisionDate"
                   disabled
                 />
                 <FieldDescription>
@@ -387,17 +309,9 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
-                <Select
-                  defaultValue={editVersionState.approver ?? undefined}
-                  onValueChange={(value) => {
-                    dispatchEditVersion({
-                      type: ACTION.SETDETAILS,
-                      payload: { approver: value },
-                    });
-                  }}
-                >
+                <Select name="approver" defaultValue={version.approver}>
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Choose an approver" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
@@ -420,7 +334,8 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                 <FieldLabel>Approved Date</FieldLabel>
                 <Input
                   type="text"
-                  value={editVersionState.approvedDate ?? ""}
+                  defaultValue={version.approvedDate ?? "Not approved yet"}
+                  name="approvedDate"
                   disabled
                 />
                 <FieldDescription>
@@ -429,8 +344,19 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
             </FieldGroup>
           </FieldSet>
-        </ScrollArea>
-      </div>
+        </div>
+      </ScrollArea>
+      <FileItem
+        version={version}
+        mode="edit"
+        isReplaceable={true}
+        file={file}
+        setFile={setFile}
+        openEditorOnClick={() => {
+          setPhase("saving");
+          checkFileSaveStatus();
+        }}
+      />
     </form>
   );
 }
