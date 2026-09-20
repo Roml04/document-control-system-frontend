@@ -354,22 +354,18 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
               </FieldSet>
             </div>
           </ScrollArea>
-          {request.version ? (
-            <FileItem
-              version={request.version}
-              isReplaceable={canEditVersion}
-              mode="edit"
-              file={file}
-              setFile={setFile}
-              setPhase={setPhase}
-              openEditorOnClick={() => {
-                setPhase("saving");
-                checkFileSaveStatus();
-              }}
-            />
-          ) : (
-            <p>No file available</p>
-          )}
+          <FileItem
+            version={request.version}
+            isReplaceable={canEditVersion}
+            mode="edit"
+            file={file}
+            setFile={setFile}
+            setPhase={setPhase}
+            openEditorOnClick={() => {
+              setPhase("saving");
+              checkFileSaveStatus();
+            }}
+          />
         </form>
       );
 
@@ -562,8 +558,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
             file={file}
             setFile={setFile}
             openEditorOnClick={() => {
-              setPhase("saving");
-              checkFileSaveStatus();
+              if (request.wasEdited) {
+                setPhase("saving");
+                checkFileSaveStatus();
+              }
             }}
           />
         </form>
