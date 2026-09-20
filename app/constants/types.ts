@@ -26,6 +26,7 @@ export type RequestType = {
   status: REQUESTSTATUS;
   user: UserType | null;
   version: VersionType | null;
+  wasEdited: boolean;
   commenters: CommenterType[];
 };
 

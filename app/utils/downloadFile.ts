@@ -1,8 +1,16 @@
+import { toast } from "sonner";
 import { apiFileFetch } from "./apiFileFetch";
 
 export async function downloadFile(versionId: number, fileName: string) {
-  const response = await apiFileFetch(`/version/${versionId}/file`);
-  const blob = await response.blob();
+  const apiFileResponse = await apiFileFetch(`/version/${versionId}/file`);
+
+  if (!apiFileResponse.ok) {
+    return toast.error("Could not download file", {
+      position: "top-center",
+    });
+  }
+
+  const blob = await apiFileResponse.blob();
   const url = URL.createObjectURL(blob);
 
   const a = document.createElement("a");

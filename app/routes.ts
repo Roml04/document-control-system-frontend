@@ -16,12 +16,14 @@ export default [
       index("./routes/main/requests.tsx"),
       route("/:id", "./routes/main/request/showRequest.tsx"),
       route("/:id/review", "./routes/main/request/reviewRequest.tsx"),
+      route("/:id/resubmit", "./routes/main/request/resubmitRequest.tsx"),
     ]),
 
     ...prefix("/files", [
       index("./routes/main/files.tsx"),
       route("/:id", "./routes/main/file/showFile.tsx"),
     ]),
+
     ...prefix("/versions", [
       route("/:id/edit", "./routes/main/version/editVersion.tsx"),
     ]),
