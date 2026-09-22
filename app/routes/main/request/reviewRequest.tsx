@@ -36,6 +36,7 @@ import {
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
+import { Spinner } from "~/components/ui/spinner";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -53,6 +54,8 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
   const [comment, setComment] = useState("");
 
+  const [isSpinning, setSpinning] = useState(false);
+
   const request = loaderData;
 
   console.log("INFO | REQUEST", request);
@@ -66,11 +69,15 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
     requestId: number,
   ) => {
     try {
+      setSpinning(true);
       if (!isApproved && !comment) {
-        return toast.error("Comment is required", {
+        toast.error("Comment is required", {
           position: "top-center",
           description: "A comment is required when denying a request.",
         });
+        setSpinning(false);
+
+        return;
       }
 
       const apiResponse = await apiFetch(`/request/${request.id}`, {
@@ -83,10 +90,13 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
       });
 
       if (!apiResponse.ok) {
-        return toast.error("Failed to submit review", {
+        toast.error("Failed to submit review", {
           position: "top-center",
           description: apiResponse.message,
         });
+        setSpinning(false);
+
+        return;
       }
 
       toast.success("Review submitted succesfully", {
@@ -102,6 +112,8 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
             ? error.message
             : "Something went wrong. Please try again in a moment",
       });
+    } finally {
+      setSpinning(false);
     }
   };
 
@@ -273,13 +285,16 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
                   <Button
                     type="button"
                     onClick={() => handleReviewRequest(true, request.id)}
+                    disabled={isSpinning}
                   >
+                    {isSpinning && <Spinner />}
                     Approve
                   </Button>
                   <Button
                     type="button"
                     variant={"destructive"}
                     onClick={() => handleReviewRequest(false, request.id)}
+                    disabled={isSpinning}
                   >
                     Deny
                   </Button>
