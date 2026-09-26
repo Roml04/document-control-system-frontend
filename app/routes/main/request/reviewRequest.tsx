@@ -56,6 +56,9 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
 
   const [isSpinning, setSpinning] = useState(false);
 
+  const [isApprovedSpinning, setApprovedSpinning] = useState(false);
+  const [isDenySpinning, setDenySpinning] = useState(false);
+
   const request = loaderData;
 
   console.log("INFO | REQUEST", request);
@@ -114,6 +117,8 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
       });
     } finally {
       setSpinning(false);
+      setApprovedSpinning(false);
+      setDenySpinning(false);
     }
   };
 
@@ -284,18 +289,25 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
                 <div className="flex gap-1 justify-end">
                   <Button
                     type="button"
-                    onClick={() => handleReviewRequest(true, request.id)}
+                    onClick={() => {
+                      setApprovedSpinning(true);
+                      handleReviewRequest(true, request.id);
+                    }}
                     disabled={isSpinning}
                   >
-                    {isSpinning && <Spinner />}
+                    {isSpinning && isApprovedSpinning && <Spinner />}
                     Approve
                   </Button>
                   <Button
                     type="button"
                     variant={"destructive"}
-                    onClick={() => handleReviewRequest(false, request.id)}
+                    onClick={() => {
+                      setDenySpinning(true);
+                      handleReviewRequest(false, request.id);
+                    }}
                     disabled={isSpinning}
                   >
+                    {isSpinning && isDenySpinning && <Spinner />}
                     Deny
                   </Button>
                 </div>

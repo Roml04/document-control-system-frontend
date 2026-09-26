@@ -50,6 +50,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
+import LoadingButton from "~/components/primitives/LoadingButton";
+import { FILETYPE } from "~/constants/enums";
 
 enum ACTION {
   SETFIELD = "SETFIELD",
@@ -100,7 +102,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
    * Mock data
    */
 
-  const fileTypes = ["Document", "Checklist", "Form"];
+  const [isSpinning, setIsSpinning] = useState(false);
 
   let files: FetchFileType[] = [];
   let approvers: UserType[] = [];
@@ -174,6 +176,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
     event,
   ) => {
     try {
+      setIsSpinning(true);
       event.preventDefault();
 
       if (!file) {
@@ -230,6 +233,8 @@ export default function files({ loaderData }: Route.ComponentProps) {
       toast.error("Failed to submit upload file request", {
         position: "top-center",
       });
+    } finally {
+      setIsSpinning(false);
     }
   };
 
@@ -375,9 +380,9 @@ export default function files({ loaderData }: Route.ComponentProps) {
                       <SelectContent>
                         <SelectGroup>
                           <SelectLabel>File Type</SelectLabel>
-                          {fileTypes.map((type, index) => (
-                            <SelectItem key={index} value={type.toLowerCase()}>
-                              {type}
+                          {Object.values(FILETYPE).map((type, index) => (
+                            <SelectItem key={index} value={type}>
+                              {type[0].toUpperCase() + type.slice(1)}
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -568,7 +573,11 @@ export default function files({ loaderData }: Route.ComponentProps) {
             </ScrollArea>
             <Separator />
             <SheetFooter>
-              <Button type="submit">Submit Request</Button>
+              <LoadingButton
+                loadingDisplayText="Submitting..."
+                displayText="Submit"
+                isSpinning={isSpinning}
+              />
             </SheetFooter>
           </form>
         </SheetContent>
