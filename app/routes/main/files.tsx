@@ -170,7 +170,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
           <ScrollArea className="h-[52em] w-full ">
             <ul className="grid grid-cols-4 gap-x-4 gap-y-2">
               {files.map((file) => (
-                <FileCard file={file} />
+                <FileCard file={file} uri={`/files/${file.id}`} />
               ))}
             </ul>
           </ScrollArea>

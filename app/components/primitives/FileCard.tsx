@@ -8,15 +8,16 @@ type FileCardPropType = {
   file: FileType & {
     latestVersion: VersionType;
   };
+  uri: string;
 };
 
-export default function FileCard({ file }: FileCardPropType) {
+export default function FileCard({ file, uri }: FileCardPropType) {
   const navigate = useNavigate();
   return (
     <div
       className="flex flex-col gap-2 border p-4 rounded-lg cursor-pointer active:bg-muted"
       onClick={() => {
-        navigate(`/files/${file.id}`);
+        navigate(uri);
       }}
     >
       <div className="flex">
