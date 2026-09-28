@@ -1,5 +1,5 @@
 import { FileIcon, FileUp, PackageOpen, Plus, XIcon } from "lucide-react";
-import { useReducer, useState, type SubmitEventHandler } from "react";
+import { useReducer, useRef, useState, type SubmitEventHandler } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import {
@@ -18,7 +18,6 @@ import {
   FieldGroup,
   FieldLabel,
   FieldSet,
-  FieldTitle,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -53,28 +52,6 @@ import {
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { FILETYPE } from "~/constants/enums";
 
-enum ACTION {
-  SETFIELD = "SETFIELD",
-  RESETFORM = "RESETFORM",
-}
-
-type UploadFileStateType = {
-  title: string;
-  reason: string;
-  fileTitle: string;
-  fileType: string;
-  originator: string;
-  department: string;
-  revisionNumber: string;
-  revisionDetails: string;
-  approver: string;
-};
-
-type UploadFileActionType = {
-  type: ACTION;
-  payload: Partial<UploadFileStateType>;
-};
-
 type FetchFileType = FileType & { latestVersion: VersionType };
 
 export async function clientLoader() {
@@ -98,76 +75,25 @@ export async function clientLoader() {
 }
 
 export default function files({ loaderData }: Route.ComponentProps) {
-  /**
-   * Mock data
-   */
-
+  const formRef = useRef<HTMLFormElement>(null);
   const [isSpinning, setIsSpinning] = useState(false);
 
   let files: FetchFileType[] = [];
   let approvers: UserType[] = [];
 
-  console.log("INFO | LOADER DATA", loaderData.files);
-
   if (loaderData.files.length !== 0) {
     files = loaderData.files;
   }
 
-  console.log("INFO | FILES", files);
-
   if (loaderData.approvers.length !== 0) {
     approvers = loaderData.approvers;
   }
-
-  console.log("INFO | APPROVERS", approvers);
 
   /**
    * Hook initialization
    */
   const [openCreateSheet, setOpenCreateSheet] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const navigate = useNavigate();
-
-  /**
-   * Upload file reducer
-   */
-  const uploadFileInitialState = {
-    title: "",
-    reason: "",
-    fileTitle: "",
-    fileType: "",
-    originator: "",
-    department: "",
-    revisionNumber: "",
-    revisionDetails: "",
-    approver: "",
-  };
-
-  function uploadFileReducer(
-    state: UploadFileStateType,
-    action: UploadFileActionType,
-  ) {
-    switch (action.type) {
-      case ACTION.SETFIELD:
-        return {
-          ...state,
-          ...action.payload,
-        };
-
-      case ACTION.RESETFORM:
-        return {
-          ...uploadFileInitialState,
-        };
-
-      default:
-        return state;
-    }
-  }
-
-  const [uploadFileState, uploadFileDispatch] = useReducer(
-    uploadFileReducer,
-    uploadFileInitialState,
-  );
 
   /**
    * Functions
@@ -180,31 +106,18 @@ export default function files({ loaderData }: Route.ComponentProps) {
       event.preventDefault();
 
       if (!file) {
-        console.log("No file was uploaded");
-        console.log("File Object | ", file);
-        return toast.error("No file uploaded", {
+        toast.error("No file uploaded", {
           position: "top-center",
         });
+        return;
       }
 
-      console.log("Sending POST request with body:");
-      console.log("uploadFileState:", uploadFileState);
-      console.log("File:", file);
-
-      const formData = new FormData();
+      const formData = new FormData(event.currentTarget);
 
       formData.append("type", "upl");
-      formData.append("title", uploadFileState.title);
-      formData.append("reason", uploadFileState.reason);
-      formData.append("fileTitle", uploadFileState.fileTitle);
-      formData.append("fileType", uploadFileState.fileType);
-      formData.append("originator", uploadFileState.originator);
-      formData.append("department", uploadFileState.department);
-      formData.append("revisionNumber", uploadFileState.revisionNumber);
-      formData.append("revisionDetails", uploadFileState.revisionDetails);
-      formData.append("approver", uploadFileState.approver);
       formData.append("file", file);
-      // formData.append("fileId", "1");
+
+      console.log("FORMDATA", Object.fromEntries(formData.entries()));
 
       const apiResponse = await apiFetch("/request", {
         method: "POST",
@@ -223,28 +136,19 @@ export default function files({ loaderData }: Route.ComponentProps) {
       }
 
       setOpenCreateSheet(false);
-      resetForm();
+      formRef.current?.reset();
+      setFile(null);
 
       return toast.success("Upload file request submitted", {
         position: "top-center",
       });
     } catch (error) {
-      console.log("ERROR |", error);
       toast.error("Failed to submit upload file request", {
         position: "top-center",
       });
     } finally {
       setIsSpinning(false);
     }
-  };
-
-  const resetForm = () => {
-    uploadFileDispatch({
-      type: ACTION.RESETFORM,
-      payload: {},
-    });
-
-    setFile(null);
   };
 
   return (
@@ -287,7 +191,8 @@ export default function files({ loaderData }: Route.ComponentProps) {
           setOpenCreateSheet(open);
 
           if (!open) {
-            resetForm();
+            setFile(null);
+            formRef.current?.reset();
           }
         }}
       >
@@ -298,6 +203,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
           }}
         >
           <form
+            ref={formRef}
             onSubmit={handleUploadRequest}
             className="flex h-full min-h-0 flex-col"
           >
@@ -315,13 +221,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <FieldLabel htmlFor="title">Title</FieldLabel>
                     <Input
                       id="title"
-                      value={uploadFileState.title}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { title: e.target.value },
-                        })
-                      }
+                      name="title"
                       type="text"
                       placeholder="e.g., Request for document upload"
                       required
@@ -331,13 +231,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <FieldLabel htmlFor="reason">Reason</FieldLabel>
                     <Textarea
                       id="reason"
-                      value={uploadFileState.reason}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { reason: e.target.value },
-                        })
-                      }
+                      name="reason"
                       placeholder="Describe the purpose or reason for submitting this request..."
                       required
                     />
@@ -351,29 +245,14 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <Input
                       id="fileTitle"
                       type="text"
-                      value={uploadFileState.fileTitle}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { fileTitle: e.target.value },
-                        })
-                      }
+                      name="fileTitle"
                       placeholder="e.g., Waste Management Procedure"
                       required
                     />
                   </Field>
                   <Field className="col-span-2">
                     <FieldLabel htmlFor="fileType">File Type</FieldLabel>
-                    <Select
-                      value={uploadFileState.fileType}
-                      onValueChange={(value) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { fileType: value },
-                        })
-                      }
-                      required
-                    >
+                    <Select name="fileType" required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select the file type" />
                       </SelectTrigger>
@@ -394,13 +273,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <Input
                       id="originator"
                       type="text"
-                      value={uploadFileState.originator}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { originator: e.target.value },
-                        })
-                      }
+                      name="originator"
                       placeholder="e.g., Juan Dela Cruz"
                       required
                     />
@@ -410,13 +283,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <Input
                       id="department"
                       type="text"
-                      value={uploadFileState.department}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { department: e.target.value },
-                        })
-                      }
+                      name="department"
                       placeholder="e.g., Information Technology"
                       required
                     />
@@ -428,13 +295,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <Input
                       id="revisionNumber"
                       type="text"
-                      value={uploadFileState.revisionNumber}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { revisionNumber: e.target.value },
-                        })
-                      }
+                      name="revisionNumber"
                       placeholder="e.g., Rev. 01"
                       required
                     />
@@ -445,13 +306,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     </FieldLabel>
                     <Textarea
                       id="revisionDetails"
-                      value={uploadFileState.revisionDetails}
-                      onChange={(e) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { revisionDetails: e.target.value },
-                        })
-                      }
+                      name="revisionDetails"
                       placeholder="Briefly describe the changes made..."
                     />
                   </Field>
@@ -476,16 +331,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
 
                   <Field className="col-span-1">
                     <FieldLabel>Approver</FieldLabel>
-                    <Select
-                      value={uploadFileState.approver}
-                      onValueChange={(value) =>
-                        uploadFileDispatch({
-                          type: ACTION.SETFIELD,
-                          payload: { approver: value },
-                        })
-                      }
-                      required
-                    >
+                    <Select name="approver" required>
                       <SelectTrigger>
                         <SelectValue placeholder="Select an Approver" />
                       </SelectTrigger>
