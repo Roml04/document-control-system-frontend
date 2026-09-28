@@ -1,5 +1,5 @@
 import { FileCheckCorner, Files, LayoutDashboard, LogOut } from "lucide-react";
-import { Outlet, useNavigate } from "react-router";
+import { Outlet, redirect, useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import {
@@ -21,6 +21,21 @@ import { toast } from "sonner";
 import { allowedRoles } from "~/utils/allowedRoles";
 import { formatUserName } from "~/utils/formatUserName";
 import avatarFallback from "~/utils/avatarFallback";
+import { USERROLE } from "~/constants/enums";
+
+export async function clientLoader() {
+  const user = await apiFetch("/me");
+
+  if (!user.id) {
+    throw redirect("/");
+  }
+
+  if (user.role === USERROLE.GUEST) {
+    throw redirect("/login");
+  }
+
+  return { user };
+}
 
 export default function layout() {
   const navigate = useNavigate();
