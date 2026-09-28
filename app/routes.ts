@@ -28,8 +28,21 @@ export default [
       route("/:id/edit", "./routes/main/version/editVersion.tsx"),
     ]),
   ]),
-  route("/admin", "./routes/admin/layout.tsx", [
-    index("./routes/admin/users.tsx"),
+
+  layout("./routes/admin/layout.tsx", [
+    ...prefix("/admin", [
+      index("./routes/admin/dashboard.tsx"),
+
+      ...prefix("/users", [index("./routes/admin/users.tsx")]),
+
+      ...prefix("/files", [
+        index("./routes/admin/files.tsx"),
+        route(":id", "./routes/admin/file/showFile.tsx"),
+      ]),
+
+      ...prefix("/requests", [index("./routes/admin/requests.tsx")]),
+      ...prefix("/versions", [index("./routes/admin/versions.tsx")]),
+    ]),
   ]),
   route("/onlyoffice/:id", "./routes/onlyoffice/editor.tsx"),
 ] satisfies RouteConfig;
