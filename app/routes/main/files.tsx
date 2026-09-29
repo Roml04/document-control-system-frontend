@@ -55,8 +55,6 @@ import { FILETYPE } from "~/constants/enums";
 type FetchFileType = FileType & { latestVersion: VersionType };
 
 export async function clientLoader() {
-  // const apiResponse = await apiFetch("/file");
-
   const [fileResponse, userResponse] = await Promise.all([
     apiFetch("/file"),
     apiFetch("/user?role=superior"),
