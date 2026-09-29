@@ -37,7 +37,8 @@ export default [
 
       ...prefix("/files", [
         index("./routes/admin/files.tsx"),
-        route(":id", "./routes/admin/file/showFile.tsx"),
+        route("/:id", "./routes/admin/file/showFile.tsx"),
+        route("/:id/edit", "./routes/admin/file/editFile.tsx"),
       ]),
 
       ...prefix("/requests", [index("./routes/admin/requests.tsx")]),
