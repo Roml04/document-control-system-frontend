@@ -6,9 +6,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "~/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 import type { FileType, VersionType } from "~/constants/types";
 import { useNavigate } from "react-router";
+import { useState } from "react";
 
 const gridStyling = "grid grid-cols-18 px-4";
 
@@ -50,16 +61,18 @@ type FileListItemPropType = {
   file: FileType & {
     latestVersion: VersionType;
   };
-  editOnClick: () => void;
-  deleteOnClick: () => void;
 };
 
-export function FileListItem({
-  file,
-  editOnClick,
-  deleteOnClick,
-}: FileListItemPropType) {
+export function FileListItem({ file }: FileListItemPropType) {
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+
   const navigate = useNavigate();
+
+  const handleDeleteFile = async () => {
+    /**
+     *
+     */
+  };
 
   return (
     <li
@@ -90,8 +103,18 @@ export function FileListItem({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem onClick={editOnClick}>Edit</DropdownMenuItem>
-                <DropdownMenuItem onClick={deleteOnClick}>
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate(`/admin/files/${file.id}/edit`);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setOpenDeleteDialog(true);
+                  }}
+                >
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -99,6 +122,25 @@ export function FileListItem({
           </DropdownMenu>
         </p>
       </div>
+      <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm file deletion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <span className="font-bold">{file.title}</span> and bypass the
+              approval process. This action cannot be undone. Do you want to
+              proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant={"destructive"}>
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </li>
   );
 }
