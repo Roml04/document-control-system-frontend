@@ -65,6 +65,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { useRevalidator } from "react-router";
 
 type FetchFileType = FileType & {
   latestVersion: VersionType;
@@ -88,52 +89,86 @@ export async function clientLoader() {
 }
 
 export default function files({ loaderData }: Route.ComponentProps) {
-  const formRef = useRef<HTMLFormElement>(null);
+  const uploadRequestFormRef = useRef<HTMLFormElement>(null);
+  const addPublishFormRef = useRef<HTMLFormElement>(null);
+
   const [file, setFile] = useState<File | null>(null);
   const [openUplRequestSheet, setOpenUplRequestSheet] = useState(false);
   const [openAddPublishSheet, setOpenAddPublishSheet] = useState(false);
 
+  const [isSpinning, setIsSpinning] = useState(false);
+
+  const revalidator = useRevalidator();
+
   const { files, approvers } = loaderData;
 
-  const handleUploadRequest: SubmitEventHandler<HTMLFormElement> = async (
-    event,
-  ) => {
-    event.preventDefault();
+  const needsCleanup = useRef(false);
 
-    const submitter = event.nativeEvent.submitter as HTMLButtonElement | null;
-    const intent = submitter?.value as SubmitIntent;
-
-    if (!file) {
-      toast.error("No file uploaded", {
-        position: "top-center",
-      });
-      return;
-    }
-
-    const formData = new FormData(event.currentTarget);
-
-    formData.append("type", "upl");
-    formData.append("file", file);
-
-    const apiResponse = await apiFetch(
-      intent === "request" ? "/request" : "/admin/file",
-      {
-        method: "POST",
-        body: formData,
-      },
-    );
-
-    if (!apiResponse.ok) {
-      console.log("INFO | MESSAGE", apiResponse.message);
-      return toast.error("Submission failed", {
-        description: apiResponse.message,
-        position: "top-center",
-      });
-    }
-
-    setOpenUplRequestSheet(false);
+  const finishClose = (formRef: React.RefObject<HTMLFormElement | null>) => {
+    if (!needsCleanup.current) return;
+    needsCleanup.current = false;
     formRef.current?.reset();
     setFile(null);
+    revalidator.revalidate();
+  };
+
+  const handleUploadFile: SubmitEventHandler<HTMLFormElement> = async (
+    event,
+  ) => {
+    setIsSpinning(true);
+    event.preventDefault();
+
+    try {
+      const submitter = event.nativeEvent.submitter as HTMLButtonElement | null;
+      const intent = submitter?.value as SubmitIntent;
+
+      if (!file) {
+        toast.error("No file uploaded", {
+          position: "top-center",
+        });
+        return;
+      }
+
+      const formData = new FormData(event.currentTarget);
+
+      formData.append("type", "upl");
+      formData.append("file", file);
+
+      console.log("FORMDATA", Object.fromEntries(formData.entries()));
+
+      const apiResponse = await apiFetch(
+        intent === "request" ? "/request" : "/admin/file",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (!apiResponse.ok) {
+        console.log("INFO | MESSAGE", apiResponse.message);
+        return toast.error("Submission failed [1]", {
+          description: apiResponse.message,
+          position: "top-center",
+        });
+      }
+
+      needsCleanup.current = true;
+
+      if (intent === "request") {
+        needsCleanup.current = true;
+        setOpenUplRequestSheet(false);
+      } else {
+        needsCleanup.current = true;
+        setOpenAddPublishSheet(false);
+      }
+    } catch (error) {
+      toast.error("Submission failed [2]", {
+        description: error instanceof Error ? error.message : undefined,
+        position: "top-center",
+      });
+    } finally {
+      setIsSpinning(false);
+    }
   };
 
   return (
@@ -169,7 +204,6 @@ export default function files({ loaderData }: Route.ComponentProps) {
           <ScrollArea className="h-[52em] w-full ">
             <ul>
               {files.map((file, index) => {
-                console.log("FILE", file);
                 return <FileListItem key={index} file={file} />;
               })}
             </ul>
@@ -192,7 +226,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
 
           if (!open) {
             setFile(null);
-            formRef.current?.reset();
+            uploadRequestFormRef.current?.reset();
           }
         }}
       >
@@ -201,10 +235,18 @@ export default function files({ loaderData }: Route.ComponentProps) {
           onInteractOutside={(event) => {
             event.preventDefault();
           }}
+          onAnimationEnd={(e) => {
+            if (
+              e.target === e.currentTarget &&
+              e.currentTarget.dataset.state === "closed"
+            ) {
+              finishClose(uploadRequestFormRef);
+            }
+          }}
         >
           <form
-            ref={formRef}
-            onSubmit={() => handleUploadRequest}
+            ref={uploadRequestFormRef}
+            onSubmit={handleUploadFile}
             className="flex h-full min-h-0 flex-col"
           >
             <SheetHeader>
@@ -425,8 +467,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                 className="flex-1"
                 loadingDisplayText="Submitting..."
                 displayText="Submit Request"
-                isSpinning={false}
-                disabled={false}
+                isSpinning={isSpinning}
               />
             </SheetFooter>
           </form>
@@ -439,7 +480,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
 
           if (!open) {
             setFile(null);
-            formRef.current?.reset();
+            addPublishFormRef.current?.reset();
           }
         }}
       >
@@ -448,10 +489,18 @@ export default function files({ loaderData }: Route.ComponentProps) {
           onInteractOutside={(event) => {
             event.preventDefault();
           }}
+          onAnimationEnd={(e) => {
+            if (
+              e.target === e.currentTarget &&
+              e.currentTarget.dataset.state === "closed"
+            ) {
+              finishClose(addPublishFormRef);
+            }
+          }}
         >
           <form
-            ref={formRef}
-            onSubmit={() => handleUploadRequest}
+            ref={addPublishFormRef}
+            onSubmit={handleUploadFile}
             className="flex h-full min-h-0 flex-col"
           >
             <SheetHeader>
@@ -538,7 +587,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                   {/* Disabled Fields */}
                   <Field className="col-span-1">
                     <FieldLabel htmlFor="uploadDate">Upload Date</FieldLabel>
-                    <Input id="uploadDate" type="date" disabled />
+                    <Input id="uploadDate" name="uploadDate" type="date" />
                     <FieldDescription className="text-gray-400">
                       Automatically set on file upload
                     </FieldDescription>
@@ -547,7 +596,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <FieldLabel htmlFor="revisionDate">
                       Revision Date
                     </FieldLabel>
-                    <Input id="revisionDate" type="date" disabled />
+                    <Input id="revisionDate" name="revisionDate" type="date" />
                     <FieldDescription className="text-gray-400">
                       Revision date unavailable on file upload
                     </FieldDescription>
@@ -584,7 +633,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                     <FieldLabel htmlFor="approvedDate">
                       Approved Date
                     </FieldLabel>
-                    <Input id="approvedDate" type="date" disabled />
+                    <Input id="approvedDate" name="approvedDate" type="date" />
                     <FieldDescription className="text-gray-400">
                       Automatically set upon approval
                     </FieldDescription>
@@ -649,8 +698,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                 className="flex-1"
                 loadingDisplayText="Processing..."
                 displayText="Add and Publish"
-                isSpinning={false}
-                disabled={false}
+                isSpinning={isSpinning}
               />
             </SheetFooter>
           </form>
