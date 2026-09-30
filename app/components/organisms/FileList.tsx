@@ -18,8 +18,10 @@ import {
 } from "~/components/ui/alert-dialog";
 import { Button } from "../ui/button";
 import type { FileType, VersionType } from "~/constants/types";
-import { useNavigate } from "react-router";
+import { useNavigate, useRevalidator } from "react-router";
 import { useState } from "react";
+import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
 
 const gridStyling = "grid grid-cols-18 px-4";
 
@@ -66,12 +68,34 @@ type FileListItemPropType = {
 export function FileListItem({ file }: FileListItemPropType) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
+  const revalidator = useRevalidator();
+
   const navigate = useNavigate();
 
   const handleDeleteFile = async () => {
-    /**
-     *
-     */
+    try {
+      const apiResponse = await apiFetch(`/admin/file/${file.id}`, {
+        method: "DELETE",
+      });
+
+      if (!apiResponse.ok) {
+        toast.error("Failed to delete file", {
+          description: apiResponse.message,
+          position: "top-center",
+        });
+      }
+
+      revalidator.revalidate();
+
+      toast.success("File deleted successfully", {
+        position: "top-center",
+      });
+    } catch (error) {
+      toast.error("Failed to delete file", {
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+      });
+    }
   };
 
   return (
@@ -135,7 +159,10 @@ export function FileListItem({ file }: FileListItemPropType) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant={"destructive"}>
+            <AlertDialogAction
+              variant={"destructive"}
+              onClick={handleDeleteFile}
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
