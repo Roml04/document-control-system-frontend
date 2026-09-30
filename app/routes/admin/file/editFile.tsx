@@ -1,6 +1,3 @@
-import type { Route } from "./+types/editVersion";
-import { apiFetch } from "~/utils/apiFetch";
-import type { UserType, VersionType } from "~/constants/types";
 import {
   Field,
   FieldDescription,
@@ -12,8 +9,8 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Download, RotateCcw } from "lucide-react";
-import { NavLink, useNavigate } from "react-router";
+import { ChevronLeft, RotateCcw } from "lucide-react";
+import { useNavigate } from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,15 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  type SubmitEventHandler,
-} from "react";
 import {
   Select,
   SelectContent,
@@ -45,8 +34,13 @@ import {
 import { FILETYPE } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
-import { toast } from "sonner";
+import { apiFetch } from "~/utils/apiFetch";
+import type { Route } from "./+types/editFile";
+import type { UserType, VersionType } from "~/constants/types";
+import { useRef, useState, type SubmitEventHandler } from "react";
 import FileItem from "~/components/molecules/FileItem";
+import StrictHeader from "~/components/organisms/StrictHeader";
+import { toast } from "sonner";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -64,19 +58,14 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
-export default function editVersion({ loaderData }: Route.ComponentProps) {
-  const navigate = useNavigate();
-
+export default function editFile({ loaderData }: Route.ComponentProps) {
+  const formRef = useRef<HTMLFormElement>(null);
   const [file, setFile] = useState<File | null>(null);
   const [phase, setPhase] = useState<PhaseType>("idle");
 
-  const formRef = useRef<HTMLFormElement>(null);
-
   const { version, superiors } = loaderData;
 
-  /**
-   * Functions
-   */
+  const navigate = useNavigate();
 
   const sendCheckRequest = async (): Promise<boolean> => {
     const apiResponse = await apiFetch(`/version/${version.id}/status`);
@@ -101,43 +90,41 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
     setPhase("idle");
   };
 
-  const handleEditSubmit: SubmitEventHandler<HTMLFormElement> = async (
-    event,
-  ) => {
-    try {
-      setPhase("submitting");
-      event.preventDefault();
+  const handleFileEdit: SubmitEventHandler<HTMLFormElement> = async (event) => {
+    setPhase("submitting");
+    event.preventDefault();
 
+    try {
       const formData = new FormData(event.currentTarget);
 
       formData.append("id", version.id.toString());
 
       if (file) formData.append("file", file);
 
-      console.log("FORM DATA |", Object.fromEntries(formData.entries()));
+      console.log(Object.fromEntries(formData.entries()));
 
-      const apiResponse = await apiFetch(`/version/${version.id}`, {
+      const apiResponse = await apiFetch(`/admin/file/${version.id}`, {
         method: "PATCH",
         body: formData,
       });
 
-      console.log("APIRESPONSE", apiResponse);
-
       if (!apiResponse.ok) {
-        return toast.error("Submission failed", {
-          position: "top-center",
+        toast.error("Failed to edit file", {
           description: apiResponse.message,
+          position: "top-center",
         });
       }
 
+      toast.success("File edited successfully", {
+        position: "top-center",
+      });
+
       navigate(-1);
     } catch (error) {
-      toast.error("An error occurred", {
-        position: "top-center",
+      toast.error("Failed to submit edits", {
         description:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again in a moment",
+          error instanceof Error ? error.message : "An error occurred",
+        position: "top-center",
       });
     } finally {
       setPhase("idle");
@@ -147,67 +134,19 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
   return (
     <form
       ref={formRef}
-      onSubmit={handleEditSubmit}
+      onSubmit={handleFileEdit}
       className="flex flex-col gap-2"
     >
-      <header className="flex justify-between">
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button type="button" variant={"ghost"}>
-              <ChevronLeft />
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Leave this page?</AlertDialogTitle>
-              <AlertDialogDescription>
-                Your unsaved changes will be lost if you leave this page. Are
-                you sure you want to continue?
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Stay on page</AlertDialogCancel>
-              <AlertDialogAction onClick={() => navigate(-1)}>
-                Leave page
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-        <div className="flex gap-1">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button type="button" variant={"ghost"}>
-                <RotateCcw />
-                Reset
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Reset your progress?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Your current progress will be lost. Are you sure you want to
-                  start over?
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Keep editing</AlertDialogCancel>
-                <AlertDialogAction onClick={() => formRef.current?.click()}>
-                  Reset
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-          <LoadingButton
-            type="submit"
-            displayText="Submit"
-            loadingDisplayText={`${formatEnum(phase)}...`}
-            isSpinning={phase === "saving" || phase === "submitting"}
-          />
-        </div>
-      </header>
+      <StrictHeader
+        resetOnCLick={() => formRef.current?.reset()}
+        buttonLoadingText={`${formatEnum(phase)}...`}
+        buttonText="Save & Publish"
+        buttonIsSpinning={phase === "saving" || phase === "submitting"}
+      />
       <ScrollArea className="h-[49em]">
         <div className="flex flex-col gap-2">
           <FieldSet className="border p-4 rounded-lg">
+            <h2>File Details</h2>
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Title</FieldLabel>
@@ -237,6 +176,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
             </FieldGroup>
           </FieldSet>
           <FieldSet className="border p-4 rounded-lg">
+            <h2>Version Details</h2>
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Originator</FieldLabel>

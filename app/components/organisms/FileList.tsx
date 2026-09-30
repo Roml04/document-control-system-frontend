@@ -129,6 +129,13 @@ export function FileListItem({ file }: FileListItemPropType) {
               <DropdownMenuGroup>
                 <DropdownMenuItem
                   onClick={() => {
+                    navigate(`/admin/files/${file.id}`);
+                  }}
+                >
+                  View
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
                     navigate(`/admin/files/${file.id}/edit`);
                   }}
                 >
