@@ -32,19 +32,19 @@ export function RequestListHeader() {
       <div className={`${columnWidths.title} `}>
         <h3>Title</h3>
       </div>
-      <div className={`${columnWidths.reason} border-x border-gray-200`}>
+      <div className={`${columnWidths.reason} border-gray-200`}>
         <h3>Reason</h3>
       </div>
       <div className={`${columnWidths.type}`}>
         <h3>Type</h3>
       </div>
-      <div className={`${columnWidths.status} border-x border-gray-200`}>
+      <div className={`${columnWidths.status} border-gray-200`}>
         <h3>Status</h3>
       </div>
       <div className={`${columnWidths.author}`}>
         <h3>Author</h3>
       </div>
-      <div className={`${columnWidths.uploadDate} border-x border-gray-200`}>
+      <div className={`${columnWidths.uploadDate} border-gray-200`}>
         <h3>Upload Date</h3>
       </div>
       <div className={`${columnWidths.action}`}>
