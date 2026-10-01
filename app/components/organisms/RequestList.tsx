@@ -26,6 +26,22 @@ const columnWidths = {
   action: "w-full px-2 col-span-1 content-center",
 };
 
+function styleRequestStatus(status: REQUESTSTATUS) {
+  switch (status) {
+    case REQUESTSTATUS.DENIED:
+      return "text-destructive";
+
+    case REQUESTSTATUS.APPROVED:
+      return "text-green-600";
+
+    case REQUESTSTATUS.ORIGINATOREDIT:
+      return "text-amber-500";
+
+    default:
+      return "";
+  }
+}
+
 export function RequestListHeader() {
   return (
     <div className={`${gridStyling} place-items-center py-2 mb-2`}>
@@ -68,9 +84,6 @@ export function RequestListItem({
   isOwned = false,
 }: RequestListItemPropType) {
   const navigate = useNavigate();
-
-  console.log("INFO | RequestListItem Title", request.title);
-  console.log("INFO | RequestListItem", request);
 
   let styleRequestStatus = "";
 
@@ -150,6 +163,107 @@ export function RequestListItem({
                 </DropdownMenuItem>
               ) : (
                 <></>
+              )}
+              {allowedRoles([
+                "coordinator",
+                "superior",
+                "manager",
+                "sysadmin",
+              ]) &&
+                !isOwned && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate(`/requests/${request.id}/review`);
+                    }}
+                  >
+                    Review
+                  </DropdownMenuItem>
+                )}
+              {allowedRoles(["originator", "sysadmin"]) &&
+                request.status === REQUESTSTATUS.DENIED && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate(
+                        `/requests/${request.id}/resubmit?type=${request.type}`,
+                      );
+                    }}
+                  >
+                    Resubmit
+                  </DropdownMenuItem>
+                )}
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </li>
+  );
+}
+
+export function AdminRequestListItem({
+  index,
+  request,
+  onClick,
+  isOwned = false,
+}: RequestListItemPropType) {
+  const navigate = useNavigate();
+
+  return (
+    <li
+      className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
+      key={index}
+    >
+      <div className={`col-span-20 py-5 grid grid-cols-20`} onClick={onClick}>
+        <div className={`${columnWidths.title} `}>
+          <p>{request.title}</p>
+        </div>
+        <div className={`${columnWidths.reason}`}>
+          <p>{request.reason}</p>
+        </div>
+        <div className={`${columnWidths.type} `}>
+          <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
+        </div>
+        <div
+          className={`${columnWidths.status} ${request.status ? styleRequestStatus(request.status) : ""}`}
+        >
+          <p>
+            {request.status ? formatEnum(request.status) : "Unknown Status"}
+          </p>
+        </div>
+        <div className={`${columnWidths.author}`}>
+          <p>
+            {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
+              "Unknown User"}
+          </p>
+        </div>
+        <div className={`${columnWidths.uploadDate}`}>
+          <p>{request.uploadDate ?? "--"}</p>
+        </div>
+      </div>
+
+      <div className={`${columnWidths.action}`}>
+        <DropdownMenu>
+          <DropdownMenuTrigger onClick={() => {}} asChild>
+            <Button size={"icon"} variant={"ghost"}>
+              <Ellipsis size={16} className="cursor-pointer" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                onClick={() => {
+                  navigate(`/requests/${request.id}`);
+                }}
+              >
+                View
+              </DropdownMenuItem>
+              {allowedRoles(["sysadmin"]) && (
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate(`/versions/${request.version?.id}/edit`);
+                  }}
+                >
+                  Edit
+                </DropdownMenuItem>
               )}
               {allowedRoles([
                 "coordinator",
