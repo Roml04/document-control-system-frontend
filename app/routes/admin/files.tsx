@@ -160,6 +160,10 @@ export default function files({ loaderData }: Route.ComponentProps) {
         needsCleanup.current = true;
         setOpenAddPublishSheet(false);
       }
+
+      toast.success("File submitted", {
+        position: "top-center",
+      });
     } catch (error) {
       toast.error("Submission failed [2]", {
         description: error instanceof Error ? error.message : undefined,

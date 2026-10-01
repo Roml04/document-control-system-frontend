@@ -31,6 +31,7 @@ import {
 } from "~/components/ui/empty";
 
 import {
+  AdminRequestListItem,
   RequestListHeader,
   RequestListItem,
 } from "~/components/organisms/RequestList";
@@ -47,6 +48,7 @@ import {
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
+import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -185,7 +187,9 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 <DropdownMenuItem onClick={() => setOpenCreateUplSheet(true)}>
                   Upload
                 </DropdownMenuItem>
-                <DropdownMenuItem>Revise</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenCreateRevSheet(true)}>
+                  Revise
+                </DropdownMenuItem>
                 <DropdownMenuItem>Delete</DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
@@ -206,7 +210,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 {/* For Approvals */}
                 {forApprovals.map((request, index) => {
                   return (
-                    <RequestListItem
+                    <AdminRequestListItem
                       index={index}
                       key={index}
                       request={request}
@@ -409,6 +413,10 @@ export default function requests({ loaderData }: Route.ComponentProps) {
       <CreateUplSheet
         open={openCreateUplSheet}
         onOpenChange={setOpenCreateUplSheet}
+      />
+      <CreateRevSheet
+        open={openCreateRevSheet}
+        onOpenChange={setOpenCreateRevSheet}
       />
     </>
   );

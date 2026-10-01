@@ -37,6 +37,7 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { REQUESTTYPE } from "~/constants/enums";
 import { NavLink } from "react-router";
+
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
 

@@ -37,6 +37,7 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { REQUESTTYPE } from "~/constants/enums";
 import { NavLink } from "react-router";
+import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -296,75 +297,11 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           )}
         </div>
       </div>
-      <Sheet
+      <CreateRevSheet
         open={openReviseSheet}
-        onOpenChange={(open) => {
-          setOpenReviseSheet(open);
-
-          if (!open) {
-            setRequestTitle("");
-            setRequestReason("");
-          }
-        }}
-      >
-        <SheetContent
-          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
-          onInteractOutside={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <form
-            onSubmit={(event) => {
-              handleSubmitRequest(event, REQUESTTYPE.REVISION);
-            }}
-            className="flex h-full min-h-0 flex-col"
-          >
-            <SheetHeader>
-              <h1>Revise a File</h1>
-              <p>Submit a revise file request.</p>
-            </SheetHeader>
-            <Separator />
-
-            <ScrollArea className="flex-1 min-h-0 px-4 py-4">
-              <FieldSet>
-                <FieldGroup>
-                  <h2>Request Details</h2>
-                  <Field>
-                    <FieldLabel htmlFor="title">Title</FieldLabel>
-                    <Input
-                      id="title"
-                      value={requestTitle}
-                      onChange={(e) => setRequestTitle(e.target.value)}
-                      type="text"
-                      placeholder="e.g., Request for document upload"
-                      required
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="reason">Reason</FieldLabel>
-                    <Textarea
-                      id="reason"
-                      value={requestReason}
-                      onChange={(e) => setRequestReason(e.target.value)}
-                      placeholder="Describe the purpose or reason for submitting this request..."
-                      required
-                    />
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
-            </ScrollArea>
-            <Separator />
-            <SheetFooter>
-              <LoadingButton
-                displayText="Submit Request"
-                loadingDisplayText="Submitting request..."
-                isSpinning={isSpinning}
-              />
-              {/* <Button type="submit">Submit Request</Button> */}
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
+        onOpenChange={setOpenReviseSheet}
+        latestVersionid={latestVersion.id}
+      />
       <Sheet
         open={openDeleteSheet}
         onOpenChange={(open) => {
