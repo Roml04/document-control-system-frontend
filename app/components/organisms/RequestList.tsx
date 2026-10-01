@@ -85,25 +85,6 @@ export function RequestListItem({
 }: RequestListItemPropType) {
   const navigate = useNavigate();
 
-  let styleRequestStatus = "";
-
-  switch (request.status) {
-    case REQUESTSTATUS.DENIED:
-      styleRequestStatus = "text-destructive";
-      break;
-
-    case REQUESTSTATUS.APPROVED:
-      styleRequestStatus = "text-green-600";
-      break;
-
-    case REQUESTSTATUS.ORIGINATOREDIT:
-      styleRequestStatus = "text-amber-500";
-      break;
-
-    default:
-      styleRequestStatus = "";
-  }
-
   return (
     <li
       className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
@@ -119,7 +100,9 @@ export function RequestListItem({
         <div className={`${columnWidths.type} `}>
           <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
         </div>
-        <div className={`${columnWidths.status} ${styleRequestStatus}`}>
+        <div
+          className={`${columnWidths.status} ${request.status ? styleRequestStatus(request.status) : ""}`}
+        >
           <p>
             {request.status ? formatEnum(request.status) : "Unknown Status"}
           </p>
@@ -259,19 +242,19 @@ export function AdminRequestListItem({
               {allowedRoles(["sysadmin"]) && (
                 <DropdownMenuItem
                   onClick={() => {
-                    navigate(`/versions/${request.version?.id}/edit`);
+                    navigate(`/admin/requests/${request.version?.id}/edit`);
                   }}
                 >
                   Edit
                 </DropdownMenuItem>
               )}
-              {allowedRoles([
-                "coordinator",
-                "superior",
-                "manager",
-                "sysadmin",
-              ]) &&
-                !isOwned && (
+              {allowedRoles(["sysadmin"]) &&
+                !(
+                  request.status &&
+                  [REQUESTSTATUS.APPROVED, REQUESTSTATUS.DENIED].includes(
+                    request.status,
+                  )
+                ) && (
                   <DropdownMenuItem
                     onClick={() => {
                       navigate(`/requests/${request.id}/review`);
@@ -280,7 +263,7 @@ export function AdminRequestListItem({
                     Review
                   </DropdownMenuItem>
                 )}
-              {allowedRoles(["originator", "sysadmin"]) &&
+              {allowedRoles(["sysadmin"]) &&
                 request.status === REQUESTSTATUS.DENIED && (
                   <DropdownMenuItem
                     onClick={() => {
