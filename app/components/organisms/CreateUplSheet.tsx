@@ -31,12 +31,7 @@ import {
 } from "~/components/ui/select";
 import { FileIcon, FileUp, XIcon } from "lucide-react";
 import LoadingButton from "~/components/primitives/LoadingButton";
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  type SubmitEventHandler,
-} from "react";
+import { useEffect, useState, type SubmitEventHandler } from "react";
 import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
@@ -73,9 +68,6 @@ export default function CreateUplSheet({
   const [approvers, setApprovers] = useState<UserType[]>([]);
   const [file, setFile] = useState<File | null>(null);
 
-  const uploadRequestFormRef = useRef<HTMLFormElement>(null);
-  const needsCleanup = useRef(false);
-
   const revalidator = useRevalidator();
 
   useEffect(() => {
@@ -91,10 +83,7 @@ export default function CreateUplSheet({
   /**
    * Functions
    */
-  const closeSheet = (formRef: React.RefObject<HTMLFormElement | null>) => {
-    if (!needsCleanup.current) return;
-    needsCleanup.current = false;
-    formRef.current?.reset();
+  const closeSheet = () => {
     setFile(null);
     revalidator.revalidate();
   };
@@ -130,7 +119,6 @@ export default function CreateUplSheet({
         });
       }
 
-      needsCleanup.current = true;
       onOpenChange(false);
     } catch (error) {
       toast.error("Failed to submit file", {
@@ -150,24 +138,25 @@ export default function CreateUplSheet({
         onInteractOutside={(event) => {
           event.preventDefault();
         }}
-        onAnimationEnd={(e) => {
+        onAnimationEnd={(event) => {
           if (
-            e.target === e.currentTarget &&
-            e.currentTarget.dataset.state === "closed"
+            event.target === event.currentTarget &&
+            event.currentTarget.dataset.state === "closed"
           ) {
-            needsCleanup.current = true;
-            closeSheet(uploadRequestFormRef);
+            closeSheet();
           }
         }}
       >
         <form
-          ref={uploadRequestFormRef}
           onSubmit={handleUploadFile}
           className="flex h-full min-h-0 flex-col"
         >
           <SheetHeader>
             <h1>Create an Upload Request</h1>
-            <p>An upload request goes through the normal approval process.</p>
+            <p>
+              Creates an upload request that goes through the normal approval
+              process.
+            </p>
           </SheetHeader>
           <Separator />
 
