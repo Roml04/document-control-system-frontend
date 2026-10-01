@@ -234,7 +234,7 @@ export function AdminRequestListItem({
             <DropdownMenuGroup>
               <DropdownMenuItem
                 onClick={() => {
-                  navigate(`/requests/${request.id}`);
+                  navigate(`/admin/requests/${request.id}`);
                 }}
               >
                 View
