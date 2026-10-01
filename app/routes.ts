@@ -41,7 +41,11 @@ export default [
         route("/:id/edit", "./routes/admin/file/editFile.tsx"),
       ]),
 
-      ...prefix("/requests", [index("./routes/admin/requests.tsx")]),
+      ...prefix("/requests", [
+        index("./routes/admin/requests.tsx"),
+        route("/:id", "./routes/admin/request/showRequest.tsx"),
+        route("/:id/edit", "./routes/admin/request/editRequest.tsx"),
+      ]),
       ...prefix("/versions", [index("./routes/admin/versions.tsx")]),
     ]),
   ]),

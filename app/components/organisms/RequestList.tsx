@@ -242,7 +242,7 @@ export function AdminRequestListItem({
               {allowedRoles(["sysadmin"]) && (
                 <DropdownMenuItem
                   onClick={() => {
-                    navigate(`/admin/requests/${request.version?.id}/edit`);
+                    navigate(`/admin/requests/${request.id}/edit`);
                   }}
                 >
                   Edit
