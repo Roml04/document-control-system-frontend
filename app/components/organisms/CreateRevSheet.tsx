@@ -134,8 +134,11 @@ export default function CreateRevSheet({
           className="flex h-full min-h-0 flex-col"
         >
           <SheetHeader>
-            <h1>Revise a File</h1>
-            <p>Submit a revise file request.</p>
+            <h1>Create a Revision Request</h1>
+            <p>
+              Creates a revision request that goes through the normal approval
+              process.
+            </p>
           </SheetHeader>
           <Separator />
 

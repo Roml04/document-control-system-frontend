@@ -151,8 +151,11 @@ export default function CreateDelSheet({
           className="flex h-full min-h-0 flex-col"
         >
           <SheetHeader>
-            <h1>Delete a file</h1>
-            <p>Submit a delete file request</p>
+            <h1>Create a Delete Request</h1>
+            <p>
+              Creates a delete request that goes through the normal approval
+              process.
+            </p>
           </SheetHeader>
           <ScrollArea className="flex-1 min-h-0 px-4 py-4">
             <FieldSet>
