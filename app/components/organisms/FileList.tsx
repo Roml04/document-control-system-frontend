@@ -65,7 +65,7 @@ type FileListItemPropType = {
   };
 };
 
-export function FileListItem({ file }: FileListItemPropType) {
+export function AdminFileListItem({ file }: FileListItemPropType) {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
 
   const revalidator = useRevalidator();
@@ -142,6 +142,7 @@ export function FileListItem({ file }: FileListItemPropType) {
                   Edit
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  variant="destructive"
                   onClick={() => {
                     setOpenDeleteDialog(true);
                   }}

@@ -56,7 +56,10 @@ import {
 } from "~/components/ui/empty";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { FILETYPE } from "~/constants/enums";
-import { FileListHeader, FileListItem } from "~/components/organisms/FileList";
+import {
+  FileListHeader,
+  AdminFileListItem,
+} from "~/components/organisms/FileList";
 import { ButtonGroup } from "~/components/ui/button-group";
 import {
   DropdownMenu,
@@ -179,27 +182,10 @@ export default function files({ loaderData }: Route.ComponentProps) {
       <div className="flex flex-col gap-4 h-[55em]">
         <div className="flex justify-between">
           <h1>Files</h1>
-          <ButtonGroup>
-            <Button onClick={() => setOpenUplRequestSheet(true)}>
-              Create Upload Request
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button>
-                  <ChevronDown color="#ffffff" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    onClick={() => setOpenAddPublishSheet(true)}
-                  >
-                    Add & Publish
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </ButtonGroup>
+          <Button onClick={() => setOpenAddPublishSheet(true)}>
+            <Plus color="#ffffff" />
+            Add & Publish
+          </Button>
         </div>
         <Separator />
         <FileListHeader />
@@ -207,7 +193,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
           <ScrollArea className="h-[52em] w-full ">
             <ul>
               {files.map((file, index) => {
-                return <FileListItem key={index} file={file} />;
+                return <AdminFileListItem key={index} file={file} />;
               })}
             </ul>
           </ScrollArea>

@@ -326,7 +326,10 @@ export function AdminRequestListItem({
                     </DropdownMenuItem>
                   )}
                 {allowedRoles(["sysadmin"]) && (
-                  <DropdownMenuItem onClick={() => setOpenDeleteAlert(true)}>
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setOpenDeleteAlert(true)}
+                  >
                     Delete
                   </DropdownMenuItem>
                 )}
