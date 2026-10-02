@@ -49,6 +49,7 @@ import {
 } from "~/components/ui/dropdown-menu";
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
+import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -190,7 +191,9 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 <DropdownMenuItem onClick={() => setOpenCreateRevSheet(true)}>
                   Revise
                 </DropdownMenuItem>
-                <DropdownMenuItem>Delete</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenCreateDelSheet(true)}>
+                  Delete
+                </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -417,6 +420,10 @@ export default function requests({ loaderData }: Route.ComponentProps) {
       <CreateRevSheet
         open={openCreateRevSheet}
         onOpenChange={setOpenCreateRevSheet}
+      />
+      <CreateDelSheet
+        open={openCreateDelSheet}
+        onOpenChange={setOpenCreateDelSheet}
       />
     </>
   );
