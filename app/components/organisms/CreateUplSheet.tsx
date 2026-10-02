@@ -266,6 +266,7 @@ export default function CreateUplSheet({
                     id="revisionDetails"
                     name="revisionDetails"
                     placeholder="Briefly describe the changes made..."
+                    required
                   />
                 </Field>
 
