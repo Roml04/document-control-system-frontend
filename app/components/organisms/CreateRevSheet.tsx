@@ -52,17 +52,19 @@ export default function CreateRevSheet({
   const revalidator = useRevalidator();
 
   useEffect(() => {
-    if (!needsPicker || !open) return;
+    const fetchUsers = async () => {
+      const fetchedUsers = await apiFetch("/user");
+      setUsers(fetchedUsers.data);
+    };
 
     const fetchFiles = async () => {
-      const [fetchedFiles, fetchedUsers] = await Promise.all([
-        apiFetch("/file"),
-        apiFetch("/user"),
-      ]);
-
-      setUsers(fetchedUsers.data);
+      const fetchedFiles = await apiFetch("/file");
       setFiles(fetchedFiles.data);
     };
+
+    fetchUsers();
+
+    if (!needsPicker || !open) return;
 
     fetchFiles();
   }, [needsPicker, open]);
@@ -160,7 +162,7 @@ export default function CreateRevSheet({
                     required
                   />
                 </Field>
-                {allowedRoles(["sysadmin"]) ? (
+                {allowedRoles(["sysadmin"]) && needsPicker ? (
                   <>
                     <Field>
                       <FieldLabel>File to Revise</FieldLabel>

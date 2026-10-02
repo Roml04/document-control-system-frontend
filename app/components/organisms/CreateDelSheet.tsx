@@ -63,22 +63,22 @@ export default function CreateDelSheet({
     : latestVersionId;
 
   useEffect(() => {
-    const fetchFile = async () => {
-      if (!needsPicker || !open) return;
-
-      const [fetchedFiles, fetchedUsers] = await Promise.all([
-        apiFetch("/file"),
-        apiFetch("/user"),
-      ]);
-
-      console.log("FETCHED FILE AND USER");
-
-      setFiles(fetchedFiles.data);
+    const fetchUsers = async () => {
+      const fetchedUsers = await apiFetch("/user");
       setUsers(fetchedUsers.data);
     };
 
-    fetchFile();
-  }, [open]);
+    const fetchFiles = async () => {
+      const fetchedFiles = await apiFetch("/file");
+      setFiles(fetchedFiles.data);
+    };
+
+    fetchUsers();
+
+    if (!needsPicker || !open) return;
+
+    fetchFiles();
+  }, [needsPicker, open]);
 
   const handleSubmitRequest: SubmitEventHandler<HTMLFormElement> = async (
     event,
@@ -97,10 +97,13 @@ export default function CreateDelSheet({
 
       console.log("FORM DATA", Object.fromEntries(formData.entries()));
 
-      const apiResponse = await apiFetch(`/request`, {
-        method: "POST",
-        body: formData,
-      });
+      const apiResponse = await apiFetch(
+        allowedRoles(["sysadmin"]) ? "/admin/request" : `/request`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!apiResponse.ok) {
         toast.error("Failed to submit request", {
@@ -138,6 +141,7 @@ export default function CreateDelSheet({
             event.target === event.currentTarget &&
             event.currentTarget.dataset.state === "closed"
           ) {
+            setSelectedFileId("");
             revalidator.revalidate();
           }
         }}
@@ -173,7 +177,7 @@ export default function CreateDelSheet({
                     required
                   />
                 </Field>
-                {allowedRoles(["sysadmin"]) ? (
+                {allowedRoles(["sysadmin"]) && needsPicker ? (
                   <Field>
                     <FieldLabel>File to Delete</FieldLabel>
                     <Select
