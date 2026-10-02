@@ -251,9 +251,11 @@ export function AdminRequestListItem({
               {allowedRoles(["sysadmin"]) &&
                 !(
                   request.status &&
-                  [REQUESTSTATUS.APPROVED, REQUESTSTATUS.DENIED].includes(
-                    request.status,
-                  )
+                  [
+                    REQUESTSTATUS.APPROVED,
+                    REQUESTSTATUS.DENIED,
+                    REQUESTSTATUS.ORIGINATOREDIT,
+                  ].includes(request.status)
                 ) && (
                   <DropdownMenuItem
                     onClick={() => {

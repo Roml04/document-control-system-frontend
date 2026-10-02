@@ -124,7 +124,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-4">
         <Header />
         {/* FILE */}
         <div className="flex flex-col border rounded-lg p-4 justify-center gap-4">
