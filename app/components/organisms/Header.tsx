@@ -8,7 +8,7 @@ export default function Header() {
 
   return (
     <header className="">
-      <Button variant={"ghost"} onClick={() => navigate(-1)}>
+      <Button type="button" variant={"ghost"} onClick={() => navigate(-1)}>
         <ChevronLeft />
       </Button>
     </header>

@@ -223,7 +223,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                   <SelectTrigger>
                     <SelectValue placeholder="Choose file type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectGroup>
                       {Object.values(FILETYPE).map((type, index) => (
                         <SelectItem key={index} value={type}>
@@ -299,7 +299,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                   <SelectTrigger>
                     <SelectValue placeholder="Choose an approver" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectGroup>
                       {superiors.map((superior, index) => {
                         const superiorName = formatUserName(

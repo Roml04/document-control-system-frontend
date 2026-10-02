@@ -7,21 +7,7 @@ import {
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import LoadingButton from "~/components/primitives/LoadingButton";
-import { Button } from "~/components/ui/button";
-import { ChevronLeft, RotateCcw } from "lucide-react";
 import { useNavigate } from "react-router";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "~/components/ui/alert-dialog";
 import { Textarea } from "~/components/ui/textarea";
 import {
   Select,
@@ -135,7 +121,7 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
     <form
       ref={formRef}
       onSubmit={handleFileEdit}
-      className="flex flex-col gap-2"
+      className="flex flex-col gap-4"
     >
       <StrictHeader
         resetOnCLick={() => formRef.current?.reset()}
@@ -143,7 +129,8 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
         buttonText="Save & Publish"
         buttonIsSpinning={phase === "saving" || phase === "submitting"}
       />
-      <ScrollArea className="h-[49em]">
+      <h1>Editing '{version.fileTitle}'</h1>
+      <ScrollArea className="h-[45em]">
         <div className="flex flex-col gap-2">
           <FieldSet className="border p-4 rounded-lg">
             <h2>File Details</h2>
@@ -162,7 +149,7 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
                   <SelectTrigger>
                     <SelectValue placeholder="Choose file type" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectGroup>
                       {Object.values(FILETYPE).map((type, index) => (
                         <SelectItem key={index} value={type}>
@@ -239,7 +226,7 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
                   <SelectTrigger>
                     <SelectValue placeholder="Choose an approver" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper">
                     <SelectGroup>
                       {superiors.map((superior, index) => {
                         const superiorName = formatUserName(

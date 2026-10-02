@@ -168,7 +168,7 @@ export default function CreateRevSheet({
                         <SelectTrigger>
                           <SelectValue placeholder="Select a file to revise" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           <SelectGroup>
                             <SelectLabel>Files</SelectLabel>
                             {files.map((file, index) => (
@@ -198,7 +198,7 @@ export default function CreateRevSheet({
                       <SelectTrigger>
                         <SelectValue placeholder="Select an author" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         <SelectGroup>
                           <SelectLabel>Users</SelectLabel>
                           {users.map((user, index) => (

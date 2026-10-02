@@ -254,7 +254,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                       <SelectTrigger>
                         <SelectValue placeholder="Select the file type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         <SelectGroup>
                           <SelectLabel>File Type</SelectLabel>
                           {Object.values(FILETYPE).map((type, index) => (
@@ -333,7 +333,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
                       <SelectTrigger>
                         <SelectValue placeholder="Select an Approver" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         <SelectGroup>
                           <SelectLabel>Approvers</SelectLabel>
                           {approvers.map((approver) => {

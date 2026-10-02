@@ -36,45 +36,36 @@ import { Separator } from "../ui/separator";
 import { ScrollArea } from "../ui/scroll-area";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-import { FILETYPE } from "~/constants/enums";
+import { FILETYPE, USERROLE } from "~/constants/enums";
 import { formatUserName } from "~/utils/formatUserName";
 import { apiFetch } from "~/utils/apiFetch";
 import type { UserType } from "~/constants/types";
 import { toast } from "sonner";
 import { useRevalidator } from "react-router";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 type CreateUplSheetType = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
 
-export async function clientLoader() {
-  const [fetchedApprovers] = await Promise.all([
-    apiFetch("/user?role=superior"),
-  ]);
-
-  return {
-    approvers: fetchedApprovers.data,
-  } as {
-    approvers: UserType[];
-  };
-}
-
 export default function CreateUplSheet({
   open,
   onOpenChange,
 }: CreateUplSheetType) {
   const [isSpinning, setIsSpinning] = useState(false);
-  const [approvers, setApprovers] = useState<UserType[]>([]);
+  const [users, setUsers] = useState<UserType[]>([]);
   const [file, setFile] = useState<File | null>(null);
 
   const revalidator = useRevalidator();
 
   useEffect(() => {
     const fetchApprovers = async () => {
-      const fetchedApprovers = await apiFetch("/user?role=superior");
+      const fetchedUsers = await apiFetch("/user");
 
-      setApprovers(fetchedApprovers.data);
+      const users: UserType[] = fetchedUsers.data;
+
+      setUsers(users);
     };
 
     fetchApprovers();
@@ -183,6 +174,26 @@ export default function CreateUplSheet({
                     required
                   />
                 </Field>
+                {allowedRoles(["sysadmin"]) && (
+                  <Field>
+                    <FieldLabel>Author</FieldLabel>
+                    <Select name="authorId" required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an author" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectGroup>
+                          <SelectLabel>Users</SelectLabel>
+                          {users.map((user, index) => (
+                            <SelectItem key={index} value={user.id.toString()}>
+                              {formatUserName(user.firstName, user.lastName)}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </Field>
+                )}
               </FieldGroup>
               <Separator />
               <FieldGroup className="grid grid-cols-2">
@@ -203,7 +214,7 @@ export default function CreateUplSheet({
                     <SelectTrigger>
                       <SelectValue placeholder="Select the file type" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper">
                       <SelectGroup>
                         <SelectLabel>File Type</SelectLabel>
                         {Object.values(FILETYPE).map((type, index) => (
@@ -280,14 +291,17 @@ export default function CreateUplSheet({
                     <SelectTrigger>
                       <SelectValue placeholder="Select an Approver" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent position="popper">
                       <SelectGroup>
                         <SelectLabel>Approvers</SelectLabel>
-                        {approvers.map((approver) => {
+                        {users.map((approver) => {
+                          if (approver.role !== USERROLE.SUPERIOR) return;
+
                           const approverName = formatUserName(
                             approver.firstName,
                             approver.lastName,
                           );
+
                           return (
                             <SelectItem key={approver.id} value={approverName}>
                               {approverName}
