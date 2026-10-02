@@ -37,6 +37,8 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { REQUESTTYPE } from "~/constants/enums";
 import { NavLink } from "react-router";
+import CreateRevSheet from "~/components/organisms/CreateRevSheet";
+import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -55,63 +57,6 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
 
   const [openReviseSheet, setOpenReviseSheet] = useState(false);
   const [openDeleteSheet, setOpenDeleteSheet] = useState(false);
-  const [requestTitle, setRequestTitle] = useState("");
-  const [requestReason, setRequestReason] = useState("");
-
-  const [isSpinning, setIsSpinning] = useState(false);
-  console.log("INFO | loaderData", file);
-
-  /**
-   * Functions
-   */
-  const handleSubmitRequest = async (
-    event: React.SubmitEvent<HTMLFormElement>,
-    type: REQUESTTYPE.REVISION | REQUESTTYPE.DELETE,
-  ) => {
-    try {
-      event.preventDefault();
-      setIsSpinning(true);
-
-      const data = {
-        type: type,
-        title: requestTitle,
-        reason: requestReason,
-        latestVersionId: latestVersion.id,
-        ...(type === "del" && { fileId: file.id }),
-      };
-
-      console.log("INFO | DATA", data);
-
-      const apiResponse = await apiFetch("/request", {
-        method: "POST",
-        body: JSON.stringify(data),
-      });
-
-      if (!apiResponse.ok) {
-        return toast.error(`Failed to submit request`, {
-          position: "top-center",
-          description: apiResponse.message,
-        });
-      }
-
-      console.log("INFO | apiResponse", apiResponse);
-
-      setRequestTitle("");
-      setRequestReason("");
-      setOpenReviseSheet(false);
-      setOpenDeleteSheet(false);
-    } catch (error) {
-      toast.error("An error occurred", {
-        position: "top-center",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again in a moment",
-      });
-    } finally {
-      setIsSpinning(false);
-    }
-  };
 
   const colSpan = {
     revisionNumber: "col-span-5",
@@ -296,141 +241,17 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           )}
         </div>
       </div>
-      <Sheet
+      <CreateRevSheet
         open={openReviseSheet}
-        onOpenChange={(open) => {
-          setOpenReviseSheet(open);
-
-          if (!open) {
-            setRequestTitle("");
-            setRequestReason("");
-          }
-        }}
-      >
-        <SheetContent
-          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
-          onInteractOutside={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <form
-            onSubmit={(event) => {
-              handleSubmitRequest(event, REQUESTTYPE.REVISION);
-            }}
-            className="flex h-full min-h-0 flex-col"
-          >
-            <SheetHeader>
-              <h1>Revise a File</h1>
-              <p>Submit a revise file request.</p>
-            </SheetHeader>
-            <Separator />
-
-            <ScrollArea className="flex-1 min-h-0 px-4 py-4">
-              <FieldSet>
-                <FieldGroup>
-                  <h2>Request Details</h2>
-                  <Field>
-                    <FieldLabel htmlFor="title">Title</FieldLabel>
-                    <Input
-                      id="title"
-                      value={requestTitle}
-                      onChange={(e) => setRequestTitle(e.target.value)}
-                      type="text"
-                      placeholder="e.g., Request for document upload"
-                      required
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="reason">Reason</FieldLabel>
-                    <Textarea
-                      id="reason"
-                      value={requestReason}
-                      onChange={(e) => setRequestReason(e.target.value)}
-                      placeholder="Describe the purpose or reason for submitting this request..."
-                      required
-                    />
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
-            </ScrollArea>
-            <Separator />
-            <SheetFooter>
-              <LoadingButton
-                displayText="Submit Request"
-                loadingDisplayText="Submitting request..."
-                isSpinning={isSpinning}
-              />
-              {/* <Button type="submit">Submit Request</Button> */}
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
-      <Sheet
+        onOpenChange={setOpenReviseSheet}
+        latestVersionid={latestVersion.id}
+      />
+      <CreateDelSheet
         open={openDeleteSheet}
-        onOpenChange={(open) => {
-          setOpenDeleteSheet(open);
-
-          if (!open) {
-            setRequestTitle("");
-            setRequestReason("");
-          }
-        }}
-      >
-        <SheetContent
-          className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0"
-          onInteractOutside={(event) => {
-            event.preventDefault();
-          }}
-        >
-          <form
-            onSubmit={(event) => {
-              handleSubmitRequest(event, REQUESTTYPE.DELETE);
-            }}
-            className="flex h-full min-h-0 flex-col"
-          >
-            <SheetHeader>
-              <h1>Delete a file</h1>
-              <p>Submit a delete file request</p>
-            </SheetHeader>
-            <ScrollArea className="flex-1 min-h-0 px-4 py-4">
-              <FieldSet>
-                <FieldGroup>
-                  <h2>Request Details</h2>
-                  <Field>
-                    <FieldLabel htmlFor="title">Title</FieldLabel>
-                    <Input
-                      id="title"
-                      value={requestTitle}
-                      onChange={(e) => setRequestTitle(e.target.value)}
-                      type="text"
-                      placeholder="e.g., Request for document upload"
-                      required
-                    />
-                  </Field>
-                  <Field>
-                    <FieldLabel htmlFor="reason">Reason</FieldLabel>
-                    <Textarea
-                      id="reason"
-                      value={requestReason}
-                      onChange={(e) => setRequestReason(e.target.value)}
-                      placeholder="Describe the purpose or reason for submitting this request..."
-                      required
-                    />
-                  </Field>
-                </FieldGroup>
-              </FieldSet>
-            </ScrollArea>
-            <Separator />
-            <SheetFooter>
-              <LoadingButton
-                displayText="Submit Request"
-                loadingDisplayText="Submitting request..."
-                isSpinning={isSpinning}
-              />
-            </SheetFooter>
-          </form>
-        </SheetContent>
-      </Sheet>
+        onOpenChange={setOpenDeleteSheet}
+        latestVersionId={latestVersion.id}
+        fileId={file.id}
+      />
     </>
   );
 }
