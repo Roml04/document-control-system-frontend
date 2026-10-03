@@ -33,7 +33,10 @@ export default [
     ...prefix("/admin", [
       index("./routes/admin/dashboard.tsx"),
 
-      ...prefix("/users", [index("./routes/admin/users.tsx")]),
+      ...prefix("/users", [
+        index("./routes/admin/users.tsx"),
+        route("/:id", "./routes/admin/user/showUser.tsx"),
+      ]),
 
       ...prefix("/files", [
         index("./routes/admin/files.tsx"),

@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router";
+import { Separator } from "../ui/separator";
 
 const columnStyling = "w-full px-2 content-center";
 
@@ -47,7 +48,7 @@ export function AdminUserListItem({ index, user }: AdminUserListItemPropType) {
     <li className="grid grid-cols-12 cursor-pointer rounded-lg hover:bg-accent">
       <div
         className={`col-span-11 py-5 grid grid-cols-11`}
-        onClick={() => console.log("NAVIGATED TO /users/:id")}
+        onClick={() => navigate(`/admin/users/${user.id}`)}
       >
         <p className={columnWidths.id}>{user.id}</p>
         <p className={columnWidths.name}>

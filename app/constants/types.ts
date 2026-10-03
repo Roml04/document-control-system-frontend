@@ -16,6 +16,7 @@ export type UserType = {
   firstName: string;
   lastName: string;
   role: USERROLE;
+  createdAt: string;
 };
 
 export type RequestType = {
