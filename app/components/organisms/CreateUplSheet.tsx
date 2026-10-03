@@ -111,6 +111,9 @@ export default function CreateUplSheet({
       }
 
       onOpenChange(false);
+      toast.success("Request submitted", {
+        position: "top-center",
+      });
     } catch (error) {
       toast.error("Failed to submit file", {
         description:

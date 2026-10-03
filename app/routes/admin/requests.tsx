@@ -10,7 +10,7 @@ import {
   SheetFooter,
   SheetHeader,
 } from "~/components/ui/sheet";
-import { useReducer, useRef, useState } from "react";
+import { useReducer, useState } from "react";
 import { File, PackageOpen, Plus, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import {
@@ -33,7 +33,6 @@ import {
 import {
   AdminRequestListItem,
   RequestListHeader,
-  RequestListItem,
 } from "~/components/organisms/RequestList";
 import { formatUserName } from "~/utils/formatUserName";
 import type { Route } from "./+types/requests";
@@ -75,7 +74,7 @@ type ViewRequestActionType = {
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
 
-  console.log("INFO | apiResponse", apiResponse);
+  console.log("INFO | apiResponse data", apiResponse.data);
 
   return apiResponse.data as {
     myRequests: ViewRequestStateType[];
@@ -84,7 +83,7 @@ export async function clientLoader() {
 }
 
 export default function requests({ loaderData }: Route.ComponentProps) {
-  const { myRequests, forApprovals } = loaderData;
+  const { forApprovals } = loaderData;
 
   /**
    * Hook initialization
@@ -199,28 +198,22 @@ export default function requests({ loaderData }: Route.ComponentProps) {
           </DropdownMenu>
         </div>
         <Separator />
-        <div className="h-[45em]">
-          {/* HEADER */}
+        <div className="h-[50em]">
           <RequestListHeader />
           {forApprovals.length !== 0 ? (
             <ul>
-              <ScrollArea className="h-[52em]">
-                {forApprovals.length !== 0 && (
-                  <div className="px-2">
-                    <h3>For Approvals</h3>
-                  </div>
-                )}
-                {/* For Approvals */}
-                {forApprovals.map((request, index) => {
-                  return (
-                    <AdminRequestListItem
-                      index={index}
-                      key={index}
-                      request={request}
-                      onClick={() => renderRequestOnSheet(request)}
-                    />
-                  );
-                })}
+              <ScrollArea className="h-[50em]">
+                <div className="px-2">
+                  <h3>For Approvals</h3>
+                </div>
+                {forApprovals.map((request, index) => (
+                  <AdminRequestListItem
+                    index={index}
+                    key={index}
+                    request={request}
+                    onClick={() => renderRequestOnSheet(request)}
+                  />
+                ))}
               </ScrollArea>
             </ul>
           ) : (
@@ -230,10 +223,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   <PackageOpen />
                 </EmptyMedia>
                 <EmptyTitle>No requests to display</EmptyTitle>
-                <EmptyDescription className="text-pretty">
-                  There are currently no requests available for you to view or
-                  review.
-                </EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}

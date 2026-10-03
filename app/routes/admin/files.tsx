@@ -179,7 +179,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-4 h-[55em]">
+      <div className="flex flex-col gap-4">
         <div className="flex justify-between">
           <h1>Files</h1>
           <Button onClick={() => setOpenAddPublishSheet(true)}>
@@ -188,25 +188,27 @@ export default function files({ loaderData }: Route.ComponentProps) {
           </Button>
         </div>
         <Separator />
-        <FileListHeader />
-        {files.length > 0 ? (
-          <ScrollArea className="h-[52em] w-full ">
+        <div className="h-[50em]">
+          <FileListHeader />
+          {files.length > 0 ? (
             <ul>
-              {files.map((file, index) => {
-                return <AdminFileListItem key={index} file={file} />;
-              })}
+              <ScrollArea className="h-[52em] w-full ">
+                {files.map((file, index) => (
+                  <AdminFileListItem key={index} file={file} />
+                ))}
+              </ScrollArea>
             </ul>
-          </ScrollArea>
-        ) : (
-          <Empty>
-            <EmptyHeader className="gap-1">
-              <EmptyMedia variant={"icon"}>
-                <PackageOpen />
-              </EmptyMedia>
-              <EmptyTitle>No files published at the moment</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        )}
+          ) : (
+            <Empty className="h-full">
+              <EmptyHeader className="gap-1">
+                <EmptyMedia variant={"icon"}>
+                  <PackageOpen />
+                </EmptyMedia>
+                <EmptyTitle>No files published at the moment</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </div>
       </div>
       <CreateUplSheet
         open={openUplRequestSheet}
