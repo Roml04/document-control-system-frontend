@@ -188,6 +188,7 @@ export default function CreateDelSheet({
                       required
                       value={selectedFileId}
                       onValueChange={setSelectedFileId}
+                      disabled={files.length === 0}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a file to revise" />
@@ -210,7 +211,11 @@ export default function CreateDelSheet({
                 {allowedRoles(["sysadmin"]) && (
                   <Field>
                     <FieldLabel>Author</FieldLabel>
-                    <Select name="authorId" required>
+                    <Select
+                      name="authorId"
+                      required
+                      disabled={users.length === 0}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a file to revise" />
                       </SelectTrigger>
