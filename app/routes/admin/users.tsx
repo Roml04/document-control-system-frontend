@@ -40,7 +40,7 @@ export default function users({ loaderData }: Route.ComponentProps) {
           <ul>
             <ScrollArea className="h-[50em]">
               {users.map((user, index) => (
-                <AdminUserListItem key={index} index={index} user={user} />
+                <AdminUserListItem key={index} user={user} />
               ))}
             </ScrollArea>
           </ul>
