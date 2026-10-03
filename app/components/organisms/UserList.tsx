@@ -11,21 +11,21 @@ import {
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router";
 
-const columnStyling = "w-full px-2 content-center";
+const columnStyling = "w-full content-center";
 
 const columnWidths = {
-  id: `${columnStyling} col-span-1`,
+  id: `${columnStyling} col-span-1 px-4`,
   name: `${columnStyling} col-span-4`,
   role: `${columnStyling} col-span-3`,
   email: `${columnStyling} col-span-3`,
-  action: `px-2 col-span-1`,
+  action: `col-span-1 flex justify-center items-center`,
 };
 
 const gridStyling = `grid grid-cols-12`;
 
 export function UserListHeader() {
   return (
-    <div className={`${gridStyling} place-items-center py-2 px-4 mb-2`}>
+    <div className={`${gridStyling} place-items-center py-2 px-4`}>
       <h3 className={columnWidths.id}>ID</h3>
       <h3 className={columnWidths.name}>Name</h3>
       <h3 className={columnWidths.role}>Role</h3>
@@ -43,10 +43,10 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
   const navigate = useNavigate();
   return (
     <li
-      className={`${gridStyling} cursor-pointer rounded-lg py-4 px-4 hover:bg-accent`}
+      className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
     >
       <div
-        className={`col-span-11 grid grid-cols-11`}
+        className={`col-span-11 grid grid-cols-11 py-4`}
         onClick={() => navigate(`/admin/users/${user.id}`)}
       >
         <p className={columnWidths.id}>{user.id}</p>
@@ -56,7 +56,9 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
         <p className={columnWidths.role}>{user.role}</p>
         <p className={columnWidths.email}>{user.email}</p>
       </div>
-      <div className={`col-span-1 grid grid-cols-1 ${columnWidths.action}`}>
+      <div
+        className={`col-span-1 grid grid-cols-1 py-4 ${columnWidths.action}`}
+      >
         <div className={`flex justify-center`}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -66,7 +68,11 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuGroup>
-                <DropdownMenuItem>View</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => navigate(`/admin/users/${user.id}`)}
+                >
+                  View
+                </DropdownMenuItem>
                 <DropdownMenuItem>Edit</DropdownMenuItem>
                 <DropdownMenuItem variant="destructive">
                   Delete

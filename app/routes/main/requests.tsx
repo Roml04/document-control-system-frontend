@@ -187,14 +187,13 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 <ScrollArea className="h-[52em]">
                   {/* MY REQUESTS */}
                   {myRequests.length !== 0 && (
-                    <div className="px-2">
+                    <div className="px-4 py-2">
                       <h3>My Requests</h3>
                     </div>
                   )}
                   {myRequests.map((request, index) => {
                     return (
                       <RequestListItem
-                        index={index}
                         key={index}
                         request={request}
                         onClick={() => renderRequestOnSheet(request)}
@@ -212,7 +211,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   {forApprovals.map((request, index) => {
                     return (
                       <RequestListItem
-                        index={index}
                         key={index}
                         request={request}
                         onClick={() => renderRequestOnSheet(request)}

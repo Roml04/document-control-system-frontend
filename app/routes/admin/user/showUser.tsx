@@ -5,20 +5,57 @@ import Header from "~/components/organisms/Header";
 import { formatUserName } from "~/utils/formatUserName";
 import { Separator } from "~/components/ui/separator";
 import formatEnum from "~/utils/formatEnum";
-import { Button } from "~/components/ui/button";
-import { Pencil, UserRound } from "lucide-react";
-import { AdminRequestListItem } from "~/components/organisms/RequestList";
+import { PackageOpen, UserRound } from "lucide-react";
+import type { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
+import {
+  Empty,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "~/components/ui/empty";
+
+export type UserRequestsType = {
+  id: number;
+  type: REQUESTTYPE;
+  title: string;
+  reason: string;
+  status: REQUESTSTATUS;
+  uploadDate: string;
+};
+
+const columnStyling = "w-full px-2 content-center";
+
+const columnWidths = {
+  id: "col-span-1",
+  title: "col-span-3",
+  reason: "col-span-3",
+  type: "col-span-1",
+  status: "col-span-2",
+  uploadDate: "col-span-2",
+};
+
+const gridStyling = "grid grid-cols-12";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const fetchedUser = await apiFetch(`/admin/user/${params.id}`);
+  const [fetchedUser, fetchedUserRequests] = await Promise.all([
+    apiFetch(`/admin/user/${params.id}`),
+    apiFetch(`/admin/request/?userId=${params.id}`),
+  ]);
 
-  console.log("CLIENT LOADER", fetchedUser);
+  console.log("CLIENT LOADER | USER", fetchedUser);
+  console.log("CLIENT LOADER | REQUESTS", fetchedUserRequests);
 
-  return fetchedUser.data as UserType;
+  return {
+    user: fetchedUser.data,
+    userRequests: fetchedUserRequests.data,
+  } as {
+    user: UserType;
+    userRequests: UserRequestsType[];
+  };
 }
 
 export default function showUser({ loaderData }: Route.ComponentProps) {
-  const user = loaderData;
+  const { user, userRequests } = loaderData;
 
   const months = [
     "January",
@@ -75,6 +112,68 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
           </div>
         </div>
       </div>
+      <ul className="flex flex-col border rounded-lg h-[40em]">
+        <div className="p-4 ">
+          <h2>Requests</h2>
+        </div>
+        <Separator />
+        {userRequests.length !== 0 ? (
+          <div>
+            <div className={`p-4 ${gridStyling}`}>
+              <h3 className={`${columnStyling} ${columnWidths.id}`}>ID</h3>
+              <h3 className={`${columnStyling} ${columnWidths.title}`}>
+                Title
+              </h3>
+              <h3 className={`${columnStyling} ${columnWidths.reason}`}>
+                Reason
+              </h3>
+              <h3 className={`${columnStyling} ${columnWidths.type}`}>Type</h3>
+              <h3 className={`${columnStyling} ${columnWidths.status}`}>
+                Status
+              </h3>
+              <h3 className={`${columnStyling} ${columnWidths.uploadDate}`}>
+                Upload Date
+              </h3>
+            </div>
+            {userRequests.map((request, index) => (
+              <li
+                key={index}
+                className={`${gridStyling} p-4 grid hover:bg-accent`}
+              >
+                <p className={`${columnStyling} ${columnWidths.id}`}>
+                  {request.id}
+                </p>
+                <p className={`${columnStyling} ${columnWidths.title}`}>
+                  {request.title}
+                </p>
+                <p className={`${columnStyling} ${columnWidths.reason}`}>
+                  {request.reason}
+                </p>
+                <p className={`${columnStyling} ${columnWidths.type}`}>
+                  {request.type.toUpperCase()}
+                </p>
+                <p className={`${columnStyling} ${columnWidths.status}`}>
+                  {request.status}
+                </p>
+                <p className={`${columnStyling} ${columnWidths.uploadDate}`}>
+                  {request.uploadDate}
+                </p>
+              </li>
+            ))}
+          </div>
+        ) : (
+          <Empty className="h-full">
+            <EmptyHeader className="gap-1">
+              <EmptyMedia variant={"icon"}>
+                <PackageOpen />
+              </EmptyMedia>
+              <EmptyTitle>
+                The user have not submitted any request yet
+              </EmptyTitle>
+            </EmptyHeader>
+          </Empty>
+        )}
+      </ul>
     </div>
   );
 }

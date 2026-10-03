@@ -28,16 +28,19 @@ import {
 } from "../ui/alert-dialog";
 import { useState } from "react";
 
-const gridStyling = "grid grid-cols-21";
+const gridStyling = "grid grid-cols-22";
+
+const columnStyling = "w-full content-center";
 
 const columnWidths = {
-  title: "w-full px-2 col-span-5 content-center",
-  reason: "w-full px-2 col-span-7 content-center",
-  type: "w-full px-2 col-span-1 content-center",
-  status: "w-full px-2 col-span-2 content-center truncate",
-  author: "w-full px-2 col-span-2 content-center",
-  uploadDate: "w-full px-2 col-span-3 content-center",
-  action: "w-full px-2 col-span-1 content-center",
+  id: `col-span-1 ${columnStyling} px-4`,
+  title: `col-span-5 ${columnStyling}`,
+  reason: `col-span-7 ${columnStyling}`,
+  type: `col-span-1 ${columnStyling}`,
+  status: `col-span-2 ${columnStyling}`,
+  author: `col-span-2 ${columnStyling}`,
+  uploadDate: `col-span-3 ${columnStyling}`,
+  action: `col-span-1 ${columnStyling} flex justify-center items-center`,
 };
 
 function styleRequestStatus(status: REQUESTSTATUS) {
@@ -58,23 +61,26 @@ function styleRequestStatus(status: REQUESTSTATUS) {
 
 export function RequestListHeader() {
   return (
-    <div className={`${gridStyling} place-items-center py-2 mb-2`}>
+    <div className={`${gridStyling} place-items-center py-2 px-4`}>
+      <div className={`${columnWidths.id} `}>
+        <h3>ID</h3>
+      </div>
       <div className={`${columnWidths.title} `}>
         <h3>Title</h3>
       </div>
-      <div className={`${columnWidths.reason} border-gray-200`}>
+      <div className={`${columnWidths.reason}`}>
         <h3>Reason</h3>
       </div>
       <div className={`${columnWidths.type}`}>
         <h3>Type</h3>
       </div>
-      <div className={`${columnWidths.status} border-gray-200`}>
+      <div className={`${columnWidths.status}`}>
         <h3>Status</h3>
       </div>
       <div className={`${columnWidths.author}`}>
         <h3>Author</h3>
       </div>
-      <div className={`${columnWidths.uploadDate} border-gray-200`}>
+      <div className={`${columnWidths.uploadDate}`}>
         <h3>Upload Date</h3>
       </div>
       <div className={`${columnWidths.action}`}>
@@ -85,14 +91,12 @@ export function RequestListHeader() {
 }
 
 type RequestListItemPropType = {
-  index: number;
   request: ViewRequestStateType;
   onClick: () => void;
   isOwned?: boolean;
 };
 
 export function RequestListItem({
-  index,
   request,
   onClick,
   isOwned = false,
@@ -101,10 +105,12 @@ export function RequestListItem({
 
   return (
     <li
-      className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
-      key={index}
+      className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
     >
-      <div className={`col-span-20 py-5 grid grid-cols-20`} onClick={onClick}>
+      <div className={`col-span-21 py-4 grid grid-cols-21`} onClick={onClick}>
+        <div className={`${columnWidths.id} `}>
+          <p>{request.id}</p>
+        </div>
         <div className={`${columnWidths.title} `}>
           <p>{request.title}</p>
         </div>
@@ -132,7 +138,7 @@ export function RequestListItem({
         </div>
       </div>
 
-      <div className={`${columnWidths.action}`}>
+      <div className={`${columnWidths.action}  py-4`}>
         <DropdownMenu>
           <DropdownMenuTrigger onClick={() => {}} asChild>
             <Button size={"icon"} variant={"ghost"}>
@@ -197,7 +203,6 @@ export function RequestListItem({
 }
 
 export function AdminRequestListItem({
-  index,
   request,
   onClick,
   isOwned = false,
@@ -240,10 +245,12 @@ export function AdminRequestListItem({
   return (
     <>
       <li
-        className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
-        key={index}
+        className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
       >
-        <div className={`col-span-20 py-5 grid grid-cols-20`} onClick={onClick}>
+        <div className={`col-span-21 py-4 grid grid-cols-21`} onClick={onClick}>
+          <div className={`${columnWidths.id} `}>
+            <p>{request.id}</p>
+          </div>
           <div className={`${columnWidths.title} `}>
             <p>{request.title}</p>
           </div>
@@ -271,7 +278,7 @@ export function AdminRequestListItem({
           </div>
         </div>
 
-        <div className={`${columnWidths.action}`}>
+        <div className={`${columnWidths.action} py-4`}>
           <DropdownMenu>
             <DropdownMenuTrigger onClick={() => {}} asChild>
               <Button size={"icon"} variant={"ghost"}>

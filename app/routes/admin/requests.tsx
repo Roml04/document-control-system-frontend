@@ -203,12 +203,11 @@ export default function requests({ loaderData }: Route.ComponentProps) {
           {forApprovals.length !== 0 ? (
             <ul>
               <ScrollArea className="h-[50em]">
-                <div className="px-2">
+                <div className="px-4 pt-2">
                   <h3>For Approvals</h3>
                 </div>
                 {forApprovals.map((request, index) => (
                   <AdminRequestListItem
-                    index={index}
                     key={index}
                     request={request}
                     onClick={() => renderRequestOnSheet(request)}

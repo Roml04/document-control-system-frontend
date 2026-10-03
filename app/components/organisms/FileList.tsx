@@ -23,38 +23,25 @@ import { useState } from "react";
 import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
 
-const gridStyling = "grid grid-cols-18 px-4";
+const gridStyling = "grid grid-cols-18";
+const columnStyling = "content-center";
 
-const columnSpan = {
-  id: "col-span-1",
-  title: "col-span-8",
-  type: "col-span-4",
-  author: "col-span-4",
-  action: "col-span-1",
+const columnWidth = {
+  id: `${columnStyling} col-span-1 px-4`,
+  title: `${columnStyling} col-span-8`,
+  type: `${columnStyling} col-span-4`,
+  author: `${columnStyling} col-span-4`,
+  action: `${columnStyling} col-span-1 flex justify-center items-center`,
 };
-
-const columnStyling = "w-full px-2 content-center";
 
 export function FileListHeader() {
   return (
-    <div className={`${gridStyling} place-items-center py-2`}>
-      <div className={`${columnSpan.id} ${columnStyling}`}>
-        <h3>ID</h3>
-      </div>
-      <div className={`${columnSpan.title} ${columnStyling}`}>
-        <h3>Title</h3>
-      </div>
-      <div className={`${columnSpan.type} ${columnStyling}`}>
-        <h3>Type</h3>
-      </div>
-      <div className={`${columnSpan.author} ${columnStyling}`}>
-        <h3>Author</h3>
-      </div>
-      <div
-        className={`${columnSpan.action} ${columnStyling} flex justify-center`}
-      >
-        <h3>Action</h3>
-      </div>
+    <div className={`${gridStyling} py-2 px-4`}>
+      <h3 className={`${columnWidth.id}`}>ID</h3>
+      <h3 className={`${columnWidth.title}`}>Title</h3>
+      <h3 className={`${columnWidth.type}`}>Type</h3>
+      <h3 className={`${columnWidth.author}`}>Author</h3>
+      <h3 className={`${columnWidth.action}`}>Action</h3>
     </div>
   );
 }
@@ -100,25 +87,23 @@ export function AdminFileListItem({ file }: FileListItemPropType) {
 
   return (
     <li
-      className={`${gridStyling} py-3 rounded-lg cursor-pointer hover:bg-accent`}
+      className={`${gridStyling} rounded-lg cursor-pointer hover:bg-accent px-4`}
     >
       <div
         onClick={() => {
           navigate(`/admin/files/${file.id}`);
         }}
-        className={`col-span-17 grid grid-cols-17`}
+        className="col-span-17 grid grid-cols-17 py-4"
       >
-        <p className={`${columnStyling} ${columnSpan.id}`}>{file.id}</p>
-        <p className={`${columnStyling} ${columnSpan.title}`}>{file.title}</p>
-        <p className={`${columnStyling} ${columnSpan.type}`}>{file.type}</p>
-        <p className={`${columnStyling} ${columnSpan.author}`}>
+        <p className={`${columnWidth.id}`}>{file.id}</p>
+        <p className={`${columnWidth.title}`}>{file.title}</p>
+        <p className={`${columnWidth.type}`}>{file.type}</p>
+        <p className={`${columnWidth.author}`}>
           {file.latestVersion.originator}
         </p>
       </div>
-      <div className={`col-span-1`}>
-        <p
-          className={`${columnStyling} ${columnSpan.action} flex justify-center items-center`}
-        >
+      <div className={`col-span-1 grid grid-cols-1 py-4`}>
+        <div className={`${columnWidth.action}`}>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant={"ghost"} size={"icon"}>
@@ -152,7 +137,7 @@ export function AdminFileListItem({ file }: FileListItemPropType) {
               </DropdownMenuGroup>
             </DropdownMenuContent>
           </DropdownMenu>
-        </p>
+        </div>
       </div>
       <AlertDialog open={openDeleteDialog} onOpenChange={setOpenDeleteDialog}>
         <AlertDialogContent>
