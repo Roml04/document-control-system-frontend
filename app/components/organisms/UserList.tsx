@@ -10,6 +10,16 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "../ui/dialog";
+import { useState } from "react";
+import UserEditForm from "./UserEditForm";
 
 const columnStyling = "w-full content-center";
 
@@ -40,6 +50,7 @@ type AdminUserListItemPropType = {
 };
 
 export function AdminUserListItem({ user }: AdminUserListItemPropType) {
+  const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
   const navigate = useNavigate();
   return (
     <li
@@ -73,12 +84,32 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
                 >
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem>Edit</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setOpenEditUserDialog(true)}
+                  // onClick={() => navigate(`/admin/users/${user.id}/edit`)}
+                >
+                  Edit
+                </DropdownMenuItem>
                 <DropdownMenuItem variant="destructive">
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
+            <Dialog
+              open={openEditUserDialog}
+              onOpenChange={setOpenEditUserDialog}
+            >
+              <DialogContent className="sm:max-w-2xl">
+                <DialogHeader>
+                  <DialogTitle>Edit User</DialogTitle>
+                </DialogHeader>
+                <UserEditForm
+                  user={user}
+                  open={openEditUserDialog}
+                  onOpenChange={setOpenEditUserDialog}
+                />
+              </DialogContent>
+            </Dialog>
           </DropdownMenu>
         </div>
       </div>
