@@ -36,7 +36,7 @@ const columnWidths = {
   type: "w-full px-2 col-span-1 content-center",
   status: "w-full px-2 col-span-2 content-center truncate",
   author: "w-full px-2 col-span-2 content-center",
-  uploadDate: "w-full px-2 w-full col-span-3 content-center",
+  uploadDate: "w-full px-2 col-span-3 content-center",
   action: "w-full px-2 col-span-1 content-center",
 };
 
