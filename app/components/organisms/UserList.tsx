@@ -10,16 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "../ui/dialog";
 import { useState } from "react";
-import UserEditForm from "./UserEditForm";
+import UserEditDialogForm, { ResetPasswordDialogForm } from "./UserEdit";
+import formatEnum from "~/utils/formatEnum";
+import { USERROLE } from "~/constants/enums";
 
 const columnStyling = "w-full content-center";
 
@@ -50,8 +44,11 @@ type AdminUserListItemPropType = {
 };
 
 export function AdminUserListItem({ user }: AdminUserListItemPropType) {
+  const [openResetPasswordDialogForm, setOpenResetPasswordDialogForm] =
+    useState(false);
   const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
   const navigate = useNavigate();
+
   return (
     <li
       className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
@@ -64,7 +61,11 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
         <p className={columnWidths.name}>
           {formatUserName(user.firstName, user.lastName)}
         </p>
-        <p className={columnWidths.role}>{user.role}</p>
+        <p
+          className={`${columnWidths.role} ${user.role === USERROLE.GUEST && `text-gray-400`}`}
+        >
+          {formatEnum(user.role)}
+        </p>
         <p className={columnWidths.email}>{user.email}</p>
       </div>
       <div
@@ -90,27 +91,27 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
                 >
                   Edit
                 </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => setOpenResetPasswordDialogForm(true)}
+                >
+                  Reset Password
+                </DropdownMenuItem>
                 <DropdownMenuItem variant="destructive">
                   Delete
                 </DropdownMenuItem>
               </DropdownMenuGroup>
             </DropdownMenuContent>
-            <Dialog
+            <UserEditDialogForm
+              user={user}
               open={openEditUserDialog}
               onOpenChange={setOpenEditUserDialog}
-            >
-              <DialogContent className="sm:max-w-2xl">
-                <DialogHeader>
-                  <DialogTitle>Edit User</DialogTitle>
-                </DialogHeader>
-                <UserEditForm
-                  user={user}
-                  open={openEditUserDialog}
-                  onOpenChange={setOpenEditUserDialog}
-                />
-              </DialogContent>
-            </Dialog>
+            />
           </DropdownMenu>
+          <ResetPasswordDialogForm
+            user={user}
+            open={openResetPasswordDialogForm}
+            onOpenChange={setOpenResetPasswordDialogForm}
+          />
         </div>
       </div>
     </li>

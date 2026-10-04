@@ -39,9 +39,10 @@ const gridStyling = "grid grid-cols-12";
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const [fetchedUser, fetchedUserRequests] = await Promise.all([
     apiFetch(`/admin/user/${params.id}`),
-    apiFetch(`/admin/request/?userId=${params.id}`),
+    apiFetch(`/admin/request/?userid=${params.id}`),
   ]);
 
+  console.log("CLIENT LOADER | ID", params.id);
   console.log("CLIENT LOADER | USER", fetchedUser);
   console.log("CLIENT LOADER | REQUESTS", fetchedUserRequests);
 
