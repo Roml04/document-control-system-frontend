@@ -98,16 +98,22 @@ export default function CreateUplSheet({
       formData.append("type", "upl");
       formData.append("file", file);
 
-      const apiResponse = await apiFetch("/request", {
-        method: "POST",
-        body: formData,
-      });
+      const apiResponse = await apiFetch(
+        allowedRoles(["sysadmin"]) ? "/admin/request" : "/request",
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
 
       if (!apiResponse.ok) {
+        console.log("ERRORS", apiResponse.message);
         toast.error("Failed to submit file", {
           description: apiResponse.message,
           position: "top-center",
         });
+
+        return;
       }
 
       onOpenChange(false);
