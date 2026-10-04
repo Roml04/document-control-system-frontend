@@ -56,7 +56,7 @@ export default function UserEditDialogForm({
 }: UserEditDialogForm) {
   const [openResetPasswordDialogForm, setOpenResetPasswordDialogForm] =
     useState(false);
-  const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
+  const [openConfirmEditDialog, setOpenConfirmEditDialog] = useState(false);
   const editUserForm = useRef<HTMLFormElement>(null);
   const revalidator = useRevalidator();
 
@@ -84,7 +84,7 @@ export default function UserEditDialogForm({
       }
 
       onOpenChange(false);
-      toast.error("User successfully edited", {
+      toast.error("User updated successfully", {
         position: "top-center",
       });
     } catch (error) {
@@ -97,7 +97,7 @@ export default function UserEditDialogForm({
   };
 
   return (
-    <Dialog open={openEditUserDialog} onOpenChange={setOpenEditUserDialog}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         className="sm:max-w-2xl"
         onAnimationEnd={(event) => {
@@ -205,12 +205,15 @@ export default function UserEditDialogForm({
           </div>
           <Separator />
           <div className="flex justify-end">
-            <Button type="button" onClick={() => setOpenEditUserDialog(true)}>
+            <Button
+              type="button"
+              onClick={() => setOpenConfirmEditDialog(true)}
+            >
               Save & Update
             </Button>
             <AlertDialog
-              open={openEditUserDialog}
-              onOpenChange={setOpenEditUserDialog}
+              open={openConfirmEditDialog}
+              onOpenChange={setOpenConfirmEditDialog}
             >
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -285,6 +288,9 @@ export function ResetPasswordDialogForm({
     }
 
     onOpenChange(false);
+    toast.success("Password reset succesful", {
+      position: "top-center",
+    });
   };
 
   return (
