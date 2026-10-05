@@ -21,21 +21,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-} from "~/components/ui/sheet";
-import React, { useState } from "react";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "~/components/ui/field";
-import { Input } from "~/components/ui/input";
-import { Textarea } from "~/components/ui/textarea";
-import LoadingButton from "~/components/primitives/LoadingButton";
-import { toast } from "sonner";
+import { useState } from "react";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
-import { REQUESTTYPE } from "~/constants/enums";
 import { NavLink } from "react-router";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
@@ -160,13 +148,11 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         </div>
-        {/* VERSIONS */}
         <div className="flex flex-col border rounded-lg justify-center">
           <div className="flex flex-col">
             <h3 className="p-4">Version History</h3>
             <Separator />
           </div>
-          {/* HEADER */}
           <div className="flex flex-col">
             <div className={`${gridCols} p-4`}>
               <div className={`${colSpan.revisionNumber}`}>
@@ -183,7 +169,6 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
           </div>
-          {/* <Separator /> */}
           {file.versions.length !== 0 ? (
             <ul className="flex flex-col">
               <ScrollArea className="h-[34em]">
@@ -231,7 +216,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                   <EmptyMedia variant={"icon"}>
                     <PackageOpen />
                   </EmptyMedia>
-                  <EmptyTitle>No versios to display</EmptyTitle>
+                  <EmptyTitle>No versions to display</EmptyTitle>
                   <EmptyDescription>
                     There are currently no versions available for viewing.
                   </EmptyDescription>

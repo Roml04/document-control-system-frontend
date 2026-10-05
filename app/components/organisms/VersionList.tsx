@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { useNavigate } from "react-router";
 
 const gridStyling = "grid grid-cols-27";
 
@@ -48,13 +49,15 @@ type VersionListItemPropType = {
 };
 
 export function VersionListItem({ version }: VersionListItemPropType) {
+  const navigate = useNavigate();
+
   return (
     <li
       className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
     >
       <div
         className={`col-span-26 grid grid-cols-26 py-4`}
-        onClick={() => console.log(`OPENED VERSION ${version.id}`)}
+        onClick={() => navigate(`/admin/versions/${version.id}`)}
       >
         <p className={columnWidths.id}>{version.id}</p>
         <p className={columnWidths.fileTitle}>{version.fileTitle}</p>
@@ -76,7 +79,11 @@ export function VersionListItem({ version }: VersionListItemPropType) {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
-              <DropdownMenuItem>View</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate(`/admin/version/${version.id}`)}
+              >
+                View
+              </DropdownMenuItem>
               <DropdownMenuItem>Edit</DropdownMenuItem>
               <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
             </DropdownMenuGroup>

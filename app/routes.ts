@@ -49,7 +49,10 @@ export default [
         route("/:id", "./routes/admin/request/showRequest.tsx"),
         route("/:id/edit", "./routes/admin/request/editRequest.tsx"),
       ]),
-      ...prefix("/versions", [index("./routes/admin/versions.tsx")]),
+      ...prefix("/versions", [
+        index("./routes/admin/versions.tsx"),
+        route("/:id", "./routes/admin/version/viewVersion.tsx"),
+      ]),
     ]),
   ]),
   route("/onlyoffice/:id", "./routes/onlyoffice/editor.tsx"),
