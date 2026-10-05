@@ -15,6 +15,8 @@ import {
   AdminUserListItem,
   UserListHeader,
 } from "~/components/organisms/UserList";
+import CreateUserSheet from "~/components/organisms/CreateUserSheet";
+import { useState } from "react";
 
 export async function clientLoader() {
   const fetchedUsers = await apiFetch("/user");
@@ -24,11 +26,13 @@ export async function clientLoader() {
 export default function users({ loaderData }: Route.ComponentProps) {
   const users = loaderData;
 
+  const [openCreateUserSheet, setOpenCreateUserSheet] = useState(false);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex w-full justify-between">
         <h1>Users</h1>
-        <Button>
+        <Button onClick={() => setOpenCreateUserSheet(true)}>
           <Plus color="#ffffff" />
           Add User
         </Button>
@@ -55,6 +59,10 @@ export default function users({ loaderData }: Route.ComponentProps) {
           </Empty>
         )}
       </div>
+      <CreateUserSheet
+        open={openCreateUserSheet}
+        onOpenChange={setOpenCreateUserSheet}
+      />
     </div>
   );
 }
