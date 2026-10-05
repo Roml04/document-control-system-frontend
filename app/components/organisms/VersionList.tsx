@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import type { VersionType } from "~/constants/types";
 import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
@@ -10,7 +10,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { useNavigate } from "react-router";
+import { useNavigate, useRevalidator } from "react-router";
+import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 const gridStyling = "grid grid-cols-27";
 
@@ -51,6 +64,29 @@ type VersionListItemPropType = {
 export function VersionListItem({ version }: VersionListItemPropType) {
   const navigate = useNavigate();
 
+  const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
+
+  const revalidator = useRevalidator();
+
+  const handleDeleteVersion = async () => {
+    const apiResponse = await apiFetch(`/admin/version/${version.id}`, {
+      method: "DELETE",
+    });
+
+    if (!apiResponse.ok) {
+      toast.error("Failed to delete version", {
+        position: "top-center",
+        description: apiResponse.message,
+      });
+      return;
+    }
+
+    revalidator.revalidate();
+    toast.success("Version deleted", {
+      position: "top-center",
+    });
+  };
+
   return (
     <li
       className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
@@ -80,7 +116,11 @@ export function VersionListItem({ version }: VersionListItemPropType) {
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onClick={() => navigate(`/admin/versions/${version.id}`)}
+                onClick={() => {
+                  allowedRoles(["sysadmin"])
+                    ? navigate(`/admin/versions/${version.id}`)
+                    : navigate(`/versions/${version.id}`);
+                }}
               >
                 View
               </DropdownMenuItem>
@@ -89,10 +129,36 @@ export function VersionListItem({ version }: VersionListItemPropType) {
               >
                 Edit
               </DropdownMenuItem>
-              <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                onClick={() => setOpenDeleteAlert(true)}
+              >
+                Delete
+              </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
+        <AlertDialog open={openDeleteAlert} onOpenChange={setOpenDeleteAlert}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Confirm version deletion?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete{" "}
+                <span className="font-bold">version ID#{version.id}</span>. This
+                action cannot be undone. Do you want to proceed?
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                variant={"destructive"}
+                onClick={handleDeleteVersion}
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </li>
   );
