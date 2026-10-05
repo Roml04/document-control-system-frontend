@@ -25,6 +25,7 @@ export default [
     ]),
 
     ...prefix("/versions", [
+      route("/:id", "./routes/main/version/showVersion.tsx"),
       route("/:id/edit", "./routes/main/version/editVersion.tsx"),
     ]),
   ]),
@@ -51,7 +52,7 @@ export default [
       ]),
       ...prefix("/versions", [
         index("./routes/admin/versions.tsx"),
-        route("/:id", "./routes/admin/version/viewVersion.tsx"),
+        route("/:id", "./routes/admin/version/showVersion.tsx"),
         route("/:id/edit", "./routes/admin/version/editVersion.tsx"),
       ]),
     ]),

@@ -35,9 +35,9 @@ const columnStyling = "w-full content-center";
 const columnWidths = {
   id: `col-span-1 ${columnStyling} px-4`,
   title: `col-span-5 ${columnStyling}`,
-  reason: `col-span-7 ${columnStyling}`,
+  reason: `col-span-6 ${columnStyling}`,
   type: `col-span-1 ${columnStyling}`,
-  status: `col-span-2 ${columnStyling}`,
+  status: `col-span-3 ${columnStyling}`,
   author: `col-span-2 ${columnStyling}`,
   uploadDate: `col-span-3 ${columnStyling}`,
   action: `col-span-1 ${columnStyling} flex justify-center items-center`,

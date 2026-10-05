@@ -1,5 +1,4 @@
 import Header from "~/components/organisms/Header";
-import type { Route } from "./+types/viewVersion";
 import { apiFetch } from "~/utils/apiFetch";
 import type { RequestType, UserType, VersionType } from "~/constants/types";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
@@ -24,6 +23,8 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
+import type { Route } from "./+types/showVersion";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 const gridStyling = "grid grid-cols-10";
 
@@ -36,7 +37,11 @@ const columnWidths = {
 };
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  const fetchedVersion = await apiFetch(`/admin/version/${params.id}`);
+  const fetchedVersion = await apiFetch(
+    allowedRoles(["sysadmin"])
+      ? `/admin/version/${params.id}`
+      : `/version/${params.id}`,
+  );
 
   console.log("VERSION", fetchedVersion);
 
@@ -47,7 +52,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
-export default function viewVersion({ loaderData }: Route.ComponentProps) {
+export default function showVersion({ loaderData }: Route.ComponentProps) {
   const version = loaderData;
 
   const navigate = useNavigate();
@@ -140,10 +145,8 @@ export default function viewVersion({ loaderData }: Route.ComponentProps) {
                   className={`${gridStyling} px-4 cursor-pointer hover:bg-accent items-center-center`}
                 >
                   <div
-                    onClick={() =>
-                      navigate(`/admin/requests/${version.request.id}`)
-                    }
-                    className="col-span-9 grid grid-cols-9 py-4"
+                    onClick={() => navigate(`/requests/${version.request.id}`)}
+                    className="col-span-9 grid grid-cols-9 py-4 items-center"
                   >
                     <p className={columnWidths.id}>{version.request.id}</p>
                     <p className={columnWidths.title}>
@@ -159,7 +162,7 @@ export default function viewVersion({ loaderData }: Route.ComponentProps) {
                       )}
                     </p>
                   </div>
-                  <div className={`${columnWidths.action}`}>
+                  <div className={`${columnWidths.action} py-4`}>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant={"ghost"} size={"icon"}>

@@ -24,7 +24,7 @@ import {
 import { useState } from "react";
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
-import { NavLink } from "react-router";
+import { NavLink, useNavigate } from "react-router";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 
@@ -42,6 +42,8 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function showFile({ loaderData }: Route.ComponentProps) {
   const file = loaderData;
   const latestVersion = file.latestVersion;
+
+  const navigate = useNavigate();
 
   const [openReviseSheet, setOpenReviseSheet] = useState(false);
   const [openDeleteSheet, setOpenDeleteSheet] = useState(false);
@@ -164,7 +166,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               <div className={`${colSpan.approvedDate}`}>
                 <h3>Approved Date</h3>
               </div>
-              <div className={`${colSpan.action}`}>
+              <div className={`${colSpan.action} flex justify-center`}>
                 <h3>Action</h3>
               </div>
             </div>
@@ -173,37 +175,45 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
             <ul className="flex flex-col">
               <ScrollArea className="h-[34em]">
                 {file.versions.map((version, index) => (
-                  <li key={index} className={`hover:bg-accent`}>
-                    <div className={`${gridCols} p-4`}>
-                      <div
-                        className={`col-span-15 grid grid-cols-15 content-center`}
-                      >
-                        <p className={`${colSpan.revisionNumber}`}>
-                          {version.revisionNumber}
-                        </p>
-                        <p className={`${colSpan.author}`}>
-                          {version.originator}
-                        </p>
-                        <p className={`${colSpan.approvedDate}`}>
-                          {version.approvedDate}
-                        </p>
-                      </div>
-                      <div className={`${colSpan.action}`}>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant={"ghost"} size={"icon"}>
-                              <Ellipsis />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuGroup>
-                              <DropdownMenuItem onClick={() => {}}>
-                                View
-                              </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+                  <li
+                    key={index}
+                    className={`${gridCols} px-4 hover:bg-accent cursor-pointer`}
+                  >
+                    <div
+                      className={`col-span-15 grid grid-cols-15 py-4 content-center`}
+                      onClick={() => navigate(`/admin/versions/${version.id}`)}
+                    >
+                      <p className={`${colSpan.revisionNumber}`}>
+                        {version.revisionNumber}
+                      </p>
+                      <p className={`${colSpan.author}`}>
+                        {version.originator}
+                      </p>
+                      <p className={`${colSpan.approvedDate}`}>
+                        {version.approvedDate}
+                      </p>
+                    </div>
+                    <div
+                      className={`${colSpan.action} py-4 flex justify-center items-center`}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant={"ghost"} size={"icon"}>
+                            <Ellipsis />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuGroup>
+                            <DropdownMenuItem
+                              onClick={() =>
+                                navigate(`/admin/versions/${version.id}`)
+                              }
+                            >
+                              View
+                            </DropdownMenuItem>
+                          </DropdownMenuGroup>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </li>
                 ))}
