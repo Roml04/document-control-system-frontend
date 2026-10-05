@@ -27,8 +27,6 @@ import {
 
 const gridStyling = "grid grid-cols-10";
 
-const columnStyling = "";
-
 const columnWidths = {
   id: "col-span-1 px-4",
   title: "col-span-3",

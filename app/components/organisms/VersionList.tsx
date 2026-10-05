@@ -80,11 +80,15 @@ export function VersionListItem({ version }: VersionListItemPropType) {
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
               <DropdownMenuItem
-                onClick={() => navigate(`/admin/version/${version.id}`)}
+                onClick={() => navigate(`/admin/versions/${version.id}`)}
               >
                 View
               </DropdownMenuItem>
-              <DropdownMenuItem>Edit</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => navigate(`/admin/versions/${version.id}/edit`)}
+              >
+                Edit
+              </DropdownMenuItem>
               <DropdownMenuItem variant="destructive">Delete</DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenuContent>

@@ -52,6 +52,7 @@ export default [
       ...prefix("/versions", [
         index("./routes/admin/versions.tsx"),
         route("/:id", "./routes/admin/version/viewVersion.tsx"),
+        route("/:id/edit", "./routes/admin/version/editVersion.tsx"),
       ]),
     ]),
   ]),
