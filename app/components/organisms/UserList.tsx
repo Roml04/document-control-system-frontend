@@ -9,11 +9,23 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { useNavigate } from "react-router";
-import { useState } from "react";
+import { useNavigate, useRevalidator } from "react-router";
+import { useState, type SubmitEventHandler } from "react";
 import UserEditDialogForm, { ResetPasswordDialogForm } from "./UserEdit";
 import formatEnum from "~/utils/formatEnum";
 import { USERROLE } from "~/constants/enums";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../ui/alert-dialog";
+import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
 
 const columnStyling = "w-full content-center";
 
@@ -47,7 +59,31 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
   const [openResetPasswordDialogForm, setOpenResetPasswordDialogForm] =
     useState(false);
   const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
+  const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
+
   const navigate = useNavigate();
+
+  const revlidator = useRevalidator();
+
+  const handleDeleteUser = async () => {
+    const apiResponse = await apiFetch(`/admin/user/${user.id}`, {
+      method: "DELETE",
+    });
+
+    if (!apiResponse.ok) {
+      toast.error("Failed to delete user", {
+        position: "top-center",
+        description: apiResponse.message,
+      });
+      return;
+    }
+
+    revlidator.revalidate();
+
+    toast.success("User deleted", {
+      position: "top-center",
+    });
+  };
 
   return (
     <li
@@ -96,9 +132,14 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
                 >
                   Reset Password
                 </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive">
-                  Delete
-                </DropdownMenuItem>
+                {user.role !== USERROLE.SYSADMIN && (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setOpenDeleteAlert(true)}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuGroup>
             </DropdownMenuContent>
             <UserEditDialogForm
@@ -114,6 +155,29 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
           />
         </div>
       </div>
+      <AlertDialog open={openDeleteAlert} onOpenChange={setOpenDeleteAlert}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm user deletion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <span className="font-bold">
+                {formatUserName(user.firstName, user.lastName)}
+              </span>
+              . This action cannot be undone. Do you want to proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={"destructive"}
+              onClick={handleDeleteUser}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </li>
   );
 }
