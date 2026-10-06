@@ -11,8 +11,7 @@ import {
   SheetHeader,
 } from "~/components/ui/sheet";
 import { useReducer, useState } from "react";
-
-import { File, PackageOpen, TriangleAlert } from "lucide-react";
+import { File, PackageOpen, Plus, TriangleAlert } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import {
   Attachment,
@@ -32,12 +31,24 @@ import {
 } from "~/components/ui/empty";
 
 import {
+  AdminRequestListItem,
   RequestListHeader,
-  RequestListItem,
 } from "~/components/organisms/RequestList";
 import { formatUserName } from "~/utils/formatUserName";
 import type { Route } from "./+types/requests";
 import { downloadFile } from "~/utils/downloadFile";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import CreateUplSheet from "~/components/organisms/CreateUplSheet";
+import CreateRevSheet from "~/components/organisms/CreateRevSheet";
+import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 
 enum ACTION {
   SETDETAILS = "SETDETAILS",
@@ -63,39 +74,24 @@ type ViewRequestActionType = {
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
 
-  console.log("INFO | apiResponse", apiResponse);
+  console.log("INFO | apiResponse data", apiResponse.data);
 
-  return apiResponse as {
-    ok: boolean;
-    data: {
-      myRequests: ViewRequestStateType[];
-      forApprovals: ViewRequestStateType[];
-    };
-    message: string;
+  return apiResponse.data as {
+    myRequests: ViewRequestStateType[];
+    forApprovals: ViewRequestStateType[];
   };
 }
 
 export default function requests({ loaderData }: Route.ComponentProps) {
-  /**
-   * Data from server
-   */
-  let myRequests: ViewRequestStateType[] = [];
-  let forApprovals: ViewRequestStateType[] = [];
-
-  const { data } = loaderData;
-
-  if (data.myRequests) {
-    myRequests = data.myRequests;
-  }
-
-  if (data.forApprovals) {
-    forApprovals = data.forApprovals;
-  }
+  const { forApprovals } = loaderData;
 
   /**
    * Hook initialization
    */
   const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
+  const [openCreateUplSheet, setOpenCreateUplSheet] = useState(false);
+  const [openCreateRevSheet, setOpenCreateRevSheet] = useState(false);
+  const [openCreateDelSheet, setOpenCreateDelSheet] = useState(false);
 
   /**
    * View request reducer
@@ -176,50 +172,49 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   return (
     <>
       <div className="flex flex-col gap-4">
-        <h1>Requests</h1>
+        <div className="flex w-full justify-between">
+          <h1>Requests</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Plus color="#ffffff" />
+                Add a Request
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Request Type</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setOpenCreateUplSheet(true)}>
+                  Upload
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenCreateRevSheet(true)}>
+                  Revise
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenCreateDelSheet(true)}>
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <Separator />
-        <div className="h-[45em]">
-          {/* HEADER */}
+        <div className="h-[50em]">
           <RequestListHeader />
-          {myRequests.length !== 0 || forApprovals.length !== 0 ? (
-            <div>
-              <ul>
-                <ScrollArea className="h-[52em]">
-                  {/* MY REQUESTS */}
-                  {myRequests.length !== 0 && (
-                    <div className="px-4 py-2">
-                      <h3>My Requests</h3>
-                    </div>
-                  )}
-                  {myRequests.map((request, index) => {
-                    return (
-                      <RequestListItem
-                        key={index}
-                        request={request}
-                        onClick={() => renderRequestOnSheet(request)}
-                        isOwned={true}
-                      />
-                    );
-                  })}
-
-                  {forApprovals.length !== 0 && (
-                    <div className="px-2">
-                      <h3>For Approvals</h3>
-                    </div>
-                  )}
-                  {/* For Approvals */}
-                  {forApprovals.map((request, index) => {
-                    return (
-                      <RequestListItem
-                        key={index}
-                        request={request}
-                        onClick={() => renderRequestOnSheet(request)}
-                      />
-                    );
-                  })}
-                </ScrollArea>
-              </ul>
-            </div>
+          {forApprovals.length !== 0 ? (
+            <ul>
+              <ScrollArea className="h-[50em]">
+                <div className="px-4 pt-2">
+                  <h3>For Approvals</h3>
+                </div>
+                {forApprovals.map((request, index) => (
+                  <AdminRequestListItem
+                    key={index}
+                    request={request}
+                    onClick={() => renderRequestOnSheet(request)}
+                  />
+                ))}
+              </ScrollArea>
+            </ul>
           ) : (
             <Empty className="h-full">
               <EmptyHeader className="gap-1">
@@ -227,10 +222,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   <PackageOpen />
                 </EmptyMedia>
                 <EmptyTitle>No requests to display</EmptyTitle>
-                <EmptyDescription className="text-pretty">
-                  There are currently no requests available for you to view or
-                  review.
-                </EmptyDescription>
               </EmptyHeader>
             </Empty>
           )}
@@ -410,6 +401,18 @@ export default function requests({ loaderData }: Route.ComponentProps) {
           </div>
         </SheetContent>
       </Sheet>
+      <CreateUplSheet
+        open={openCreateUplSheet}
+        onOpenChange={setOpenCreateUplSheet}
+      />
+      <CreateRevSheet
+        open={openCreateRevSheet}
+        onOpenChange={setOpenCreateRevSheet}
+      />
+      <CreateDelSheet
+        open={openCreateDelSheet}
+        onOpenChange={setOpenCreateDelSheet}
+      />
     </>
   );
 }

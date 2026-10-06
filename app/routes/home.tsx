@@ -15,6 +15,7 @@ import { apiFetch } from "~/utils/apiFetch";
 import { toast } from "sonner";
 import { Spinner } from "~/components/ui/spinner";
 import { useSessionStore } from "../../stores/sessionStore";
+import { USERROLE } from "~/constants/enums";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -63,6 +64,13 @@ export default function Home() {
       toast.success("Login successful!", {
         position: "top-right",
       });
+
+      console.log("ROLE", role);
+
+      if (role === USERROLE.SYSADMIN) {
+        navigate("/admin");
+        return;
+      }
 
       navigate("/dashboard");
     } catch (error) {

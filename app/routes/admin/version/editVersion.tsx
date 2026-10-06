@@ -1,4 +1,3 @@
-import type { Route } from "./+types/editVersion";
 import { apiFetch } from "~/utils/apiFetch";
 import type { UserType, VersionType } from "~/constants/types";
 import {
@@ -12,8 +11,8 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Download, RotateCcw } from "lucide-react";
-import { NavLink, useNavigate } from "react-router";
+import { ChevronLeft, RotateCcw } from "lucide-react";
+import { useNavigate } from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,28 +24,24 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  type SubmitEventHandler,
-} from "react";
+import { useEffect, useRef, useState, type SubmitEventHandler } from "react";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { FILETYPE } from "~/constants/enums";
+import { FILETYPE, VERSIONSTATUS } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
 import { toast } from "sonner";
 import FileItem from "~/components/molecules/FileItem";
+import type { Route } from "./+types/editVersion";
+import { formatDate } from "~/utils/formatDate";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -116,7 +111,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
 
       console.log("FORM DATA |", Object.fromEntries(formData.entries()));
 
-      const apiResponse = await apiFetch(`/version/${version.id}`, {
+      const apiResponse = await apiFetch(`/admin/version/${version.id}`, {
         method: "PATCH",
         body: formData,
       });
@@ -272,26 +267,18 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               <Field>
                 <FieldLabel>Upload Date</FieldLabel>
                 <Input
-                  type="text"
-                  defaultValue={version.uploadDate ?? ""}
+                  type="datetime-local"
                   name="uploadDate"
-                  disabled
+                  defaultValue={formatDate(version.uploadDate) ?? ""}
                 />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel>Revision Date</FieldLabel>
                 <Input
-                  type="text"
-                  defaultValue={version.revisionDate ?? ""}
+                  type="datetime-local"
                   name="revisionDate"
-                  disabled
+                  defaultValue={formatDate(version.revisionDate) ?? ""}
                 />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
@@ -319,14 +306,35 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               <Field>
                 <FieldLabel>Approved Date</FieldLabel>
                 <Input
-                  type="text"
-                  defaultValue={version.approvedDate ?? "Not approved yet"}
+                  type="datetime-local"
                   name="approvedDate"
-                  disabled
+                  defaultValue={
+                    version.approvedDate && formatDate(version.approvedDate)
+                  }
                 />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
+                {!version.approvedDate && (
+                  <FieldDescription>
+                    This version is not approved yet.
+                  </FieldDescription>
+                )}
+              </Field>
+              <Field>
+                <FieldLabel>Status</FieldLabel>
+                <Select name="status" required defaultValue={version.status}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    <SelectGroup>
+                      <SelectLabel>Status</SelectLabel>
+                      {Object.values(VERSIONSTATUS).map((status, index) => (
+                        <SelectItem key={index} value={status}>
+                          {formatEnum(status)}
+                        </SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
               </Field>
             </FieldGroup>
           </FieldSet>

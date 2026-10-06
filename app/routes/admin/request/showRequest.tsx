@@ -1,7 +1,6 @@
 import { Separator } from "~/components/ui/separator";
-import type { Route } from "./+types/showRequest";
 import formatEnum from "~/utils/formatEnum";
-import { Download, PackageOpen } from "lucide-react";
+import { Box, Download, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type {
   CommenterType,
@@ -32,6 +31,7 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { NavLink } from "react-router";
 import { Button } from "~/components/ui/button";
 import { downloadFile } from "~/utils/downloadFile";
+import type { Route } from "./+types/showRequest";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -50,8 +50,9 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
   const version = request.version;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-2">
       <Header />
+
       <div className="flex gap-6 h-[55em]">
         <div className="flex flex-col gap-4 w-full">
           <div className="flex flex-col border p-4 rounded-lg gap-4">
