@@ -22,7 +22,6 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 import { useState } from "react";
-
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { NavLink, useNavigate } from "react-router";
@@ -40,25 +39,23 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
-const columnWidth = {
-  revisionNumber: "col-span-5",
-  author: "col-span-5",
-  approvedDate: "col-span-5",
-  action: "col-span-1 flex justify-center items-center",
-};
-
-const gridStyling = "grid grid-cols-16";
-
 export default function showFile({ loaderData }: Route.ComponentProps) {
   const file = loaderData;
   const latestVersion = file.latestVersion;
 
+  const navigate = useNavigate();
+
   const [openReviseSheet, setOpenReviseSheet] = useState(false);
   const [openDeleteSheet, setOpenDeleteSheet] = useState(false);
 
-  const navigate = useNavigate();
+  const colSpan = {
+    revisionNumber: "col-span-5",
+    author: "col-span-5",
+    approvedDate: "col-span-5",
+    action: "col-span-1",
+  };
 
-  console.log("INFO | loaderData", file);
+  const gridCols = "grid grid-cols-16";
 
   return (
     <>
@@ -153,25 +150,23 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
             </div>
           </div>
         </div>
-        {/* VERSIONS */}
         <div className="flex flex-col border rounded-lg justify-center">
           <div className="flex flex-col">
             <h3 className="p-4">Version History</h3>
             <Separator />
           </div>
-          {/* HEADER */}
           <div className="flex flex-col">
-            <div className={`${gridStyling} p-4`}>
-              <div className={`${columnWidth.revisionNumber}`}>
+            <div className={`${gridCols} p-4`}>
+              <div className={`${colSpan.revisionNumber}`}>
                 <h3>Revision Number</h3>
               </div>
-              <div className={`${columnWidth.author}`}>
+              <div className={`${colSpan.author}`}>
                 <h3>Author</h3>
               </div>
-              <div className={`${columnWidth.approvedDate}`}>
+              <div className={`${colSpan.approvedDate}`}>
                 <h3>Approved Date</h3>
               </div>
-              <div className={`${columnWidth.action}`}>
+              <div className={`${colSpan.action} flex justify-center`}>
                 <h3>Action</h3>
               </div>
             </div>
@@ -182,25 +177,24 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                 {file.versions.map((version, index) => (
                   <li
                     key={index}
-                    className={`${gridStyling} px-4 hover:bg-accent cursor-pointer`}
-                    onClick={() => navigate(`/versions/${version.id}`)}
+                    className={`${gridCols} px-4 hover:bg-accent cursor-pointer`}
                   >
                     <div
                       className={`col-span-15 grid grid-cols-15 py-4 content-center`}
                       onClick={() => navigate(`/admin/versions/${version.id}`)}
                     >
-                      <p className={`${columnWidth.revisionNumber}`}>
+                      <p className={`${colSpan.revisionNumber}`}>
                         {version.revisionNumber}
                       </p>
-                      <p className={`${columnWidth.author}`}>
+                      <p className={`${colSpan.author}`}>
                         {version.originator}
                       </p>
-                      <p className={`${columnWidth.approvedDate}`}>
+                      <p className={`${colSpan.approvedDate}`}>
                         {version.approvedDate}
                       </p>
                     </div>
                     <div
-                      className={`${columnWidth.action} py-4 flex justify-center items-center`}
+                      className={`${colSpan.action} py-4 flex justify-center items-center`}
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -232,7 +226,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                   <EmptyMedia variant={"icon"}>
                     <PackageOpen />
                   </EmptyMedia>
-                  <EmptyTitle>No versios to display</EmptyTitle>
+                  <EmptyTitle>No versions to display</EmptyTitle>
                   <EmptyDescription>
                     There are currently no versions available for viewing.
                   </EmptyDescription>
@@ -250,8 +244,8 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
       <CreateDelSheet
         open={openDeleteSheet}
         onOpenChange={setOpenDeleteSheet}
-        fileId={file.id}
         latestVersionId={latestVersion.id}
+        fileId={file.id}
       />
     </>
   );

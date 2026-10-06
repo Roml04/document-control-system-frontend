@@ -240,7 +240,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                       <SelectTrigger type="button">
                         <SelectValue placeholder="Select file type" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         <SelectGroup>
                           <SelectLabel>File Type</SelectLabel>
                           {Object.values(FILETYPE).map((type, index) => (
@@ -317,7 +317,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                       <SelectTrigger type="button">
                         <SelectValue placeholder="Select an approver" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent position="popper">
                         <SelectGroup>
                           <SelectLabel>Approver</SelectLabel>
                           {superiors.map((superior, index) => {
@@ -431,7 +431,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                         <SelectTrigger type="button">
                           <SelectValue placeholder="Select file type" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           <SelectGroup>
                             <SelectLabel>File Type</SelectLabel>
                             {Object.values(FILETYPE).map((type, index) => (
@@ -511,7 +511,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                         <SelectTrigger type="button">
                           <SelectValue placeholder="Select an approver" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent position="popper">
                           <SelectGroup>
                             <SelectLabel>Approver</SelectLabel>
                             {superiors.map((superior, index) => {

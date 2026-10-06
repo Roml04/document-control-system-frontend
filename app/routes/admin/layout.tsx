@@ -1,7 +1,8 @@
-import { FileCheckCorner, Files, LayoutDashboard, LogOut } from "lucide-react";
 import { Outlet, redirect, useNavigate } from "react-router";
+import { USERROLE } from "~/constants/enums";
+import { apiFetch } from "~/utils/apiFetch";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { ScrollArea } from "~/components/ui/scroll-area";
+
 import {
   Sidebar,
   SidebarContent,
@@ -15,23 +16,29 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "~/components/ui/sidebar";
-import { useSessionStore } from "../../../stores/sessionStore";
-import { apiFetch } from "~/utils/apiFetch";
-import { toast } from "sonner";
+import {
+  FileCheckCorner,
+  Files,
+  FileStack,
+  LayoutDashboard,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import { allowedRoles } from "~/utils/allowedRoles";
-import { formatUserName } from "~/utils/formatUserName";
 import avatarFallback from "~/utils/avatarFallback";
-import { USERROLE } from "~/constants/enums";
+import { useSessionStore } from "../../../stores/sessionStore";
+import { toast } from "sonner";
+import { formatUserName } from "~/utils/formatUserName";
 
 export async function clientLoader() {
   const user = await apiFetch("/me");
 
-  if (!user.id) {
+  if (!user) {
     throw redirect("/");
   }
 
-  if (user.role === USERROLE.GUEST) {
-    throw redirect("/login");
+  if (user.role !== USERROLE.SYSADMIN) {
+    throw redirect("/dashboard");
   }
 
   return { user };
@@ -39,6 +46,7 @@ export async function clientLoader() {
 
 export default function layout() {
   const navigate = useNavigate();
+
   const token = useSessionStore((state) => state.token);
 
   const firstName = useSessionStore((state) => state.firstName);
@@ -81,7 +89,7 @@ export default function layout() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => {
-                      navigate("/dashboard");
+                      navigate("/admin");
                     }}
                   >
                     <LayoutDashboard />
@@ -91,25 +99,43 @@ export default function layout() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => {
-                      navigate("/files");
+                      navigate("/admin/users");
+                    }}
+                  >
+                    <UserRound />
+                    Users
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      navigate("/admin/files");
                     }}
                   >
                     <Files />
                     Files
                   </SidebarMenuButton>
                 </SidebarMenuItem>
-                {allowedRoles("*") && (
-                  <SidebarMenuItem>
-                    <SidebarMenuButton
-                      onClick={() => {
-                        navigate("/requests");
-                      }}
-                    >
-                      <FileCheckCorner />
-                      Requests
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                )}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      navigate("/admin/requests");
+                    }}
+                  >
+                    <FileCheckCorner />
+                    Requests
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => {
+                      navigate("/admin/versions");
+                    }}
+                  >
+                    <FileStack />
+                    Versions
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               </SidebarMenu>
             </SidebarGroup>
           </SidebarContent>

@@ -4,6 +4,7 @@ export enum USERROLE {
   COORDINATOR = "coordinator",
   SUPERIOR = "superior",
   MANAGER = "manager",
+  SYSADMIN = "sysadmin",
 }
 
 export enum REQUESTSTATUS {

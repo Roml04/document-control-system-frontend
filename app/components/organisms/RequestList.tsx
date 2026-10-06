@@ -9,42 +9,78 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
 import { Ellipsis } from "lucide-react";
-import { useNavigate } from "react-router";
+import { useNavigate, useRevalidator } from "react-router";
 import { allowedRoles } from "~/utils/allowedRoles";
 import formatEnum from "~/utils/formatEnum";
 import type { ViewRequestStateType } from "~/routes/main/requests";
+import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { useState } from "react";
 
-const gridStyling = "grid grid-cols-21";
+const gridStyling = "grid grid-cols-22";
+
+const columnStyling = "w-full content-center";
 
 const columnWidths = {
-  title: "w-full px-2 col-span-5 content-center",
-  reason: "w-full px-2 col-span-7 content-center",
-  type: "w-full px-2 col-span-1 content-center",
-  status: "w-full px-2 col-span-2 content-center truncate",
-  author: "w-full px-2 col-span-2 content-center",
-  uploadDate: "w-full px-2 w-full col-span-3 content-center",
-  action: "w-full px-2 col-span-1 content-center",
+  id: `col-span-1 ${columnStyling} px-4`,
+  title: `col-span-5 ${columnStyling}`,
+  reason: `col-span-6 ${columnStyling}`,
+  type: `col-span-1 ${columnStyling}`,
+  status: `col-span-3 ${columnStyling}`,
+  author: `col-span-2 ${columnStyling}`,
+  uploadDate: `col-span-3 ${columnStyling}`,
+  action: `col-span-1 ${columnStyling} flex justify-center items-center`,
 };
+
+function styleRequestStatus(status: REQUESTSTATUS) {
+  switch (status) {
+    case REQUESTSTATUS.DENIED:
+      return "text-destructive";
+
+    case REQUESTSTATUS.APPROVED:
+      return "text-green-600";
+
+    case REQUESTSTATUS.ORIGINATOREDIT:
+      return "text-amber-500";
+
+    default:
+      return "";
+  }
+}
 
 export function RequestListHeader() {
   return (
-    <div className={`${gridStyling} place-items-center py-2 mb-2`}>
+    <div className={`${gridStyling} place-items-center py-2 px-4`}>
+      <div className={`${columnWidths.id} `}>
+        <h3>ID</h3>
+      </div>
       <div className={`${columnWidths.title} `}>
         <h3>Title</h3>
       </div>
-      <div className={`${columnWidths.reason} border-x border-gray-200`}>
+      <div className={`${columnWidths.reason}`}>
         <h3>Reason</h3>
       </div>
       <div className={`${columnWidths.type}`}>
         <h3>Type</h3>
       </div>
-      <div className={`${columnWidths.status} border-x border-gray-200`}>
+      <div className={`${columnWidths.status}`}>
         <h3>Status</h3>
       </div>
       <div className={`${columnWidths.author}`}>
         <h3>Author</h3>
       </div>
-      <div className={`${columnWidths.uploadDate} border-x border-gray-200`}>
+      <div className={`${columnWidths.uploadDate}`}>
         <h3>Upload Date</h3>
       </div>
       <div className={`${columnWidths.action}`}>
@@ -55,48 +91,26 @@ export function RequestListHeader() {
 }
 
 type RequestListItemPropType = {
-  index: number;
   request: ViewRequestStateType;
   onClick: () => void;
   isOwned?: boolean;
 };
 
 export function RequestListItem({
-  index,
   request,
   onClick,
   isOwned = false,
 }: RequestListItemPropType) {
   const navigate = useNavigate();
 
-  console.log("INFO | RequestListItem Title", request.title);
-  console.log("INFO | RequestListItem", request);
-
-  let styleRequestStatus = "";
-
-  switch (request.status) {
-    case REQUESTSTATUS.DENIED:
-      styleRequestStatus = "text-destructive";
-      break;
-
-    case REQUESTSTATUS.APPROVED:
-      styleRequestStatus = "text-green-600";
-      break;
-
-    case REQUESTSTATUS.ORIGINATOREDIT:
-      styleRequestStatus = "text-amber-500";
-      break;
-
-    default:
-      styleRequestStatus = "";
-  }
-
   return (
     <li
-      className={`grid grid-cols-21 cursor-pointer ${index !== 0 ? `border-t border-gray-200` : ``} rounded-lg hover:bg-accent`}
-      key={index}
+      className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
     >
-      <div className={`col-span-20 py-5 grid grid-cols-20`} onClick={onClick}>
+      <div className={`col-span-21 py-4 grid grid-cols-21`} onClick={onClick}>
+        <div className={`${columnWidths.id} `}>
+          <p>{request.id}</p>
+        </div>
         <div className={`${columnWidths.title} `}>
           <p>{request.title}</p>
         </div>
@@ -106,7 +120,9 @@ export function RequestListItem({
         <div className={`${columnWidths.type} `}>
           <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
         </div>
-        <div className={`${columnWidths.status} ${styleRequestStatus}`}>
+        <div
+          className={`${columnWidths.status} ${request.status ? styleRequestStatus(request.status) : ""}`}
+        >
           <p>
             {request.status ? formatEnum(request.status) : "Unknown Status"}
           </p>
@@ -122,7 +138,7 @@ export function RequestListItem({
         </div>
       </div>
 
-      <div className={`${columnWidths.action}`}>
+      <div className={`${columnWidths.action}  py-4`}>
         <DropdownMenu>
           <DropdownMenuTrigger onClick={() => {}} asChild>
             <Button size={"icon"} variant={"ghost"}>
@@ -183,5 +199,175 @@ export function RequestListItem({
         </DropdownMenu>
       </div>
     </li>
+  );
+}
+
+export function AdminRequestListItem({
+  request,
+  onClick,
+  isOwned = false,
+}: RequestListItemPropType) {
+  const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
+
+  const revalidator = useRevalidator();
+
+  const navigate = useNavigate();
+
+  const handleDeleteRequest = async () => {
+    try {
+      const apiResponse = await apiFetch(`/admin/request/${request.id}`, {
+        method: "DELETE",
+      });
+
+      if (!apiResponse.ok) {
+        toast.error("Failed to delete request", {
+          position: "top-center",
+          description: apiResponse.message,
+        });
+        return;
+      }
+
+      revalidator.revalidate();
+
+      toast.success("Request deleted", {
+        position: "top-center",
+      });
+    } catch (error) {
+      toast.error("Failed to delete request", {
+        position: "top-center",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+      });
+    } finally {
+    }
+  };
+
+  return (
+    <>
+      <li
+        className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
+      >
+        <div className={`col-span-21 py-4 grid grid-cols-21`} onClick={onClick}>
+          <div className={`${columnWidths.id} `}>
+            <p>{request.id}</p>
+          </div>
+          <div className={`${columnWidths.title} `}>
+            <p>{request.title}</p>
+          </div>
+          <div className={`${columnWidths.reason}`}>
+            <p>{request.reason}</p>
+          </div>
+          <div className={`${columnWidths.type} `}>
+            <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
+          </div>
+          <div
+            className={`${columnWidths.status} ${request.status ? styleRequestStatus(request.status) : ""}`}
+          >
+            <p>
+              {request.status ? formatEnum(request.status) : "Unknown Status"}
+            </p>
+          </div>
+          <div className={`${columnWidths.author}`}>
+            <p>
+              {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
+                "Unknown User"}
+            </p>
+          </div>
+          <div className={`${columnWidths.uploadDate}`}>
+            <p>{request.uploadDate ?? "--"}</p>
+          </div>
+        </div>
+
+        <div className={`${columnWidths.action} py-4`}>
+          <DropdownMenu>
+            <DropdownMenuTrigger onClick={() => {}} asChild>
+              <Button size={"icon"} variant={"ghost"}>
+                <Ellipsis size={16} className="cursor-pointer" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuItem
+                  onClick={() => {
+                    navigate(`/admin/requests/${request.id}`);
+                  }}
+                >
+                  View
+                </DropdownMenuItem>
+                {allowedRoles(["sysadmin"]) && (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      navigate(`/admin/requests/${request.id}/edit`);
+                    }}
+                  >
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {allowedRoles(["sysadmin"]) &&
+                  !(
+                    request.status &&
+                    [
+                      REQUESTSTATUS.APPROVED,
+                      REQUESTSTATUS.DENIED,
+                      REQUESTSTATUS.ORIGINATOREDIT,
+                    ].includes(request.status)
+                  ) && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        navigate(`/requests/${request.id}/review`);
+                      }}
+                    >
+                      Review
+                    </DropdownMenuItem>
+                  )}
+                {allowedRoles(["sysadmin"]) &&
+                  request.status === REQUESTSTATUS.DENIED && (
+                    <DropdownMenuItem
+                      onClick={() => {
+                        navigate(
+                          `/requests/${request.id}/resubmit?type=${request.type}`,
+                        );
+                      }}
+                    >
+                      Resubmit
+                    </DropdownMenuItem>
+                  )}
+                {allowedRoles(["sysadmin"]) && (
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onClick={() => setOpenDeleteAlert(true)}
+                  >
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </li>
+      <AlertDialog open={openDeleteAlert} onOpenChange={setOpenDeleteAlert}>
+        <AlertDialogTrigger asChild></AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm file deletion?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete{" "}
+              <span className="font-bold">{request.title}</span> and bypass the
+              approval process. This action cannot be undone. Do you want to
+              proceed?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant={"destructive"}
+              onClick={handleDeleteRequest}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
