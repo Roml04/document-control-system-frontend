@@ -92,7 +92,7 @@ export default function CreateUserSheet({
                   <Input
                     type="text"
                     name="firstName"
-                    placeholder="First Name"
+                    placeholder="e.g., Juan"
                     required
                   />
                 </Field>
@@ -101,7 +101,7 @@ export default function CreateUserSheet({
                   <Input
                     type="text"
                     name="lastName"
-                    placeholder="Last Name"
+                    placeholder="e.g., Dela cruz"
                     required
                   />
                 </Field>
@@ -128,7 +128,7 @@ export default function CreateUserSheet({
                   <Input
                     type="email"
                     name="email"
-                    placeholder="Last Name"
+                    placeholder="e.g., juandelacruz@example.com"
                     required
                   />
                 </Field>
@@ -138,7 +138,7 @@ export default function CreateUserSheet({
                     type="password"
                     name="password"
                     minLength={8}
-                    placeholder="Last Name"
+                    placeholder="Enter a password..."
                     required
                   />
                 </Field>

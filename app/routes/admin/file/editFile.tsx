@@ -27,6 +27,7 @@ import { useRef, useState, type SubmitEventHandler } from "react";
 import FileItem from "~/components/molecules/FileItem";
 import StrictHeader from "~/components/organisms/StrictHeader";
 import { toast } from "sonner";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -204,9 +205,6 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
                   name="uploadDate"
                   disabled
                 />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel>Revision Date</FieldLabel>
@@ -216,9 +214,6 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
                   name="revisionDate"
                   disabled
                 />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
@@ -251,9 +246,6 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
                   name="approvedDate"
                   disabled
                 />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
               </Field>
             </FieldGroup>
           </FieldSet>

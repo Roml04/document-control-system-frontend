@@ -40,6 +40,15 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   };
 }
 
+const columnWidth = {
+  revisionNumber: "col-span-5",
+  author: "col-span-5",
+  approvedDate: "col-span-5",
+  action: "col-span-1 flex justify-center items-center",
+};
+
+const gridStyling = "grid grid-cols-16";
+
 export default function showFile({ loaderData }: Route.ComponentProps) {
   const file = loaderData;
   const latestVersion = file.latestVersion;
@@ -50,15 +59,6 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   const navigate = useNavigate();
 
   console.log("INFO | loaderData", file);
-
-  const colSpan = {
-    revisionNumber: "col-span-5",
-    author: "col-span-5",
-    approvedDate: "col-span-5",
-    action: "col-span-1",
-  };
-
-  const gridCols = "grid grid-cols-16";
 
   return (
     <>
@@ -161,84 +161,46 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
           </div>
           {/* HEADER */}
           <div className="flex flex-col">
-            <div className={`${gridCols} p-4`}>
-              <div className={`${colSpan.revisionNumber}`}>
+            <div className={`${gridStyling} p-4`}>
+              <div className={`${columnWidth.revisionNumber}`}>
                 <h3>Revision Number</h3>
               </div>
-              <div className={`${colSpan.author}`}>
+              <div className={`${columnWidth.author}`}>
                 <h3>Author</h3>
               </div>
-              <div className={`${colSpan.approvedDate}`}>
+              <div className={`${columnWidth.approvedDate}`}>
                 <h3>Approved Date</h3>
               </div>
-              <div className={`${colSpan.action}`}>
+              <div className={`${columnWidth.action}`}>
                 <h3>Action</h3>
               </div>
             </div>
           </div>
-          {/* <Separator /> */}
           {file.versions.length !== 0 ? (
             <ul className="flex flex-col">
               <ScrollArea className="h-[34em]">
                 {file.versions.map((version, index) => (
-                  // <li key={index} className={`hover:bg-accent`}>
-                  //   <div className={`${gridCols} px-4`}>
-                  //     <div
-                  //       className={`col-span-15 grid grid-cols-15 content-center py-4`}
-                  //     >
-                  //       <p className={`${colSpan.revisionNumber}`}>
-                  //         {version.revisionNumber}
-                  //       </p>
-                  //       <p className={`${colSpan.author}`}>
-                  //         {version.originator}
-                  //       </p>
-                  //       <p className={`${colSpan.approvedDate}`}>
-                  //         {version.approvedDate}
-                  //       </p>
-                  //     </div>
-                  //     <div className={`${colSpan.action} py-4`}>
-                  //       <DropdownMenu>
-                  //         <DropdownMenuTrigger asChild>
-                  //           <Button variant={"ghost"} size={"icon"}>
-                  //             <Ellipsis />
-                  //           </Button>
-                  //         </DropdownMenuTrigger>
-                  //         <DropdownMenuContent align="end">
-                  //           <DropdownMenuGroup>
-                  //             <DropdownMenuItem
-                  //               onClick={() =>
-                  //                 navigate(`/versions/${version.id}`)
-                  //               }
-                  //             >
-                  //               View
-                  //             </DropdownMenuItem>
-                  //           </DropdownMenuGroup>
-                  //         </DropdownMenuContent>
-                  //       </DropdownMenu>
-                  //     </div>
-                  //   </div>
-                  // </li>
                   <li
                     key={index}
-                    className={`${gridCols} px-4 hover:bg-accent cursor-pointer`}
+                    className={`${gridStyling} px-4 hover:bg-accent cursor-pointer`}
                     onClick={() => navigate(`/versions/${version.id}`)}
                   >
                     <div
                       className={`col-span-15 grid grid-cols-15 py-4 content-center`}
                       onClick={() => navigate(`/admin/versions/${version.id}`)}
                     >
-                      <p className={`${colSpan.revisionNumber}`}>
+                      <p className={`${columnWidth.revisionNumber}`}>
                         {version.revisionNumber}
                       </p>
-                      <p className={`${colSpan.author}`}>
+                      <p className={`${columnWidth.author}`}>
                         {version.originator}
                       </p>
-                      <p className={`${colSpan.approvedDate}`}>
+                      <p className={`${columnWidth.approvedDate}`}>
                         {version.approvedDate}
                       </p>
                     </div>
                     <div
-                      className={`${colSpan.action} py-4 flex justify-center items-center`}
+                      className={`${columnWidth.action} py-4 flex justify-center items-center`}
                     >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

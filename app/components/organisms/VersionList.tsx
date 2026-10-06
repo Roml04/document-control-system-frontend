@@ -144,8 +144,8 @@ export function VersionListItem({ version }: VersionListItemPropType) {
               <AlertDialogTitle>Confirm version deletion?</AlertDialogTitle>
               <AlertDialogDescription>
                 This will permanently delete{" "}
-                <span className="font-bold">version ID#{version.id}</span>. This
-                action cannot be undone. Do you want to proceed?
+                <span className="font-bold">version ID #{version.id}</span>.
+                This action cannot be undone. Do you want to proceed?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

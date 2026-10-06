@@ -13,6 +13,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import avatarFallback from "~/utils/avatarFallback";
+import { useNavigate } from "react-router";
 
 export type UserRequestsType = {
   id: number;
@@ -58,6 +61,8 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
 export default function showUser({ loaderData }: Route.ComponentProps) {
   const { user, userRequests } = loaderData;
 
+  const navigate = useNavigate();
+
   const months = [
     "January",
     "February",
@@ -81,7 +86,15 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
       <div className="border p-4 rounded-lg flex flex-col gap-4">
         <div className="flex justify-between">
           <div className="flex gap-2 items-center">
-            <UserRound color="#000000" />
+            {/* <Avatar size="lg">
+              <AvatarImage src="" />
+              <AvatarFallback>
+                {avatarFallback(user.firstName, user.lastName)}
+              </AvatarFallback>
+            </Avatar> */}
+            <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-14">
+              <UserRound />
+            </div>
             <h1>{formatUserName(user.firstName, user.lastName)}</h1>
           </div>
         </div>
@@ -139,7 +152,12 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
             {userRequests.map((request, index) => (
               <li
                 key={index}
-                className={`${gridStyling} p-4 grid hover:bg-accent`}
+                className={`${gridStyling} p-4 grid hover:bg-accent cursor-pointer`}
+                onClick={() => {
+                  console.log("REQUEST | ", request);
+
+                  navigate(`/admin/requests/${request.id}`);
+                }}
               >
                 <p className={`${columnStyling} ${columnWidths.id}`}>
                   {request.id}
@@ -154,7 +172,7 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
                   {request.type.toUpperCase()}
                 </p>
                 <p className={`${columnStyling} ${columnWidths.status}`}>
-                  {request.status}
+                  {formatEnum(request.status)}
                 </p>
                 <p className={`${columnStyling} ${columnWidths.uploadDate}`}>
                   {request.uploadDate}

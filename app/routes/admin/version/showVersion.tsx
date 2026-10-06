@@ -82,8 +82,11 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
             </Button>
           </div>
         </div>
+      </div>
+      <div className="border rounded-lg flex flex-col">
+        <h3 className="p-4">Version ID #{version.id}</h3>
         <Separator />
-        <div>
+        <div className="p-4">
           <div className="grid grid-cols-4 gap-y-4">
             <div>
               <p className="text-muted-foreground">Originator</p>
@@ -150,7 +153,7 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
                       {version.request.title}
                     </p>
                     <p className={columnWidths.status}>
-                      {version.request.status}
+                      {formatEnum(version.request.status)}
                     </p>
                     <p className={columnWidths.author}>
                       {formatUserName(

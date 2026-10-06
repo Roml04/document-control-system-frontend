@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate, useRevalidator } from "react-router";
-import { useState, type SubmitEventHandler } from "react";
+import { useState } from "react";
 import UserEditDialogForm, { ResetPasswordDialogForm } from "./UserEdit";
 import formatEnum from "~/utils/formatEnum";
 import { USERROLE } from "~/constants/enums";
@@ -56,14 +56,13 @@ type AdminUserListItemPropType = {
 };
 
 export function AdminUserListItem({ user }: AdminUserListItemPropType) {
-  const [openResetPasswordDialogForm, setOpenResetPasswordDialogForm] =
-    useState(false);
+  const [openResetPassDialog, setOpenResetPassDialog] = useState(false);
   const [openEditUserDialog, setOpenEditUserDialog] = useState(false);
   const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
 
   const navigate = useNavigate();
 
-  const revlidator = useRevalidator();
+  const revalidator = useRevalidator();
 
   const handleDeleteUser = async () => {
     const apiResponse = await apiFetch(`/admin/user/${user.id}`, {
@@ -78,7 +77,7 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
       return;
     }
 
-    revlidator.revalidate();
+    revalidator.revalidate();
 
     toast.success("User deleted", {
       position: "top-center",
@@ -121,15 +120,10 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
                 >
                   View
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setOpenEditUserDialog(true)}
-                  // onClick={() => navigate(`/admin/users/${user.id}/edit`)}
-                >
+                <DropdownMenuItem onClick={() => setOpenEditUserDialog(true)}>
                   Edit
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setOpenResetPasswordDialogForm(true)}
-                >
+                <DropdownMenuItem onClick={() => setOpenResetPassDialog(true)}>
                   Reset Password
                 </DropdownMenuItem>
                 {user.role !== USERROLE.SYSADMIN && (
@@ -150,8 +144,8 @@ export function AdminUserListItem({ user }: AdminUserListItemPropType) {
           </DropdownMenu>
           <ResetPasswordDialogForm
             user={user}
-            open={openResetPasswordDialogForm}
-            onOpenChange={setOpenResetPasswordDialogForm}
+            open={openResetPassDialog}
+            onOpenChange={setOpenResetPassDialog}
           />
         </div>
       </div>
