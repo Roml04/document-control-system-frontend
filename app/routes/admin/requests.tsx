@@ -1,30 +1,12 @@
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
 import type { UserType, VersionType } from "~/constants/types";
-import formatEnum from "~/utils/formatEnum";
 import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-} from "~/components/ui/sheet";
-import { useReducer, useState } from "react";
-import { File, PackageOpen, Plus, TriangleAlert } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import {
-  Attachment,
-  AttachmentContent,
-  AttachmentDescription,
-  AttachmentMedia,
-  AttachmentTitle,
-  AttachmentTrigger,
-} from "~/components/ui/attachment";
-import { toast } from "sonner";
+import { useState } from "react";
+import { PackageOpen, Plus } from "lucide-react";
 import {
   Empty,
-  EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
@@ -34,9 +16,7 @@ import {
   AdminRequestListItem,
   RequestListHeader,
 } from "~/components/organisms/RequestList";
-import { formatUserName } from "~/utils/formatUserName";
 import type { Route } from "./+types/requests";
-import { downloadFile } from "~/utils/downloadFile";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -49,13 +29,9 @@ import {
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
+import { useNavigate } from "react-router";
 
-enum ACTION {
-  SETDETAILS = "SETDETAILS",
-  RESETDETAILS = "RESETDETAILS",
-}
-
-export type ViewRequestStateType = {
+export type ViewRequestType = {
   id: number | null;
   type: REQUESTTYPE | null;
   title: string;
@@ -66,19 +42,14 @@ export type ViewRequestStateType = {
   version: VersionType | null;
 };
 
-type ViewRequestActionType = {
-  type: ACTION;
-  payload: Partial<ViewRequestStateType>;
-};
-
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
 
   console.log("INFO | apiResponse data", apiResponse.data);
 
   return apiResponse.data as {
-    myRequests: ViewRequestStateType[];
-    forApprovals: ViewRequestStateType[];
+    myRequests: ViewRequestType[];
+    forApprovals: ViewRequestType[];
   };
 }
 
@@ -88,86 +59,12 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   /**
    * Hook initialization
    */
-  const [openReqItemSheet, setOpenReqItemSheet] = useState(false);
   const [openCreateUplSheet, setOpenCreateUplSheet] = useState(false);
   const [openCreateRevSheet, setOpenCreateRevSheet] = useState(false);
   const [openCreateDelSheet, setOpenCreateDelSheet] = useState(false);
+  const [openAddPublishSheet, setOpenAddPublishSheet] = useState(false);
 
-  /**
-   * View request reducer
-   */
-  const viewRequestInitialState: ViewRequestStateType = {
-    id: null,
-    type: null,
-    title: "",
-    reason: "",
-    status: null,
-    uploadDate: null,
-    user: null,
-    version: null,
-  };
-
-  function viewRequestReducer(
-    state: ViewRequestStateType,
-    action: ViewRequestActionType,
-  ) {
-    switch (action.type) {
-      case ACTION.SETDETAILS:
-        return {
-          ...state,
-          ...action.payload,
-        };
-
-      case ACTION.RESETDETAILS:
-        return viewRequestInitialState;
-
-      default:
-        return state;
-    }
-  }
-
-  const [viewRequestState, viewRequestDispatch] = useReducer(
-    viewRequestReducer,
-    viewRequestInitialState,
-  );
-
-  /**
-   * Functions
-   */
-  const renderRequestOnSheet = async (request: ViewRequestStateType) => {
-    try {
-      console.log("INFO | RENDER REQUEST ON SHEET", request);
-      console.log("INFO | REQUEST VERSION", request.version);
-
-      if (!request.version) {
-        return toast.success("Failed to show file details", {
-          position: "top-center",
-          description: "No version associated with this request",
-        });
-      }
-
-      const apiResponse = await apiFetch(`/version/${request.version.id}`);
-
-      console.log("INFO | RESPONSE OK:", apiResponse.ok);
-      console.log("INFO | RESPONSE DATA:", apiResponse.data);
-      console.log("INFO | RESPONSE MESSAGE:", apiResponse.message);
-
-      viewRequestDispatch({
-        type: ACTION.SETDETAILS,
-        payload: { ...request, version: apiResponse.data },
-      });
-
-      setOpenReqItemSheet(true);
-    } catch (error) {
-      toast.error("An error occurred", {
-        position: "top-center",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Something went wrong. Please try again in a moment",
-      });
-    }
-  };
+  const navigate = useNavigate();
 
   return (
     <>
@@ -210,7 +107,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   <AdminRequestListItem
                     key={index}
                     request={request}
-                    onClick={() => renderRequestOnSheet(request)}
+                    onClick={() => navigate(`/admin/requests/${request.id}`)}
                   />
                 ))}
               </ScrollArea>
@@ -227,180 +124,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
           )}
         </div>
       </div>
-      <Sheet open={openReqItemSheet} onOpenChange={setOpenReqItemSheet}>
-        <SheetContent className="w-[30vw] sm:max-w-[30vw]! h-dvh p-0">
-          <div className="flex h-full min-h-0 flex-col">
-            <SheetHeader>
-              <h1>{viewRequestState.title}</h1>
-              <Badge title="Authored by" className="cursor-pointer">
-                {formatEnum(viewRequestState.status) ?? "--"}
-              </Badge>
-            </SheetHeader>
-            <Separator />
-            <ScrollArea className="flex-1 min-h-0 px-4 pt-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col">
-                  <h2>Request Details</h2>
-                  <div className="px-4">
-                    <div className="py-4 grid grid-cols-6">
-                      <h3 className="py-2 col-span-2">Reason</h3>
-                      <p className="py-2 col-span-4">
-                        {viewRequestState.reason ?? "--"}
-                      </p>
-                    </div>
-                    <div className="py-4 grid grid-cols-6">
-                      <h3 className="py-2 col-span-2">Author</h3>
-                      <p className="py-2 col-span-4">
-                        {formatUserName(
-                          viewRequestState.user?.firstName,
-                          viewRequestState.user?.lastName,
-                        )}
-                      </p>
-                    </div>
-                    <div className="py-4 grid grid-cols-6">
-                      <h3 className="py-2 col-span-2">Upload Date</h3>
-
-                      <p className="py-2 col-span-4">
-                        {viewRequestState.uploadDate ?? "--"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <Separator />
-                {viewRequestState.version ? (
-                  <div className="flex flex-col">
-                    <h2>File Details</h2>
-                    <div className="px-4">
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Title</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.fileTitle ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Type</h3>
-                        <p className="py-2 col-span-4">
-                          {formatEnum(viewRequestState.version.fileType) ??
-                            "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Originator</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.originator ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Department</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.department ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Revision Number</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.revisionNumber ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Revision Details</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.revisionDetails ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Upload Date</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.uploadDate ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Revision Date</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.revisionDate ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Approver</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.approver ?? "--"}
-                        </p>
-                      </div>
-                      <div className="py-4 grid grid-cols-6">
-                        <h3 className="py-2 col-span-2">Approved Date</h3>
-                        <p className="py-2 col-span-4">
-                          {viewRequestState.version.approvedDate ?? "--"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <Empty className="h-full border-dashed gap-0">
-                    <EmptyMedia variant={"icon"}>
-                      <TriangleAlert />
-                    </EmptyMedia>
-                    <EmptyHeader>
-                      <EmptyTitle>No version</EmptyTitle>
-                      <EmptyDescription className="text-pretty">
-                        This request is missing its associated version. Please
-                        contact your administrator for assistance.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                  </Empty>
-                )}
-              </div>
-            </ScrollArea>
-            <Separator />
-            <SheetFooter>
-              {!viewRequestState.version ||
-              !viewRequestState.version?.filePath ? (
-                <div>
-                  <p className="text-muted-foreground">
-                    The uploaded file could not be found.
-                  </p>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-2">
-                  <h3>Uploaded File</h3>
-                  <Attachment className="w-full">
-                    <AttachmentMedia>
-                      <File />
-                    </AttachmentMedia>
-                    <AttachmentContent>
-                      <AttachmentTitle>
-                        {viewRequestState.version?.fileTitle ?? "Unknown file"}
-                      </AttachmentTitle>
-                      <AttachmentDescription>
-                        {viewRequestState.version?.fileType ?? "Unknown type"}
-                      </AttachmentDescription>
-                    </AttachmentContent>
-                    <AttachmentTrigger
-                      onClick={() => {
-                        if (!viewRequestState.version) {
-                          return toast.error("Failed to open file", {
-                            position: "top-center",
-                          });
-                        }
-
-                        console.log(
-                          "INFO | FILE NAME",
-                          viewRequestState.version.fileName,
-                        );
-
-                        downloadFile(
-                          viewRequestState.version.id,
-                          viewRequestState.version.fileName,
-                        );
-                      }}
-                      className="cursor-pointer"
-                    ></AttachmentTrigger>
-                  </Attachment>
-                </div>
-              )}
-            </SheetFooter>
-          </div>
-        </SheetContent>
-      </Sheet>
       <CreateUplSheet
         open={openCreateUplSheet}
         onOpenChange={setOpenCreateUplSheet}
