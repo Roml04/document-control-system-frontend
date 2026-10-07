@@ -22,17 +22,17 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 import { useState } from "react";
-
 import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { NavLink, useNavigate } from "react-router";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
+import { formatUserName } from "~/utils/formatUserName";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
 
-  console.log("INFO | CLIENT LOADER", apiResponse);
+  console.log("INFO | CLIENT LOADER [MAIN]", apiResponse);
 
   return apiResponse.data as FileType & {
     latestVersion: VersionType;
@@ -53,12 +53,10 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
   const file = loaderData;
   const latestVersion = file.latestVersion;
 
-  const [openReviseSheet, setOpenReviseSheet] = useState(false);
-  const [openDeleteSheet, setOpenDeleteSheet] = useState(false);
-
   const navigate = useNavigate();
 
-  console.log("INFO | loaderData", file);
+  const [openReviseSheet, setOpenReviseSheet] = useState(false);
+  const [openDeleteSheet, setOpenDeleteSheet] = useState(false);
 
   return (
     <>
@@ -144,7 +142,12 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
               </div>
               <div>
                 <p className="text-muted-foreground">Approver</p>
-                <p>{latestVersion.approver}</p>
+                <p>
+                  {formatUserName(
+                    latestVersion.approver.firstName,
+                    latestVersion.approver.lastName,
+                  )}
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Approved Date</p>
@@ -183,11 +186,10 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                   <li
                     key={index}
                     className={`${gridStyling} px-4 hover:bg-accent cursor-pointer`}
-                    onClick={() => navigate(`/versions/${version.id}`)}
                   >
                     <div
                       className={`col-span-15 grid grid-cols-15 py-4 content-center`}
-                      onClick={() => navigate(`/admin/versions/${version.id}`)}
+                      onClick={() => navigate(`/versions/${version.id}`)}
                     >
                       <p className={`${columnWidth.revisionNumber}`}>
                         {version.revisionNumber}
@@ -232,7 +234,7 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                   <EmptyMedia variant={"icon"}>
                     <PackageOpen />
                   </EmptyMedia>
-                  <EmptyTitle>No versios to display</EmptyTitle>
+                  <EmptyTitle>No versions to display</EmptyTitle>
                   <EmptyDescription>
                     There are currently no versions available for viewing.
                   </EmptyDescription>

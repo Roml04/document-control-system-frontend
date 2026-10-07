@@ -41,7 +41,7 @@ export type VersionType = {
   revisionDetails: string;
   uploadDate: string;
   revisionDate: string;
-  approver: string;
+  approver: Pick<UserType, "id" | "firstName" | "lastName">;
   approvedDate: string;
   status: VERSIONSTATUS;
   fileName: string;

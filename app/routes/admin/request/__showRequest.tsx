@@ -1,6 +1,6 @@
 import { Separator } from "~/components/ui/separator";
 import formatEnum from "~/utils/formatEnum";
-import { Box, Download, PackageOpen } from "lucide-react";
+import { Download, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import type {
   CommenterType,
@@ -36,7 +36,7 @@ import type { Route } from "./+types/showRequest";
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
-  console.log("INFO | request.tsx cientLoader(),", apiResponse);
+  console.log(`INFO | /request/${params.id} [ADMIN]`, apiResponse);
 
   return apiResponse.data as RequestType & {
     version: VersionType;
@@ -50,7 +50,7 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
   const version = request.version;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div className="flex flex-col gap-4">
       <Header />
 
       <div className="flex gap-6 h-[55em]">
@@ -131,7 +131,12 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Approver</p>
-                  <p>{version.approver ?? "--"}</p>
+                  <p>
+                    {formatUserName(
+                      version.approver.firstName,
+                      version.approver.lastName,
+                    ) ?? "--"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Approved Date</p>

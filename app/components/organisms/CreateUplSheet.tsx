@@ -98,6 +98,8 @@ export default function CreateUplSheet({
       formData.append("type", "upl");
       formData.append("file", file);
 
+      console.log("FORM DATA", Object.fromEntries(formData.entries()));
+
       const apiResponse = await apiFetch(
         allowedRoles(["sysadmin"]) ? "/admin/request" : "/request",
         {
@@ -297,14 +299,14 @@ export default function CreateUplSheet({
 
                 <Field className="col-span-1">
                   <FieldLabel>Approver</FieldLabel>
-                  <Select name="approver" required>
+                  <Select name="approverId" required>
                     <SelectTrigger>
                       <SelectValue placeholder="Select an Approver" />
                     </SelectTrigger>
                     <SelectContent position="popper">
                       <SelectGroup>
                         <SelectLabel>Approvers</SelectLabel>
-                        {users.map((approver) => {
+                        {users.map((approver, index) => {
                           if (approver.role !== USERROLE.SUPERIOR) return;
 
                           const approverName = formatUserName(
@@ -313,7 +315,10 @@ export default function CreateUplSheet({
                           );
 
                           return (
-                            <SelectItem key={approver.id} value={approverName}>
+                            <SelectItem
+                              key={index}
+                              value={approver.id.toString()}
+                            >
                               {approverName}
                             </SelectItem>
                           );

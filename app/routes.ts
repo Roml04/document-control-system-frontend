@@ -15,13 +15,17 @@ export default [
     ...prefix("/requests", [
       index("./routes/main/requests.tsx"),
       route("/:id", "./routes/main/request/showRequest.tsx"),
-      route("/:id/review", "./routes/main/request/reviewRequest.tsx"),
+      route("/:id/review", "./routes/main/request/reviewRequest.tsx", {
+        id: "show-request-main",
+      }),
       route("/:id/resubmit", "./routes/main/request/resubmitRequest.tsx"),
     ]),
 
     ...prefix("/files", [
       index("./routes/main/files.tsx"),
-      route("/:id", "./routes/main/file/showFile.tsx"),
+      route("/:id", "./routes/main/file/showFile.tsx", {
+        id: "show-file-main",
+      }),
     ]),
 
     ...prefix("/versions", [
@@ -41,13 +45,18 @@ export default [
 
       ...prefix("/files", [
         index("./routes/admin/files.tsx"),
-        route("/:id", "./routes/admin/file/showFile.tsx"),
+        route("/:id", "./routes/main/file/showFile.tsx", {
+          id: "show-file-admin",
+        }),
+        // route("/:id", "./routes/admin/file/showFile.tsx"),
         route("/:id/edit", "./routes/admin/file/editFile.tsx"),
       ]),
 
       ...prefix("/requests", [
         index("./routes/admin/requests.tsx"),
-        route("/:id", "./routes/admin/request/showRequest.tsx"),
+        route("/:id", "./routes/main/request/showRequest.tsx", {
+          id: "show-request-admin",
+        }),
         route("/:id/edit", "./routes/admin/request/editRequest.tsx"),
       ]),
       ...prefix("/versions", [

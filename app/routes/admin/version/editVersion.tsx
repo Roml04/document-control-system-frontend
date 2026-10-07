@@ -51,7 +51,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     apiFetch(`/user?role=superior`),
   ]);
 
-  console.log("CLIENTLOADER:", versionResponse);
+  console.log("INFO | CLIENT LOADER [ADMIN]", versionResponse);
 
   return { version: versionResponse.data, superiors: userResponse.data } as {
     version: VersionType;
@@ -282,20 +282,22 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
-                <Select name="approver" defaultValue={version.approver}>
+                <Select
+                  name="approver"
+                  defaultValue={String(version.approver.id)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose an approver" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
                       {superiors.map((superior, index) => {
-                        const superiorName = formatUserName(
-                          superior.firstName,
-                          superior.lastName,
-                        );
                         return (
-                          <SelectItem key={index} value={superiorName}>
-                            {superiorName}
+                          <SelectItem key={index} value={String(superior.id)}>
+                            {formatUserName(
+                              superior.firstName,
+                              superior.lastName,
+                            )}
                           </SelectItem>
                         );
                       })}

@@ -36,7 +36,7 @@ import { downloadFile } from "~/utils/downloadFile";
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
-  console.log("INFO | request.tsx cientLoader(),", apiResponse);
+  console.log(`INFO | /request/${params.id} [MAIN]`, apiResponse);
 
   return apiResponse.data as RequestType & {
     version: VersionType;
@@ -130,7 +130,12 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Approver</p>
-                  <p>{version.approver ?? "--"}</p>
+                  <p>
+                    {formatUserName(
+                      version.approver.firstName,
+                      version.approver.lastName,
+                    ) ?? "--"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Approved Date</p>

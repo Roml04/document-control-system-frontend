@@ -119,7 +119,12 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
             </div>
             <div>
               <p className="text-muted-foreground">Approver</p>
-              <p>{version.approver}</p>
+              <p>
+                {formatUserName(
+                  version.approver.firstName,
+                  version.approver.lastName,
+                )}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Approved Date</p>

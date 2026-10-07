@@ -198,7 +198,12 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
               </div>
               <div>
                 <p className="text-muted-foreground">Approver</p>
-                <p>{request.version.approver ?? "--"}</p>
+                <p>
+                  {formatUserName(
+                    request.version.approver.firstName,
+                    request.version.approver.lastName,
+                  ) ?? "--"}
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Approved Date</p>

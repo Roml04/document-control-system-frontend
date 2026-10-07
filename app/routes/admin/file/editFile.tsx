@@ -27,7 +27,6 @@ import { useRef, useState, type SubmitEventHandler } from "react";
 import FileItem from "~/components/molecules/FileItem";
 import StrictHeader from "~/components/organisms/StrictHeader";
 import { toast } from "sonner";
-import { allowedRoles } from "~/utils/allowedRoles";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -37,7 +36,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     apiFetch(`/user?role=superior`),
   ]);
 
-  console.log("CLIENTLOADER:", versionResponse);
+  console.log("INFO | CLIENT LOADER [ADMIN]", versionResponse);
 
   return { version: versionResponse.data, superiors: userResponse.data } as {
     version: VersionType;
@@ -217,20 +216,25 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
-                <Select name="approver" defaultValue={version.approver}>
+                <Select
+                  name="approver"
+                  defaultValue={String(version.approver.id)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Choose an approver" />
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
-                      {superiors.map((superior, index) => {
-                        const superiorName = formatUserName(
-                          superior.firstName,
-                          superior.lastName,
-                        );
+                      {superiors.map((superior) => {
                         return (
-                          <SelectItem key={index} value={superiorName}>
-                            {superiorName}
+                          <SelectItem
+                            key={superior.id}
+                            value={String(superior.id)}
+                          >
+                            {formatUserName(
+                              superior.firstName,
+                              superior.lastName,
+                            )}
                           </SelectItem>
                         );
                       })}
