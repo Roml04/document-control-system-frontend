@@ -1,7 +1,6 @@
 import { FileCheckCorner, Files, LayoutDashboard, LogOut } from "lucide-react";
 import { Outlet, redirect, useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sidebar,
   SidebarContent,
@@ -72,22 +71,10 @@ export default function layout() {
     <>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar">
-          {/* <SidebarHeader></SidebarHeader> */}
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>Document Control System</SidebarGroupLabel>
-              {/* <SidebarGroupContent>GroupContent</SidebarGroupContent> */}
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      navigate("/dashboard");
-                    }}
-                  >
-                    <LayoutDashboard />
-                    Dashboard
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => {

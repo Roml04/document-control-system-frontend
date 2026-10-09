@@ -19,7 +19,6 @@ import {
   FileCheckCorner,
   Files,
   FileStack,
-  LayoutDashboard,
   LogOut,
   UserRound,
 } from "lucide-react";
@@ -78,22 +77,10 @@ export default function layout() {
     <>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar">
-          {/* <SidebarHeader></SidebarHeader> */}
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>Document Control System</SidebarGroupLabel>
-              {/* <SidebarGroupContent>GroupContent</SidebarGroupContent> */}
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      navigate("/admin");
-                    }}
-                  >
-                    <LayoutDashboard />
-                    Dashboard
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     onClick={() => {
