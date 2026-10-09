@@ -23,22 +23,15 @@ type FetchFileType = FileType & {
 };
 
 export async function clientLoader() {
-  const [fileResponse, userResponse] = await Promise.all([
-    apiFetch("/file"),
-    apiFetch("/user?role=superior"),
-  ]);
+  const fileResponse = await apiFetch("/file");
 
-  return {
-    files: fileResponse.data,
-    approvers: userResponse.data,
-  } as {
-    files: FetchFileType[];
-    approvers: UserType[];
-  };
+  console.log("INFO | CLIENT LOADER [MAIN]", fileResponse);
+
+  return fileResponse.data as FetchFileType[];
 }
 
 export default function files({ loaderData }: Route.ComponentProps) {
-  const { files } = loaderData;
+  const files = loaderData;
   const [openAddPublishSheet, setOpenAddPublishSheet] = useState(false);
 
   return (

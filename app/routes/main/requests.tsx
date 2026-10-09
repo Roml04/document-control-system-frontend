@@ -3,7 +3,7 @@ import { apiFetch } from "~/utils/apiFetch";
 import type { UserType, VersionType } from "~/constants/types";
 import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { PackageOpen } from "lucide-react";
+import { PackageOpen, Plus } from "lucide-react";
 import {
   Empty,
   EmptyDescription,
@@ -11,7 +11,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import {
   RequestListHeader,
   RequestListItem,
@@ -19,7 +26,11 @@ import {
 import type { Route } from "./+types/requests";
 import { useNavigate } from "react-router";
 import { useState } from "react";
+import { Button } from "~/components/ui/button";
+import { allowedRoles } from "~/utils/allowedRoles";
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
+import CreateRevSheet from "~/components/organisms/CreateRevSheet";
+import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 
 export type ViewRequestStateType = {
   id: number | null;
@@ -35,7 +46,7 @@ export type ViewRequestStateType = {
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
 
-  console.log("INFO | apiResponse", apiResponse);
+  console.log("INFO | CLIENT LOADER [MAIN]", apiResponse);
 
   return apiResponse.data as {
     myRequests: ViewRequestStateType[];
@@ -47,12 +58,38 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   const { myRequests, forApprovals } = loaderData;
 
   const [openCreateUplSheet, setOpenCreateUplSheet] = useState(false);
+  const [openCreateRevSheet, setOpenCreateRevSheet] = useState(false);
+  const [openCreateDelSheet, setOpenCreateDelSheet] = useState(false);
   const navigate = useNavigate();
 
   return (
     <>
       <div className="flex flex-col gap-4">
-        <h1>Requests</h1>
+        <div className="flex w-full justify-between">
+          <h1>Requests</h1>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button>
+                <Plus color="#ffffff" />
+                Add a Request
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Request Type</DropdownMenuLabel>
+                <DropdownMenuItem onClick={() => setOpenCreateUplSheet(true)}>
+                  Upload
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenCreateRevSheet(true)}>
+                  Revise
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setOpenCreateDelSheet(true)}>
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         <Separator />
         <div className="h-[45em]">
           {/* HEADER */}
@@ -116,6 +153,18 @@ export default function requests({ loaderData }: Route.ComponentProps) {
         open={openCreateUplSheet}
         onOpenChange={setOpenCreateUplSheet}
       />
+      {allowedRoles(["sysadmin"]) && (
+        <CreateRevSheet
+          open={openCreateRevSheet}
+          onOpenChange={setOpenCreateRevSheet}
+        />
+      )}
+      {allowedRoles(["sysadmin"]) && (
+        <CreateDelSheet
+          open={openCreateDelSheet}
+          onOpenChange={setOpenCreateDelSheet}
+        />
+      )}
     </>
   );
 }

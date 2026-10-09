@@ -1,4 +1,3 @@
-import Header from "~/components/organisms/Header";
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/versions";
@@ -16,7 +15,7 @@ import VersionListHeader, {
 } from "~/components/organisms/VersionList";
 
 export async function clientLoader() {
-  const fetchedVersions = await apiFetch("/admin/version");
+  const fetchedVersions = await apiFetch("/version");
 
   return fetchedVersions.data as VersionType[];
 }
@@ -45,7 +44,7 @@ export default function versions({ loaderData }: Route.ComponentProps) {
               <EmptyMedia variant={"icon"}>
                 <PackageOpen />
               </EmptyMedia>
-              <EmptyTitle>No users to display</EmptyTitle>
+              <EmptyTitle>No versions to display</EmptyTitle>
             </EmptyHeader>
           </Empty>
         )}

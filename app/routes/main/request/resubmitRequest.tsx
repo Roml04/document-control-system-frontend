@@ -20,26 +20,9 @@ import { FILETYPE, REQUESTTYPE } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
 import type { RequestType, UserType } from "~/constants/types";
 import { formatUserName } from "~/utils/formatUserName";
-import { useEffect, useRef, useState, type SubmitEventHandler } from "react";
+import { useRef, useState, type SubmitEventHandler } from "react";
 import { toast } from "sonner";
 import StrictHeader from "~/components/organisms/StrictHeader";
-
-enum ACTION {
-  SETDETAILS = "SETDETAILS",
-  RESETDETAILS = "RESETDETAILS",
-}
-
-type ResubRequestStateType = Omit<
-  {
-    [K in keyof RequestType]: RequestType[K];
-  },
-  "commenters"
->;
-
-type ResubRequestActionType = {
-  type: ACTION;
-  payload: Partial<ResubRequestStateType>;
-};
 
 export async function clientLoader({
   params,
@@ -53,7 +36,7 @@ export async function clientLoader({
     apiFetch(`/user?role=superior`),
   ]);
 
-  console.log("INFO | API RESPONSE", apiResponse);
+  console.log("INFO | CLIENT LOADER [MAIN]", apiResponse);
 
   return {
     request: apiResponse.data,
@@ -115,7 +98,6 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
   const handleResubmit: SubmitEventHandler<HTMLFormElement> = async (event) => {
     try {
       event.preventDefault();
-      console.log("SUBMITTED");
 
       if (!request.version) {
         toast.error("Failed to resubmit request", {
@@ -138,7 +120,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
         formData.append("department", request.version.department);
         formData.append("revisionNumber", request.version.revisionNumber);
         formData.append("revisionDetails", request.version.revisionDetails);
-        formData.append("approver", request.version.approver);
+        formData.append("approverId", String(request.version.approver.id));
       }
 
       formData.append("requestId", `${request.id}`);
@@ -311,8 +293,8 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                   <Field>
                     <FieldLabel>Approver</FieldLabel>
                     <Select
-                      defaultValue={request.version?.approver}
-                      name="approver"
+                      defaultValue={String(request.version?.approver.id)}
+                      name="approverId"
                     >
                       <SelectTrigger type="button">
                         <SelectValue placeholder="Select an approver" />
@@ -324,10 +306,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                             return (
                               <SelectItem
                                 key={index}
-                                value={formatUserName(
-                                  superior.firstName,
-                                  superior.lastName,
-                                )}
+                                value={String(superior.id)}
                                 onChange={() => {}}
                               >
                                 {formatUserName(
@@ -505,8 +484,8 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                     <Field>
                       <FieldLabel>Approver</FieldLabel>
                       <Select
-                        defaultValue={request.version?.approver}
-                        name="approver"
+                        defaultValue={String(request.version?.approver.id)}
+                        name="approverId"
                       >
                         <SelectTrigger type="button">
                           <SelectValue placeholder="Select an approver" />
@@ -518,10 +497,7 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                               return (
                                 <SelectItem
                                   key={index}
-                                  value={formatUserName(
-                                    superior.firstName,
-                                    superior.lastName,
-                                  )}
+                                  value={String(superior.id)}
                                   onChange={() => {}}
                                 >
                                   {formatUserName(

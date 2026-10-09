@@ -25,7 +25,7 @@ import {
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
 import { Textarea } from "~/components/ui/textarea";
-import { useEffect, useRef, useState, type SubmitEventHandler } from "react";
+import { useRef, useState, type SubmitEventHandler } from "react";
 import {
   Select,
   SelectContent,
@@ -42,6 +42,7 @@ import { toast } from "sonner";
 import FileItem from "~/components/molecules/FileItem";
 import type { Route } from "./+types/editVersion";
 import { formatDate } from "~/utils/formatDate";
+import checkStatus from "~/utils/checkStatus";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -72,24 +73,12 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
   /**
    * Functions
    */
-
-  const sendCheckRequest = async (): Promise<boolean> => {
-    const apiResponse = await apiFetch(`/version/${version.id}/status`);
-
-    console.log(
-      `INFO | RESPONSE FROM /version/${version.id}/status`,
-      apiResponse,
-    );
-
-    return apiResponse.saved;
-  };
-
   const checkFileSaveStatus = async () => {
     let isSaved = false;
 
     while (!isSaved) {
       console.log("INFO | IS FILE SAVED", isSaved);
-      isSaved = await sendCheckRequest();
+      isSaved = await checkStatus(version.id);
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
 

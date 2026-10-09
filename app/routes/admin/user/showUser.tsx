@@ -13,8 +13,6 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import avatarFallback from "~/utils/avatarFallback";
 import { useNavigate } from "react-router";
 
 export type UserRequestsType = {
@@ -86,12 +84,6 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
       <div className="border p-4 rounded-lg flex flex-col gap-4">
         <div className="flex justify-between">
           <div className="flex gap-2 items-center">
-            {/* <Avatar size="lg">
-              <AvatarImage src="" />
-              <AvatarFallback>
-                {avatarFallback(user.firstName, user.lastName)}
-              </AvatarFallback>
-            </Avatar> */}
             <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-14">
               <UserRound />
             </div>

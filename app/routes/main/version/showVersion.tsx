@@ -43,7 +43,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       : `/version/${params.id}`,
   );
 
-  console.log("VERSION", fetchedVersion);
+  console.log("INFO | CLIENT LOADER [MAIN]", fetchedVersion);
 
   return fetchedVersion.data as VersionType & {
     request: Pick<RequestType, "id" | "title" | "status" | "user"> & {

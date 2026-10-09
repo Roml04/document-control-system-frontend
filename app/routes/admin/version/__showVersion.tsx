@@ -38,7 +38,7 @@ const columnWidths = {
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const fetchedVersion = await apiFetch(`/admin/version/${params.id}`);
 
-  console.log("VERSION", fetchedVersion);
+  console.log("INFO | CLIENT LOADER [ADMIN]", fetchedVersion);
 
   return fetchedVersion.data as VersionType & {
     request: Pick<RequestType, "id" | "title" | "status" | "user"> & {

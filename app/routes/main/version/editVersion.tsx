@@ -12,8 +12,8 @@ import { Input } from "~/components/ui/input";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import LoadingButton from "~/components/primitives/LoadingButton";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, Download, RotateCcw } from "lucide-react";
-import { NavLink, useNavigate } from "react-router";
+import { ChevronLeft, RotateCcw } from "lucide-react";
+import { useNavigate } from "react-router";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,15 +25,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "~/components/ui/alert-dialog";
-import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  useEffect,
-  useReducer,
-  useRef,
-  useState,
-  type SubmitEventHandler,
-} from "react";
+import { useRef, useState, type SubmitEventHandler } from "react";
 import {
   Select,
   SelectContent,
@@ -47,6 +40,9 @@ import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
 import { toast } from "sonner";
 import FileItem from "~/components/molecules/FileItem";
+import checkStatus from "~/utils/checkStatus";
+import { allowedRoles } from "~/utils/allowedRoles";
+import { formatDate } from "~/utils/formatDate";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -56,7 +52,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
     apiFetch(`/user?role=superior`),
   ]);
 
-  console.log("INFO | CLIENT LOADER [ADMIN]", versionResponse);
+  console.log("INFO | CLIENT LOADER [MAIN]", versionResponse);
 
   return { version: versionResponse.data, superiors: userResponse.data } as {
     version: VersionType;
@@ -77,24 +73,12 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
   /**
    * Functions
    */
-
-  const sendCheckRequest = async (): Promise<boolean> => {
-    const apiResponse = await apiFetch(`/version/${version.id}/status`);
-
-    console.log(
-      `INFO | RESPONSE FROM /version/${version.id}/status`,
-      apiResponse,
-    );
-
-    return apiResponse.saved;
-  };
-
   const checkFileSaveStatus = async () => {
     let isSaved = false;
 
     while (!isSaved) {
       console.log("INFO | IS FILE SAVED", isSaved);
-      isSaved = await sendCheckRequest();
+      isSaved = await checkStatus(version.id);
       await new Promise((resolve) => setTimeout(resolve, 3000));
     }
 
@@ -116,10 +100,15 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
 
       console.log("FORM DATA |", Object.fromEntries(formData.entries()));
 
-      const apiResponse = await apiFetch(`/version/${version.id}`, {
-        method: "PATCH",
-        body: formData,
-      });
+      const apiResponse = await apiFetch(
+        allowedRoles(["sysadmin"])
+          ? `/admin/version/${version.id}`
+          : `/version/${version.id}`,
+        {
+          method: "PATCH",
+          body: formData,
+        },
+      );
 
       console.log("APIRESPONSE", apiResponse);
 
@@ -271,27 +260,47 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
               <Field>
                 <FieldLabel>Upload Date</FieldLabel>
-                <Input
-                  type="text"
-                  defaultValue={version.uploadDate ?? ""}
-                  name="uploadDate"
-                  disabled
-                />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
+                {allowedRoles(["sysadmin"]) ? (
+                  <Input
+                    type="datetime-local"
+                    name="uploadDate"
+                    defaultValue={formatDate(version.uploadDate) ?? ""}
+                  />
+                ) : (
+                  <Input
+                    type="text"
+                    defaultValue={version.uploadDate ?? ""}
+                    name="uploadDate"
+                    disabled
+                  />
+                )}
+                {!allowedRoles(["sysadmin"]) && (
+                  <FieldDescription>
+                    No action is needed. This field is filled in automatically.
+                  </FieldDescription>
+                )}
               </Field>
               <Field>
                 <FieldLabel>Revision Date</FieldLabel>
-                <Input
-                  type="text"
-                  defaultValue={version.revisionDate ?? ""}
-                  name="revisionDate"
-                  disabled
-                />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
+                {allowedRoles(["sysadmin"]) ? (
+                  <Input
+                    type="datetime-local"
+                    name="revisionDate"
+                    defaultValue={formatDate(version.revisionDate) ?? ""}
+                  />
+                ) : (
+                  <Input
+                    type="text"
+                    defaultValue={version.revisionDate ?? ""}
+                    name="revisionDate"
+                    disabled
+                  />
+                )}
+                {!allowedRoles(["sysadmin"]) && (
+                  <FieldDescription>
+                    No action is needed. This field is filled in automatically.
+                  </FieldDescription>
+                )}
               </Field>
               <Field>
                 <FieldLabel>Approver</FieldLabel>
@@ -320,15 +329,34 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
               </Field>
               <Field>
                 <FieldLabel>Approved Date</FieldLabel>
-                <Input
-                  type="text"
-                  defaultValue={version.approvedDate ?? "Not approved yet"}
-                  name="approvedDate"
-                  disabled
-                />
-                <FieldDescription>
-                  No action is needed. This field is filled in automatically.
-                </FieldDescription>
+                {allowedRoles(["sysadmin"]) ? (
+                  <>
+                    <Input
+                      type="datetime-local"
+                      name="approvedDate"
+                      defaultValue={
+                        version.approvedDate && formatDate(version.approvedDate)
+                      }
+                    />
+                    {!version.approvedDate && (
+                      <FieldDescription>
+                        This version is not approved yet.
+                      </FieldDescription>
+                    )}
+                  </>
+                ) : (
+                  <Input
+                    type="text"
+                    defaultValue={version.approvedDate ?? "Not approved yet"}
+                    name="approvedDate"
+                    disabled
+                  />
+                )}
+                {!allowedRoles(["sysadmin"]) && (
+                  <FieldDescription>
+                    No action is needed. This field is filled in automatically.
+                  </FieldDescription>
+                )}
               </Field>
             </FieldGroup>
           </FieldSet>

@@ -26,10 +26,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
+import { useNavigate } from "react-router";
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
-import { useNavigate } from "react-router";
 
 export type ViewRequestType = {
   id: number | null;
@@ -45,7 +45,7 @@ export type ViewRequestType = {
 export async function clientLoader() {
   const apiResponse = await apiFetch("/request");
 
-  console.log("INFO | apiResponse data", apiResponse.data);
+  console.log("INFO | CLIENT LOADER [ADMIN]", apiResponse);
 
   return apiResponse.data as {
     myRequests: ViewRequestType[];
@@ -62,7 +62,6 @@ export default function requests({ loaderData }: Route.ComponentProps) {
   const [openCreateUplSheet, setOpenCreateUplSheet] = useState(false);
   const [openCreateRevSheet, setOpenCreateRevSheet] = useState(false);
   const [openCreateDelSheet, setOpenCreateDelSheet] = useState(false);
-  const [openAddPublishSheet, setOpenAddPublishSheet] = useState(false);
 
   const navigate = useNavigate();
 
