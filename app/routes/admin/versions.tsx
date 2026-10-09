@@ -17,6 +17,8 @@ import VersionListHeader, {
 export async function clientLoader() {
   const fetchedVersions = await apiFetch("/version");
 
+  console.log("INFO | CLIENT LOADER [ADMIN]", fetchedVersions);
+
   return fetchedVersions.data as VersionType[];
 }
 

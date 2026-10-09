@@ -153,7 +153,13 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
                   className={`${gridStyling} px-4 cursor-pointer hover:bg-accent items-center-center`}
                 >
                   <div
-                    onClick={() => navigate(`/requests/${version.request.id}`)}
+                    onClick={() =>
+                      navigate(
+                        allowedRoles(["sysadmin"])
+                          ? `/admin/requests/${version.request.id}`
+                          : `/requests/${version.request.id}`,
+                      )
+                    }
                     className="col-span-9 grid grid-cols-9 py-4 items-center"
                   >
                     <p className={columnWidths.id}>{version.request.id}</p>

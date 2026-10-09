@@ -16,6 +16,10 @@ import {
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
 import { allowedRoles } from "~/utils/allowedRoles";
 import AddPublishFileSheet from "~/components/organisms/AddPublishFileSheet";
+import {
+  AdminFileListItem,
+  FileListHeader,
+} from "~/components/organisms/FileList";
 
 type FetchFileType = FileType & { latestVersion: VersionType };
 
@@ -56,24 +60,43 @@ export default function files({ loaderData }: Route.ComponentProps) {
           )}
         </div>
         <Separator />
-        {files.length > 0 ? (
-          <ScrollArea className="h-[52em] w-full ">
-            <ul className="grid grid-cols-4 gap-x-4 gap-y-2">
-              {files.map((file, index) => (
-                <FileCard key={index} file={file} uri={`/files/${file.id}`} />
-              ))}
-            </ul>
-          </ScrollArea>
-        ) : (
-          <Empty>
-            <EmptyHeader className="gap-1">
-              <EmptyMedia variant={"icon"}>
-                <PackageOpen />
-              </EmptyMedia>
-              <EmptyTitle>No files published at the moment</EmptyTitle>
-            </EmptyHeader>
-          </Empty>
-        )}
+        <div>
+          {allowedRoles(["sysadmin"]) && <FileListHeader />}
+          {files.length > 0 ? (
+            <ScrollArea className="h-[52em] w-full">
+              {allowedRoles(["sysadmin"]) ? (
+                <ul>
+                  {files.map((file, index) => (
+                    <AdminFileListItem key={index} file={file} />
+                  ))}
+                </ul>
+              ) : (
+                <ul className="grid grid-cols-4 gap-x-4 gap-y-2">
+                  {files.map((file, index) => (
+                    <FileCard
+                      key={index}
+                      file={file}
+                      uri={
+                        allowedRoles(["sysadmin"])
+                          ? `/admin/files/${file.id}`
+                          : `/files/${file.id}`
+                      }
+                    />
+                  ))}
+                </ul>
+              )}
+            </ScrollArea>
+          ) : (
+            <Empty>
+              <EmptyHeader className="gap-1">
+                <EmptyMedia variant={"icon"}>
+                  <PackageOpen />
+                </EmptyMedia>
+                <EmptyTitle>No files published at the moment</EmptyTitle>
+              </EmptyHeader>
+            </Empty>
+          )}
+        </div>
       </div>
       <CreateUplSheet
         open={openCreateSheet}

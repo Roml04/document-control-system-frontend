@@ -147,19 +147,17 @@ export function RequestListItem({
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuGroup>
-              <DropdownMenuItem
-                onClick={() => {
-                  navigate(`/requests/${request.id}`);
-                }}
-              >
-                View
-              </DropdownMenuItem>
+              <DropdownMenuItem onClick={onClick}>View</DropdownMenuItem>
               {allowedRoles(["originator", "sysadmin"]) &&
               request.type === REQUESTTYPE.REVISION &&
               request.status === REQUESTSTATUS.ORIGINATOREDIT ? (
                 <DropdownMenuItem
                   onClick={() => {
-                    navigate(`/versions/${request.version?.id}/edit`);
+                    navigate(
+                      allowedRoles(["sysadmin"])
+                        ? `/admin/versions/${request.version?.id}/edit`
+                        : `/versions/${request.version?.id}/edit`,
+                    );
                   }}
                 >
                   Edit

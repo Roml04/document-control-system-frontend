@@ -28,6 +28,7 @@ import { NavLink, useNavigate } from "react-router";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 import { formatUserName } from "~/utils/formatUserName";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/file/${params.id}`);
@@ -189,7 +190,13 @@ export default function showFile({ loaderData }: Route.ComponentProps) {
                   >
                     <div
                       className={`col-span-15 grid grid-cols-15 py-4 content-center`}
-                      onClick={() => navigate(`/versions/${version.id}`)}
+                      onClick={() =>
+                        navigate(
+                          allowedRoles(["sysadmin"])
+                            ? `/admin/versions/${version.id}`
+                            : `/versions/${version.id}`,
+                        )
+                      }
                     >
                       <p className={`${columnWidth.revisionNumber}`}>
                         {version.revisionNumber}

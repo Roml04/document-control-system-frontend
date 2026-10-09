@@ -21,6 +21,8 @@ import { useState } from "react";
 export async function clientLoader() {
   const fetchedUsers = await apiFetch("/user");
 
+  console.log("INFO | CLIENT LOADER [ADMIN]", fetchedUsers);
+
   return fetchedUsers.data as UserType[];
 }
 export default function users({ loaderData }: Route.ComponentProps) {

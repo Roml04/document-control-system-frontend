@@ -2,7 +2,6 @@ import { Outlet, redirect, useNavigate } from "react-router";
 import { USERROLE } from "~/constants/enums";
 import { apiFetch } from "~/utils/apiFetch";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-
 import {
   Sidebar,
   SidebarContent,
@@ -24,7 +23,6 @@ import {
   LogOut,
   UserRound,
 } from "lucide-react";
-import { allowedRoles } from "~/utils/allowedRoles";
 import avatarFallback from "~/utils/avatarFallback";
 import { useSessionStore } from "../../../stores/sessionStore";
 import { toast } from "sonner";

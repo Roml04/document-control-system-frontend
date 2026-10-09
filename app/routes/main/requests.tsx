@@ -67,28 +67,30 @@ export default function requests({ loaderData }: Route.ComponentProps) {
       <div className="flex flex-col gap-4">
         <div className="flex w-full justify-between">
           <h1>Requests</h1>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>
-                <Plus color="#ffffff" />
-                Add a Request
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Request Type</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => setOpenCreateUplSheet(true)}>
-                  Upload
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenCreateRevSheet(true)}>
-                  Revise
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setOpenCreateDelSheet(true)}>
-                  Delete
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          {allowedRoles(["sysadmin"]) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <Plus color="#ffffff" />
+                  Add a Request
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Request Type</DropdownMenuLabel>
+                  <DropdownMenuItem onClick={() => setOpenCreateUplSheet(true)}>
+                    Upload
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setOpenCreateRevSheet(true)}>
+                    Revise
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setOpenCreateDelSheet(true)}>
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
         <Separator />
         <div className="h-[45em]">
@@ -109,7 +111,13 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       <RequestListItem
                         key={index}
                         request={request}
-                        onClick={() => navigate(`/requests/${request.id}`)}
+                        onClick={() =>
+                          navigate(
+                            allowedRoles(["sysadmin"])
+                              ? `/admin/requests/${request.id}`
+                              : `/requests/${request.id}`,
+                          )
+                        }
                         isOwned={true}
                       />
                     );
@@ -126,7 +134,13 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                       <RequestListItem
                         key={index}
                         request={request}
-                        onClick={() => navigate(`/requests/${request.id}`)}
+                        onClick={() =>
+                          navigate(
+                            allowedRoles(["sysadmin"])
+                              ? `/admin/requests/${request.id}`
+                              : `/requests/${request.id}`,
+                          )
+                        }
                       />
                     );
                   })}
