@@ -10,8 +10,6 @@ export default [
   index("routes/home.tsx"),
   route("/register", "./routes/register.tsx"),
   layout("./routes/main/layout.tsx", [
-    route("/dashboard", "./routes/main/dashboard.tsx"),
-
     ...prefix("/requests", [
       index("./routes/main/requests.tsx", {
         id: "index-request-main",
@@ -19,8 +17,12 @@ export default [
       route("/:id", "./routes/main/request/showRequest.tsx", {
         id: "show-request-main",
       }),
-      route("/:id/review", "./routes/main/request/reviewRequest.tsx"),
-      route("/:id/resubmit", "./routes/main/request/resubmitRequest.tsx"),
+      route("/:id/review", "./routes/main/request/reviewRequest.tsx", {
+        id: "review-request-main",
+      }),
+      route("/:id/resubmit", "./routes/main/request/resubmitRequest.tsx", {
+        id: "resubmit-request-main",
+      }),
     ]),
 
     ...prefix("/files", [
@@ -44,8 +46,6 @@ export default [
 
   layout("./routes/admin/layout.tsx", [
     ...prefix("/admin", [
-      index("./routes/admin/dashboard.tsx"),
-
       ...prefix("/users", [
         index("./routes/admin/users.tsx"),
         route("/:id", "./routes/admin/user/showUser.tsx"),
@@ -67,6 +67,12 @@ export default [
         }),
         route("/:id", "./routes/main/request/showRequest.tsx", {
           id: "show-request-admin",
+        }),
+        route("/:id/review", "./routes/main/request/reviewRequest.tsx", {
+          id: "review-request-admin",
+        }),
+        route("/:id/resubmit", "./routes/main/request/resubmitRequest.tsx", {
+          id: "resubmit-request-admin",
         }),
         route("/:id/edit", "./routes/admin/request/editRequest.tsx"),
       ]),

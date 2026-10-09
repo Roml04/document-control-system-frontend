@@ -1,5 +1,4 @@
 import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -174,7 +173,11 @@ export function RequestListItem({
                 !isOwned && (
                   <DropdownMenuItem
                     onClick={() => {
-                      navigate(`/requests/${request.id}/review`);
+                      navigate(
+                        allowedRoles(["sysadmin"])
+                          ? `/admin/requests/${request.id}/review`
+                          : `/requests/${request.id}/review`,
+                      );
                     }}
                   >
                     Review
@@ -312,7 +315,7 @@ export function AdminRequestListItem({
                   ) && (
                     <DropdownMenuItem
                       onClick={() => {
-                        navigate(`/requests/${request.id}/review`);
+                        navigate(`/admin/requests/${request.id}/review`);
                       }}
                     >
                       Review
@@ -323,7 +326,7 @@ export function AdminRequestListItem({
                     <DropdownMenuItem
                       onClick={() => {
                         navigate(
-                          `/requests/${request.id}/resubmit?type=${request.type}`,
+                          `/admin/requests/${request.id}/resubmit?type=${request.type}`,
                         );
                       }}
                     >

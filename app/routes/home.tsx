@@ -68,11 +68,11 @@ export default function Home() {
       console.log("ROLE", role);
 
       if (role === USERROLE.SYSADMIN) {
-        navigate("/admin");
+        navigate("/admin/users");
         return;
       }
 
-      navigate("/dashboard");
+      navigate("/files");
     } catch (error) {
       toast.error("Login failed", {
         position: "top-right",
