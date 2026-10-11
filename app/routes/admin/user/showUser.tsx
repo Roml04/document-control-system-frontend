@@ -14,6 +14,8 @@ import {
   EmptyTitle,
 } from "~/components/ui/empty";
 import { useNavigate } from "react-router";
+import { formatDateTime } from "~/utils/formatDateTime";
+import { formatDate } from "~/utils/formatDate";
 
 export type UserRequestsType = {
   id: number;
@@ -114,7 +116,7 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
           </div>
           <div>
             <p className="text-muted-foreground">Created At</p>
-            <p>{`${months[dateCreated.getMonth()]} ${dateCreated.getDay()}, ${dateCreated.getFullYear()}`}</p>
+            <p>{user.createdAt}</p>
           </div>
         </div>
       </div>
