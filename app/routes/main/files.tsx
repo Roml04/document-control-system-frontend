@@ -60,12 +60,12 @@ export default function files({ loaderData }: Route.ComponentProps) {
           )}
         </div>
         <Separator />
-        <div>
-          {allowedRoles(["sysadmin"]) && <FileListHeader />}
+        <div className="h-[50em]">
           {files.length > 0 ? (
             <ScrollArea className="h-[52em] w-full">
               {allowedRoles(["sysadmin"]) ? (
                 <ul>
+                  <FileListHeader />
                   {files.map((file, index) => (
                     <AdminFileListItem key={index} file={file} />
                   ))}
@@ -87,12 +87,12 @@ export default function files({ loaderData }: Route.ComponentProps) {
               )}
             </ScrollArea>
           ) : (
-            <Empty>
+            <Empty className="h-full">
               <EmptyHeader className="gap-1">
                 <EmptyMedia variant={"icon"}>
                   <PackageOpen />
                 </EmptyMedia>
-                <EmptyTitle>No files published at the moment</EmptyTitle>
+                <EmptyTitle>No files to display</EmptyTitle>
               </EmptyHeader>
             </Empty>
           )}
