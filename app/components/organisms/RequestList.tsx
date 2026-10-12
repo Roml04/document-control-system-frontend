@@ -191,7 +191,7 @@ export function RequestListItem({
                     );
                   }}
                 >
-                  Edit
+                  Edit as Originator
                 </DropdownMenuItem>
               ) : (
                 <></>
@@ -202,7 +202,10 @@ export function RequestListItem({
                 "manager",
                 "sysadmin",
               ]) &&
-                !isOwned && (
+                !isOwned &&
+                ![REQUESTSTATUS.APPROVED, REQUESTSTATUS.DENIED].includes(
+                  request.status,
+                ) && (
                   <DropdownMenuItem
                     onClick={() => {
                       navigate(
@@ -232,6 +235,13 @@ export function RequestListItem({
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() =>
+                      navigate(`/admin/requests/${request.id}/edit`)
+                    }
+                  >
+                    Edit
+                  </DropdownMenuItem>
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => setOpenDeleteAlert(true)}

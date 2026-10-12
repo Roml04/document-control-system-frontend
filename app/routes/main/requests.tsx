@@ -33,14 +33,14 @@ import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
 
 export type ViewRequestStateType = {
-  id: number | null;
-  type: REQUESTTYPE | null;
+  id: number;
+  type: REQUESTTYPE;
   title: string;
   reason: string;
-  status: REQUESTSTATUS | null;
-  uploadDate: string | null;
-  user: UserType | null;
-  version: VersionType | null;
+  status: REQUESTSTATUS;
+  uploadDate: string;
+  user: UserType;
+  version: VersionType;
 };
 
 export async function clientLoader() {

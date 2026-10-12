@@ -37,6 +37,7 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { Spinner } from "~/components/ui/spinner";
+import { allowedRoles } from "~/utils/allowedRoles";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
@@ -83,14 +84,19 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
         return;
       }
 
-      const apiResponse = await apiFetch(`/request/${request.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          isApproved: isApproved,
-          comment: comment,
-          requestId: requestId,
-        }),
-      });
+      const apiResponse = await apiFetch(
+        allowedRoles(["sysadmin"])
+          ? `/admin/request/${request.id}/approval`
+          : `/request/${request.id}`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            isApproved: isApproved,
+            comment: comment,
+            requestId: requestId,
+          }),
+        },
+      );
 
       if (!apiResponse.ok) {
         toast.error("Failed to submit review", {
