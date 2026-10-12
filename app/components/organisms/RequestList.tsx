@@ -4,6 +4,8 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
@@ -101,6 +103,36 @@ export function RequestListItem({
   isOwned = false,
 }: RequestListItemPropType) {
   const navigate = useNavigate();
+  const revalidator = useRevalidator();
+  const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
+
+  const handleDeleteRequest = async () => {
+    try {
+      const apiResponse = await apiFetch(`/admin/request/${request.id}`, {
+        method: "DELETE",
+      });
+
+      if (!apiResponse.ok) {
+        toast.error("Failed to delete request", {
+          position: "top-center",
+          description: apiResponse.message,
+        });
+        return;
+      }
+
+      revalidator.revalidate();
+
+      toast.success("Request deleted", {
+        position: "top-center",
+      });
+    } catch (error) {
+      toast.error("Failed to delete request", {
+        position: "top-center",
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+      });
+    }
+  };
 
   return (
     <li
@@ -196,156 +228,22 @@ export function RequestListItem({
                   </DropdownMenuItem>
                 )}
             </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </li>
-  );
-}
-
-export function AdminRequestListItem({
-  request,
-  onClick,
-  isOwned = false,
-}: RequestListItemPropType) {
-  const [openDeleteAlert, setOpenDeleteAlert] = useState(false);
-
-  const revalidator = useRevalidator();
-
-  const navigate = useNavigate();
-
-  const handleDeleteRequest = async () => {
-    try {
-      const apiResponse = await apiFetch(`/admin/request/${request.id}`, {
-        method: "DELETE",
-      });
-
-      if (!apiResponse.ok) {
-        toast.error("Failed to delete request", {
-          position: "top-center",
-          description: apiResponse.message,
-        });
-        return;
-      }
-
-      revalidator.revalidate();
-
-      toast.success("Request deleted", {
-        position: "top-center",
-      });
-    } catch (error) {
-      toast.error("Failed to delete request", {
-        position: "top-center",
-        description:
-          error instanceof Error ? error.message : "An error occurred",
-      });
-    } finally {
-    }
-  };
-
-  return (
-    <>
-      <li
-        className={`${gridStyling} cursor-pointer rounded-lg hover:bg-accent px-4`}
-      >
-        <div className={`col-span-21 py-4 grid grid-cols-21`} onClick={onClick}>
-          <div className={`${columnWidths.id} `}>
-            <p>{request.id}</p>
-          </div>
-          <div className={`${columnWidths.title} `}>
-            <p>{request.title}</p>
-          </div>
-          <div className={`${columnWidths.reason}`}>
-            <p>{request.reason}</p>
-          </div>
-          <div className={`${columnWidths.type} `}>
-            <p>{request.type ? `${request.type}`.toUpperCase() : "--"}</p>
-          </div>
-          <div
-            className={`${columnWidths.status} ${request.status ? styleRequestStatus(request.status) : ""}`}
-          >
-            <p>
-              {request.status ? formatEnum(request.status) : "Unknown Status"}
-            </p>
-          </div>
-          <div className={`${columnWidths.author}`}>
-            <p>
-              {`${request.user?.firstName ?? ""} ${request.user?.lastName ?? ""}`.trim() ||
-                "Unknown User"}
-            </p>
-          </div>
-          <div className={`${columnWidths.uploadDate}`}>
-            <p>{request.uploadDate ?? "--"}</p>
-          </div>
-        </div>
-
-        <div className={`${columnWidths.action} py-4`}>
-          <DropdownMenu>
-            <DropdownMenuTrigger onClick={() => {}} asChild>
-              <Button size={"icon"} variant={"ghost"}>
-                <Ellipsis size={16} className="cursor-pointer" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuGroup>
-                <DropdownMenuItem
-                  onClick={() => {
-                    navigate(`/admin/requests/${request.id}`);
-                  }}
-                >
-                  View
-                </DropdownMenuItem>
-                {allowedRoles(["sysadmin"]) && (
-                  <DropdownMenuItem
-                    onClick={() => {
-                      navigate(`/admin/requests/${request.id}/edit`);
-                    }}
-                  >
-                    Edit
-                  </DropdownMenuItem>
-                )}
-                {allowedRoles(["sysadmin"]) &&
-                  !(
-                    request.status &&
-                    [
-                      REQUESTSTATUS.APPROVED,
-                      REQUESTSTATUS.DENIED,
-                      REQUESTSTATUS.ORIGINATOREDIT,
-                    ].includes(request.status)
-                  ) && (
-                    <DropdownMenuItem
-                      onClick={() => {
-                        navigate(`/admin/requests/${request.id}/review`);
-                      }}
-                    >
-                      Review
-                    </DropdownMenuItem>
-                  )}
-                {allowedRoles(["sysadmin"]) &&
-                  request.status === REQUESTSTATUS.DENIED && (
-                    <DropdownMenuItem
-                      onClick={() => {
-                        navigate(
-                          `/admin/requests/${request.id}/resubmit?type=${request.type}`,
-                        );
-                      }}
-                    >
-                      Resubmit
-                    </DropdownMenuItem>
-                  )}
-                {allowedRoles(["sysadmin"]) && (
+            {allowedRoles(["sysadmin"]) && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
                   <DropdownMenuItem
                     variant="destructive"
                     onClick={() => setOpenDeleteAlert(true)}
                   >
                     Delete
                   </DropdownMenuItem>
-                )}
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </li>
+                </DropdownMenuGroup>
+              </>
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <AlertDialog open={openDeleteAlert} onOpenChange={setOpenDeleteAlert}>
         <AlertDialogTrigger asChild></AlertDialogTrigger>
         <AlertDialogContent>
@@ -369,6 +267,6 @@ export function AdminRequestListItem({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </li>
   );
 }
