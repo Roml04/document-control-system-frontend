@@ -187,7 +187,11 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
                         <DropdownMenuGroup>
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(`/admin/requests/${version.request.id}`)
+                              navigate(
+                                allowedRoles(["sysadmin"])
+                                  ? `/admin/requests/${version.request.id}`
+                                  : `/requests/${version.request.id}`,
+                              )
                             }
                           >
                             View

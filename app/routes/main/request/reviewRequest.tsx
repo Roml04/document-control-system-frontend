@@ -115,7 +115,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
         position: "top-center",
       });
 
-      navigate("/requests");
+      navigate(allowedRoles(["sysadmin"]) ? "/admin/requests" : "/requests");
     } catch (error) {
       toast.error("An error occurred", {
         position: "top-center",

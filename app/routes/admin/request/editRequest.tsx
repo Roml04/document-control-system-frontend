@@ -145,8 +145,8 @@ export default function editRequest({ loaderData }: Route.ComponentProps) {
                     This request has already reached the{" "}
                     <span className="font-semibold">{request.status}</span>{" "}
                     status. Changing its status will only update the request
-                    itself and will not undo the publication of its associated
-                    file or the rejection of its associated version.
+                    itself and will not undo the publication or rejection of its
+                    associated file and version.
                   </FieldDescription>
                 )}
               </Field>

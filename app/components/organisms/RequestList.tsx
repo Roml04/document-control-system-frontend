@@ -223,7 +223,9 @@ export function RequestListItem({
                   <DropdownMenuItem
                     onClick={() => {
                       navigate(
-                        `/requests/${request.id}/resubmit?type=${request.type}`,
+                        allowedRoles(["sysadmin"])
+                          ? `/admin/requests/${request.id}/resubmit?type=${request.type}`
+                          : `/requests/${request.id}/resubmit?type=${request.type}`,
                       );
                     }}
                   >
