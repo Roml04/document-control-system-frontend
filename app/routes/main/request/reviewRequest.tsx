@@ -38,13 +38,16 @@ import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { Spinner } from "~/components/ui/spinner";
 import { allowedRoles } from "~/utils/allowedRoles";
+import groupCommentsByUser, {
+  type CommentWithUserType,
+} from "~/utils/groupCommentsByUse";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
   return apiResponse.data as RequestType & {
     version: VersionType;
-    comment: CommentType[];
+    comments: CommentWithUserType[];
   };
 }
 
@@ -226,31 +229,25 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
           </div>
           <div className="flex flex-col p-4 gap-4">
             <p className="text-muted-foreground">Comments</p>
-            {request.commenters.length > 0 ? (
+            {request.comments.length > 0 ? (
               <div className="px-4 border-l flex flex-col gap-6">
-                {request.commenters.map((commenter, index) => {
+                {groupCommentsByUser(request.comments).map((group, index) => {
+                  const { user, comments } = group;
+
                   return (
                     <Message key={index}>
-                      <MessageAvatar
-                        title={formatUserName(
-                          commenter.firstName,
-                          commenter.lastName,
-                        )}
-                      >
+                      <MessageAvatar>
                         <Avatar>
                           <AvatarImage />
                           <AvatarFallback>
-                            {avatarFallback(
-                              commenter.firstName,
-                              commenter.lastName,
-                            )}
+                            {avatarFallback(user.firstName, user.lastName)}
                           </AvatarFallback>
                         </Avatar>
                       </MessageAvatar>
                       <MessageContent className="gap-0">
-                        <MessageHeader>{commenter.role}</MessageHeader>
+                        <MessageHeader>{`${formatUserName(user.firstName, user.lastName)} (${formatEnum(user.role)})`}</MessageHeader>
                         <BubbleGroup>
-                          {commenter.comments.map((comment, commentIndex) => {
+                          {comments.map((comment, commentIndex) => {
                             return (
                               <Bubble variant={"muted"} key={commentIndex}>
                                 <BubbleContent>{comment.content}</BubbleContent>
