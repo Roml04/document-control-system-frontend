@@ -28,7 +28,6 @@ export type RequestType = {
   user: UserType;
   version: VersionType;
   wasEdited: boolean;
-  commenters: CommenterType[];
 };
 
 export type VersionType = {
@@ -48,14 +47,6 @@ export type VersionType = {
   filePath: string;
   fileId: number;
   requestId: number;
-};
-
-export type CommenterType = {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  role: string;
-  comments: CommentType[];
 };
 
 export type CommentType = {

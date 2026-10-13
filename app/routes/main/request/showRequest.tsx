@@ -3,13 +3,7 @@ import type { Route } from "./+types/showRequest";
 import formatEnum from "~/utils/formatEnum";
 import { Download, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import type {
-  CommenterType,
-  CommentType,
-  RequestType,
-  UserType,
-  VersionType,
-} from "~/constants/types";
+import type { RequestType, VersionType } from "~/constants/types";
 import {
   Message,
   MessageAvatar,
