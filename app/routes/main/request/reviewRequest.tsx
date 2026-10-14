@@ -24,7 +24,7 @@ import {
 import { Bubble, BubbleContent, BubbleGroup } from "~/components/ui/bubble";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { toast } from "sonner";
-import type { CommentType, RequestType, VersionType } from "~/constants/types";
+import type { RequestType, VersionType } from "~/constants/types";
 import avatarFallback from "~/utils/avatarFallback";
 import { formatUserName } from "~/utils/formatUserName";
 import {
@@ -90,7 +90,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
       const apiResponse = await apiFetch(
         allowedRoles(["sysadmin"])
           ? `/admin/request/${request.id}/approval`
-          : `/request/${request.id}`,
+          : `/request/${request.id}/approval`,
         {
           method: "PATCH",
           body: JSON.stringify({

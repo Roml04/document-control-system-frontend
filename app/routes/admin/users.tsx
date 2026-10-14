@@ -19,7 +19,7 @@ import CreateUserSheet from "~/components/organisms/CreateUserSheet";
 import { useState } from "react";
 
 export async function clientLoader() {
-  const fetchedUsers = await apiFetch("/user");
+  const fetchedUsers = await apiFetch("/admin/user");
 
   console.log("INFO | CLIENT LOADER [ADMIN]", fetchedUsers);
 
