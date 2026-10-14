@@ -43,10 +43,12 @@ export default function Home() {
       });
 
       if (!apiResponse.ok) {
-        return toast.error("Login failed", {
+        toast.error("Login failed", {
           description: apiResponse.message,
           position: "top-right",
         });
+
+        return;
       }
 
       const { userId, firstName, lastName, role, token } = apiResponse.data;

@@ -191,7 +191,7 @@ export function RequestListItem({
                     );
                   }}
                 >
-                  Edit as Originator
+                  {allowedRoles(["sysadmin"]) ? "Edit as Originator" : "Edit"}
                 </DropdownMenuItem>
               ) : (
                 <></>

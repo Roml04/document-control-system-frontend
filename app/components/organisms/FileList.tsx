@@ -71,6 +71,8 @@ export function AdminFileListItem({ file }: FileListItemPropType) {
           description: apiResponse.message,
           position: "top-center",
         });
+
+        return;
       }
 
       revalidator.revalidate();

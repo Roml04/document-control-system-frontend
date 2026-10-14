@@ -109,7 +109,7 @@ export default function CreateUplSheet({
       );
 
       if (!apiResponse.ok) {
-        console.log("ERRORS", apiResponse.message);
+        console.error("ERROR |", apiResponse.message);
         toast.error("Failed to submit file", {
           description: apiResponse.message,
           position: "top-center",

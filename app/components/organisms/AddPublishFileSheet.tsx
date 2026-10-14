@@ -121,10 +121,12 @@ export default function AddPublishFileSheet({
 
       if (!apiResponse.ok) {
         console.log("INFO | MESSAGE", apiResponse.message);
-        return toast.error("Submission failed [1]", {
+        toast.error("Failed to add file", {
           description: apiResponse.message,
           position: "top-center",
         });
+
+        return;
       }
 
       needsCleanup.current = true;
@@ -135,7 +137,7 @@ export default function AddPublishFileSheet({
         position: "top-center",
       });
     } catch (error) {
-      toast.error("Submission failed [2]", {
+      toast.error("Failed to add file", {
         description: error instanceof Error ? error.message : undefined,
         position: "top-center",
       });

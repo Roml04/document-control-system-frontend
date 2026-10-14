@@ -99,6 +99,8 @@ export default function editFile({ loaderData }: Route.ComponentProps) {
           description: apiResponse.message,
           position: "top-center",
         });
+
+        return;
       }
 
       toast.success("File edited successfully", {

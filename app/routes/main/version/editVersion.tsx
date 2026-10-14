@@ -113,10 +113,12 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
       console.log("APIRESPONSE", apiResponse);
 
       if (!apiResponse.ok) {
-        return toast.error("Submission failed", {
+        toast.error("Submission failed", {
           position: "top-center",
           description: apiResponse.message,
         });
+
+        return;
       }
 
       navigate(-1);

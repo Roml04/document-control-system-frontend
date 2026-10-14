@@ -61,9 +61,11 @@ export default function layout() {
     });
 
     if (!apiResponse.ok) {
-      return toast.error("Logout failed", {
+      toast.error("Logout failed", {
         position: "top-right",
       });
+
+      return;
     }
 
     toast.success("Logout successful!", {
