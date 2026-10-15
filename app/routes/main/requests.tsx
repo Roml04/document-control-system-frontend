@@ -106,69 +106,76 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                     </TabsTrigger>
                     <TabsTrigger value="myRequest">My Requests</TabsTrigger>
                   </TabsList>
-                  <RequestListHeader />
                   <TabsContent value="myRequest">
-                    {/* MY REQUESTS */}
-                    {myRequests.length > 0 ? (
-                      <ScrollArea>
-                        {myRequests.map((request, index) => {
-                          return (
-                            <RequestListItem
-                              key={index}
-                              request={request}
-                              onClick={() =>
-                                navigate(
-                                  allowedRoles(["sysadmin"])
-                                    ? `/admin/requests/${request.id}`
-                                    : `/requests/${request.id}`,
-                                )
-                              }
-                              isOwned={true}
-                            />
-                          );
-                        })}
-                      </ScrollArea>
-                    ) : (
-                      <Empty className="h-full">
-                        <EmptyHeader className="gap-1">
-                          <EmptyMedia variant={"icon"}>
-                            <PackageOpen />
-                          </EmptyMedia>
-                          <EmptyTitle>No requests to display</EmptyTitle>
-                        </EmptyHeader>
-                      </Empty>
-                    )}
+                    <ul className="flex flex-col gap-4 h-[50em]">
+                      {/* MY REQUESTS */}
+                      {myRequests.length > 0 ? (
+                        <>
+                          <RequestListHeader />
+                          <ScrollArea>
+                            {myRequests.map((request, index) => (
+                              <RequestListItem
+                                key={index}
+                                request={request}
+                                onClick={() =>
+                                  navigate(
+                                    allowedRoles(["sysadmin"])
+                                      ? `/admin/requests/${request.id}`
+                                      : `/requests/${request.id}`,
+                                  )
+                                }
+                                isOwned={true}
+                              />
+                            ))}
+                          </ScrollArea>
+                        </>
+                      ) : (
+                        <Empty className="h-full">
+                          <EmptyHeader className="gap-1">
+                            <EmptyMedia variant={"icon"}>
+                              <PackageOpen />
+                            </EmptyMedia>
+                            <EmptyTitle>No requests to display</EmptyTitle>
+                          </EmptyHeader>
+                        </Empty>
+                      )}
+                    </ul>
                   </TabsContent>
                   <TabsContent value="forApprovals">
-                    {/* For Approvals */}
-                    {forApprovals.length > 0 ? (
-                      <ScrollArea>
-                        {forApprovals.map((request, index) => {
-                          return (
-                            <RequestListItem
-                              key={index}
-                              request={request}
-                              onClick={() =>
-                                navigate(
-                                  allowedRoles(["sysadmin"])
-                                    ? `/admin/requests/${request.id}`
-                                    : `/requests/${request.id}`,
-                                )
-                              }
-                            />
-                          );
-                        })}
-                      </ScrollArea>
-                    ) : (
-                      <Empty className="h-full">
-                        <EmptyHeader className="gap-1">
-                          <EmptyMedia variant={"icon"}>
-                            <PackageOpen />
-                          </EmptyMedia>
-                          <EmptyTitle>No requests to display</EmptyTitle>
-                        </EmptyHeader>
-                      </Empty>
-                    )}
+                    <ul className="flex flex-col gap-4 h-[50em]">
+                      {/* For Approvals */}
+                      {forApprovals.length > 0 ? (
+                        <>
+                          <RequestListHeader />
+                          <ScrollArea>
+                            {forApprovals.map((request, index) => {
+                              return (
+                                <RequestListItem
+                                  key={index}
+                                  request={request}
+                                  onClick={() =>
+                                    navigate(
+                                      allowedRoles(["sysadmin"])
+                                        ? `/admin/requests/${request.id}`
+                                        : `/requests/${request.id}`,
+                                    )
+                                  }
+                                />
+                              );
+                            })}
+                          </ScrollArea>
+                        </>
+                      ) : (
+                        <Empty className="h-full">
+                          <EmptyHeader className="gap-1">
+                            <EmptyMedia variant={"icon"}>
+                              <PackageOpen />
+                            </EmptyMedia>
+                            <EmptyTitle>No requests to display</EmptyTitle>
+                          </EmptyHeader>
+                        </Empty>
+                      )}
+                    </ul>
                   </TabsContent>
                 </Tabs>
               )}
@@ -178,15 +185,9 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                 "superior",
                 "manager",
               ]) && (
-                <ul>
+                <ul className="flex flex-col gap-4">
                   <RequestListHeader />
                   <ScrollArea className="h-[50em]">
-                    {/* MY REQUESTS */}
-                    {myRequests.length !== 0 && (
-                      <div className="px-4 py-2">
-                        <h3>My Requests</h3>
-                      </div>
-                    )}
                     {myRequests.map((request, index) => {
                       return (
                         <RequestListItem

@@ -32,7 +32,7 @@ export default function versions({ loaderData }: Route.ComponentProps) {
       <Separator />
       <div className="h-[50em]">
         {versions.length !== 0 ? (
-          <ul>
+          <ul className="flex flex-col gap-4">
             <VersionListHeader />
             <ScrollArea className="h-[50em]">
               {versions.map((version, index) => (

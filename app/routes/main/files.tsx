@@ -64,7 +64,7 @@ export default function files({ loaderData }: Route.ComponentProps) {
           {files.length > 0 ? (
             <ScrollArea className="h-[52em] w-full">
               {allowedRoles(["sysadmin"]) ? (
-                <ul>
+                <ul className="flex flex-col gap-4">
                   <FileListHeader />
                   {files.map((file, index) => (
                     <AdminFileListItem key={index} file={file} />

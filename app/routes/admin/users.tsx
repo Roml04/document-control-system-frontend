@@ -42,7 +42,7 @@ export default function users({ loaderData }: Route.ComponentProps) {
       <Separator />
       <div className="h-[50em]">
         {users.length !== 0 ? (
-          <ul>
+          <ul className="flex flex-col gap-4">
             <UserListHeader />
             <ScrollArea className="h-[50em]">
               {users.map((user, index) => (
