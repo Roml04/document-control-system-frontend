@@ -32,10 +32,11 @@ import {
   SelectContent,
   SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { FILETYPE } from "~/constants/enums";
+import { FILETYPE, VERSIONSTATUS } from "~/constants/enums";
 import formatEnum from "~/utils/formatEnum";
 import { formatUserName } from "~/utils/formatUserName";
 import { toast } from "sonner";
@@ -43,6 +44,7 @@ import FileItem from "~/components/molecules/FileItem";
 import checkStatus from "~/utils/checkStatus";
 import { allowedRoles } from "~/utils/allowedRoles";
 import { formatDate } from "~/utils/formatDate";
+import { Separator } from "~/components/ui/separator";
 
 type PhaseType = "idle" | "saving" | "submitting";
 
@@ -122,6 +124,9 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
       }
 
       navigate(-1);
+      toast.success("Revision submitted", {
+        position: "top-center",
+      });
     } catch (error) {
       toast.error("An error occurred", {
         position: "top-center",
@@ -196,9 +201,14 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
           />
         </div>
       </header>
-      <ScrollArea className="h-[49em]">
+      <div className="flex flex-col">
+        <h1>Revising {version.fileTitle}</h1>
+        <p className="text-muted-foreground">Version #{version.id}</p>
+      </div>
+      <ScrollArea className="h-[45em]">
         <div className="flex flex-col gap-2">
           <FieldSet className="border p-4 rounded-lg">
+            <h3>File Details</h3>
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Title</FieldLabel>
@@ -228,6 +238,7 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
             </FieldGroup>
           </FieldSet>
           <FieldSet className="border p-4 rounded-lg">
+            <h3>Version Details</h3>
             <FieldGroup className="grid grid-cols-2">
               <Field>
                 <FieldLabel>Originator</FieldLabel>
@@ -253,6 +264,28 @@ export default function editVersion({ loaderData }: Route.ComponentProps) {
                   defaultValue={version.revisionNumber}
                 />
               </Field>
+              {allowedRoles(["sysadmin"]) ? (
+                <Field>
+                  <FieldLabel>Status</FieldLabel>
+                  <Select defaultValue={version.status} name="status" required>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status..." />
+                    </SelectTrigger>
+                    <SelectContent position="popper">
+                      <SelectGroup>
+                        <SelectLabel>Version Status</SelectLabel>
+                        {Object.values(VERSIONSTATUS).map((status, index) => (
+                          <SelectItem key={index} value={status}>
+                            {formatEnum(status)}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                </Field>
+              ) : (
+                <input type="hidden" name="status" value={version.status} />
+              )}
               <Field className="col-span-2">
                 <FieldLabel>Revision Details</FieldLabel>
                 <Textarea

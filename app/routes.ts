@@ -74,7 +74,7 @@ export default [
         route("/:id/resubmit", "./routes/main/request/resubmitRequest.tsx", {
           id: "resubmit-request-admin",
         }),
-        route("/:id/edit", "./routes/main/version/editVersion.tsx"),
+        route("/:id/edit", "./routes/admin/request/editRequest.tsx"),
       ]),
 
       ...prefix("/versions", [
