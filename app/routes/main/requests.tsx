@@ -31,6 +31,7 @@ import { allowedRoles } from "~/utils/allowedRoles";
 import CreateUplSheet from "~/components/organisms/CreateUplSheet";
 import CreateRevSheet from "~/components/organisms/CreateRevSheet";
 import CreateDelSheet from "~/components/organisms/CreateDelSheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 
 export type ViewRequestStateType = {
   id: number;
@@ -96,55 +97,138 @@ export default function requests({ loaderData }: Route.ComponentProps) {
         <div className="h-[50em]">
           {/* HEADER */}
           {myRequests.length !== 0 || forApprovals.length !== 0 ? (
-            <ul>
-              <RequestListHeader />
-              <ScrollArea className="h-[50em]">
-                {/* MY REQUESTS */}
-                {myRequests.length !== 0 && (
-                  <div className="px-4 py-2">
-                    <h3>My Requests</h3>
-                  </div>
-                )}
-                {myRequests.map((request, index) => {
-                  return (
-                    <RequestListItem
-                      key={index}
-                      request={request}
-                      onClick={() =>
-                        navigate(
-                          allowedRoles(["sysadmin"])
-                            ? `/admin/requests/${request.id}`
-                            : `/requests/${request.id}`,
-                        )
-                      }
-                      isOwned={true}
-                    />
-                  );
-                })}
+            <>
+              {allowedRoles([
+                "sysadmin",
+                "coordinator",
+                "superior",
+                "manager",
+              ]) && (
+                <Tabs defaultValue="forApprovals" className="h-[50em]">
+                  <TabsList variant={"line"}>
+                    <TabsTrigger value="forApprovals">
+                      For Approvals
+                    </TabsTrigger>
+                    <TabsTrigger value="myRequest">My Requests</TabsTrigger>
+                  </TabsList>
+                  <RequestListHeader />
+                  <TabsContent value="myRequest">
+                    {/* MY REQUESTS */}
+                    {myRequests.length > 0 ? (
+                      <ScrollArea>
+                        {myRequests.map((request, index) => {
+                          return (
+                            <RequestListItem
+                              key={index}
+                              request={request}
+                              onClick={() =>
+                                navigate(
+                                  allowedRoles(["sysadmin"])
+                                    ? `/admin/requests/${request.id}`
+                                    : `/requests/${request.id}`,
+                                )
+                              }
+                              isOwned={true}
+                            />
+                          );
+                        })}
+                      </ScrollArea>
+                    ) : (
+                      <Empty className="h-full">
+                        <EmptyHeader className="gap-1">
+                          <EmptyMedia variant={"icon"}>
+                            <PackageOpen />
+                          </EmptyMedia>
+                          <EmptyTitle>No requests to display</EmptyTitle>
+                        </EmptyHeader>
+                      </Empty>
+                    )}
+                  </TabsContent>
+                  <TabsContent value="forApprovals">
+                    {/* For Approvals */}
+                    {forApprovals.length > 0 ? (
+                      <ScrollArea>
+                        {forApprovals.map((request, index) => {
+                          return (
+                            <RequestListItem
+                              key={index}
+                              request={request}
+                              onClick={() =>
+                                navigate(
+                                  allowedRoles(["sysadmin"])
+                                    ? `/admin/requests/${request.id}`
+                                    : `/requests/${request.id}`,
+                                )
+                              }
+                            />
+                          );
+                        })}
+                      </ScrollArea>
+                    ) : (
+                      <Empty className="h-full">
+                        <EmptyHeader className="gap-1">
+                          <EmptyMedia variant={"icon"}>
+                            <PackageOpen />
+                          </EmptyMedia>
+                          <EmptyTitle>No requests to display</EmptyTitle>
+                        </EmptyHeader>
+                      </Empty>
+                    )}
+                  </TabsContent>
+                </Tabs>
+              )}
+              {allowedRoles(["originator"]) && (
+                <ul>
+                  <RequestListHeader />
+                  <ScrollArea className="h-[50em]">
+                    {/* MY REQUESTS */}
+                    {myRequests.length !== 0 && (
+                      <div className="px-4 py-2">
+                        <h3>My Requests</h3>
+                      </div>
+                    )}
+                    {myRequests.map((request, index) => {
+                      return (
+                        <RequestListItem
+                          key={index}
+                          request={request}
+                          onClick={() =>
+                            navigate(
+                              allowedRoles(["sysadmin"])
+                                ? `/admin/requests/${request.id}`
+                                : `/requests/${request.id}`,
+                            )
+                          }
+                          isOwned={true}
+                        />
+                      );
+                    })}
 
-                {forApprovals.length !== 0 && (
-                  <div className="px-2">
-                    <h3>For Approvals</h3>
-                  </div>
-                )}
-                {/* For Approvals */}
-                {forApprovals.map((request, index) => {
-                  return (
-                    <RequestListItem
-                      key={index}
-                      request={request}
-                      onClick={() =>
-                        navigate(
-                          allowedRoles(["sysadmin"])
-                            ? `/admin/requests/${request.id}`
-                            : `/requests/${request.id}`,
-                        )
-                      }
-                    />
-                  );
-                })}
-              </ScrollArea>
-            </ul>
+                    {forApprovals.length !== 0 && (
+                      <div className="px-2">
+                        <h3>For Approvals</h3>
+                      </div>
+                    )}
+                    {/* For Approvals */}
+                    {forApprovals.map((request, index) => {
+                      return (
+                        <RequestListItem
+                          key={index}
+                          request={request}
+                          onClick={() =>
+                            navigate(
+                              allowedRoles(["sysadmin"])
+                                ? `/admin/requests/${request.id}`
+                                : `/requests/${request.id}`,
+                            )
+                          }
+                        />
+                      );
+                    })}
+                  </ScrollArea>
+                </ul>
+              )}
+            </>
           ) : (
             <Empty className="h-full">
               <EmptyHeader className="gap-1">
