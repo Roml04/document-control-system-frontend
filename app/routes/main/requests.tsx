@@ -98,12 +98,7 @@ export default function requests({ loaderData }: Route.ComponentProps) {
           {/* HEADER */}
           {myRequests.length !== 0 || forApprovals.length !== 0 ? (
             <>
-              {allowedRoles([
-                "sysadmin",
-                "coordinator",
-                "superior",
-                "manager",
-              ]) && (
+              {allowedRoles(["sysadmin"]) && (
                 <Tabs defaultValue="forApprovals" className="h-[50em]">
                   <TabsList variant={"line"}>
                     <TabsTrigger value="forApprovals">
@@ -177,7 +172,12 @@ export default function requests({ loaderData }: Route.ComponentProps) {
                   </TabsContent>
                 </Tabs>
               )}
-              {allowedRoles(["originator"]) && (
+              {allowedRoles([
+                "originator",
+                "coordinator",
+                "superior",
+                "manager",
+              ]) && (
                 <ul>
                   <RequestListHeader />
                   <ScrollArea className="h-[50em]">
