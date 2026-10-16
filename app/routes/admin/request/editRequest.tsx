@@ -91,7 +91,10 @@ export default function editRequest({ loaderData }: Route.ComponentProps) {
           isSpinning={false}
         />
       </div>
-      <h1>Editing '{request.title}'</h1>
+      <div className="flex flex-col">
+        <h1>Editing {request.title}</h1>
+        <p className="text-muted-foreground">Request #{request.id}</p>
+      </div>
       <ScrollArea className="h-[50em]">
         <div className="flex flex-col gap-4">
           <FieldSet className="border rounded-lg p-4">

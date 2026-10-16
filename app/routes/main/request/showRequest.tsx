@@ -52,17 +52,19 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
       <Header />
       <div className="flex gap-6 h-[55em]">
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col border p-4 rounded-lg gap-4">
-            <div className="flex w-full justify-between items-center">
+          <div className="border rounded-lg">
+            <div className="flex w-full justify-between items-center p-4">
               <div className="flex flex-col">
                 <h1>{request.title}</h1>
+                <p className="text-muted-foreground">Request #{request.id}</p>
               </div>
               <div className="flex items-center gap-1">
                 <RequestTypeBadge type={request.type} />
                 <Badge>{formatEnum(request.status)}</Badge>
               </div>
             </div>
-            <div className="flex flex-col bg-secondary p-4 border rounded-lg">
+            <Separator />
+            <div className="flex flex-col bg-secondary p-4">
               <p className="text-muted-foreground">Reason</p>
               <p className="text-secondary-foreground">{request.reason}</p>
             </div>
@@ -70,8 +72,8 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
 
           {/* DEV-NOTE: Turn this into a component */}
           {version ? (
-            <div className="flex flex-col border p-4 rounded-lg gap-4">
-              <div className="flex justify-between">
+            <div className="border rounded-lg">
+              <div className="flex justify-between p-4">
                 <div className="flex gap-2 items-center">
                   <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-12">
                     <FileTypeBadge type={version.fileType} size={22} />
@@ -101,7 +103,7 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
                 </div>
               </div>
               <Separator />
-              <div className="grid grid-cols-4 gap-y-4">
+              <div className="grid grid-cols-4 gap-y-4 p-4">
                 <div>
                   <p className="text-muted-foreground">Originator</p>
                   <p>{version.originator ?? "--"}</p>

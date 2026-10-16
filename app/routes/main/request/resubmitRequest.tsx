@@ -178,6 +178,11 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
           />
           <ScrollArea className="h-[49em]">
             <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
+                <h1>Editing Request {request.title}</h1>
+                <p className="text-muted-foreground">Request #{request.id}</p>
+              </div>
+
               <FieldSet className="border p-4 flex flex-col rounded-lg gap-4">
                 <h2>Request</h2>
                 <FieldGroup>
@@ -326,7 +331,9 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
                       type="text"
                       disabled
                       name="approvedDate"
-                      defaultValue={request.version?.approvedDate}
+                      defaultValue={
+                        request.version?.approvedDate ?? "Not approved yet"
+                      }
                     />
                   </Field>
                 </FieldGroup>
@@ -365,6 +372,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
           />
           <ScrollArea className="h-[49em]">
             <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
+                <h1>Editing {request.title}</h1>
+                <p className="text-muted-foreground">Request #{request.id}</p>
+              </div>
               <FieldSet className="border p-4 flex flex-col rounded-lg gap-4">
                 <h2>Request</h2>
                 <FieldGroup>
@@ -557,6 +568,10 @@ export default function resubmitRequest({ loaderData }: Route.ComponentProps) {
 
           <ScrollArea className="h-[49em]">
             <div className="flex flex-col gap-2">
+              <div className="flex flex-col">
+                <h1>Editing {request.title}</h1>
+                <p className="text-muted-foreground">Request #{request.id}</p>
+              </div>
               <FieldSet className="border p-4 flex flex-col rounded-lg gap-4">
                 <h2>Request</h2>
                 <FieldGroup>
