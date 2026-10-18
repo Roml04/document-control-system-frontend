@@ -1,5 +1,5 @@
 import { useState, type SubmitEventHandler } from "react";
-import { NavLink, useNavigate } from "react-router";
+import { NavLink, redirect, useNavigate } from "react-router";
 import { Button } from "~/components/ui/button";
 import {
   Card,
@@ -16,6 +16,25 @@ import { toast } from "sonner";
 import { Spinner } from "~/components/ui/spinner";
 import { useSessionStore } from "../../stores/sessionStore";
 import { USERROLE } from "~/constants/enums";
+
+export async function clientLoader() {
+  const user = await apiFetch("/me");
+
+  console.log("HOME | CLIENT LOADER", user);
+
+  if (!user.id) {
+    console.error("UNAUTHENTICATED");
+    return null;
+  }
+
+  console.log("AUTHENTICATED");
+
+  if (user.role === USERROLE.SYSADMIN) {
+    return redirect("/admin/users");
+  }
+
+  return redirect("/files");
+}
 
 export default function Home() {
   const navigate = useNavigate();
@@ -66,8 +85,6 @@ export default function Home() {
       toast.success("Login successful!", {
         position: "top-right",
       });
-
-      console.log("ROLE", role);
 
       if (role === USERROLE.SYSADMIN) {
         navigate("/admin/users");
