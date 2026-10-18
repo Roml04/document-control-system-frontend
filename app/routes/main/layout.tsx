@@ -1,7 +1,12 @@
-import { FileCheckCorner, Files, LayoutDashboard, LogOut } from "lucide-react";
+import {
+  FileCheckCorner,
+  Files,
+  FileStack,
+  LogOut,
+  UserRound,
+} from "lucide-react";
 import { Outlet, redirect, useNavigate } from "react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { ScrollArea } from "~/components/ui/scroll-area";
 import {
   Sidebar,
   SidebarContent,
@@ -26,12 +31,16 @@ import { USERROLE } from "~/constants/enums";
 export async function clientLoader() {
   const user = await apiFetch("/me");
 
+  console.log("MAIN LAYOUT | CLIENT LOADER [MAIN]", user);
+
   if (!user.id) {
     throw redirect("/");
   }
+  console.log("AUTHENTICATED");
 
   if (user.role === USERROLE.GUEST) {
-    throw redirect("/login");
+    console.error("UNAUTHORIZED");
+    throw redirect("/");
   }
 
   return { user };
@@ -39,26 +48,20 @@ export async function clientLoader() {
 
 export default function layout() {
   const navigate = useNavigate();
-  const token = useSessionStore((state) => state.token);
 
   const firstName = useSessionStore((state) => state.firstName);
   const lastName = useSessionStore((state) => state.lastName);
   const role = useSessionStore((state) => state.role);
 
   const handleLogOut = async () => {
-    const apiResponse = await apiFetch("/logout", {
-      method: "GET",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const apiResponse = await apiFetch("/logout");
 
     if (!apiResponse.ok) {
-      return toast.error("Logout failed", {
+      toast.error("Logout failed", {
         position: "top-right",
       });
+
+      return;
     }
 
     toast.success("Logout successful!", {
@@ -72,41 +75,63 @@ export default function layout() {
     <>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar">
-          {/* <SidebarHeader></SidebarHeader> */}
           <SidebarContent>
             <SidebarGroup>
               <SidebarGroupLabel>Document Control System</SidebarGroupLabel>
-              {/* <SidebarGroupContent>GroupContent</SidebarGroupContent> */}
               <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      navigate("/dashboard");
-                    }}
-                  >
-                    <LayoutDashboard />
-                    Dashboard
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    onClick={() => {
-                      navigate("/files");
-                    }}
-                  >
-                    <Files />
-                    Files
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
+                {allowedRoles(["sysadmin"]) && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        navigate("/admin/users");
+                      }}
+                    >
+                      <UserRound />
+                      Users
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
                 {allowedRoles("*") && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       onClick={() => {
-                        navigate("/requests");
+                        navigate(
+                          allowedRoles(["sysadmin"])
+                            ? "/admin/files"
+                            : "/files",
+                        );
+                      }}
+                    >
+                      <Files />
+                      Files
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {allowedRoles("*") && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        navigate(
+                          allowedRoles(["sysadmin"])
+                            ? "/admin/requests"
+                            : "/requests",
+                        );
                       }}
                     >
                       <FileCheckCorner />
                       Requests
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
+                {allowedRoles(["sysadmin"]) && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={() => {
+                        navigate("/admin/versions");
+                      }}
+                    >
+                      <FileStack />
+                      Versions
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}

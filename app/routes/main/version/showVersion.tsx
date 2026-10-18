@@ -43,7 +43,7 @@ export async function clientLoader({ params }: Route.ClientLoaderArgs) {
       : `/version/${params.id}`,
   );
 
-  console.log("VERSION", fetchedVersion);
+  console.log("INFO | CLIENT LOADER [MAIN]", fetchedVersion);
 
   return fetchedVersion.data as VersionType & {
     request: Pick<RequestType, "id" | "title" | "status" | "user"> & {
@@ -119,7 +119,12 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
             </div>
             <div>
               <p className="text-muted-foreground">Approver</p>
-              <p>{version.approver}</p>
+              <p>
+                {formatUserName(
+                  version.approver.firstName,
+                  version.approver.lastName,
+                )}
+              </p>
             </div>
             <div>
               <p className="text-muted-foreground">Approved Date</p>
@@ -148,7 +153,13 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
                   className={`${gridStyling} px-4 cursor-pointer hover:bg-accent items-center-center`}
                 >
                   <div
-                    onClick={() => navigate(`/requests/${version.request.id}`)}
+                    onClick={() =>
+                      navigate(
+                        allowedRoles(["sysadmin"])
+                          ? `/admin/requests/${version.request.id}`
+                          : `/requests/${version.request.id}`,
+                      )
+                    }
                     className="col-span-9 grid grid-cols-9 py-4 items-center"
                   >
                     <p className={columnWidths.id}>{version.request.id}</p>
@@ -176,7 +187,11 @@ export default function showVersion({ loaderData }: Route.ComponentProps) {
                         <DropdownMenuGroup>
                           <DropdownMenuItem
                             onClick={() =>
-                              navigate(`/admin/requests/${version.request.id}`)
+                              navigate(
+                                allowedRoles(["sysadmin"])
+                                  ? `/admin/requests/${version.request.id}`
+                                  : `/requests/${version.request.id}`,
+                              )
                             }
                           >
                             View

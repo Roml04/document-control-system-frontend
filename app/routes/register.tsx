@@ -84,10 +84,12 @@ export default function register() {
     });
 
     if (!apiResponse.ok) {
-      return toast.error("Registration Failed!", {
+      toast.error("Registration Failed!", {
         description: apiResponse.message,
         position: "top-right",
       });
+
+      return;
     }
 
     toast.success("Account registered", {
