@@ -3,11 +3,7 @@ import type { Route } from "./+types/showRequest";
 import formatEnum from "~/utils/formatEnum";
 import { Download, PackageOpen } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
-import type {
-  CommenterType,
-  RequestType,
-  VersionType,
-} from "~/constants/types";
+import type { RequestType, VersionType } from "~/constants/types";
 import {
   Message,
   MessageAvatar,
@@ -32,15 +28,17 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import { NavLink } from "react-router";
 import { Button } from "~/components/ui/button";
 import { downloadFile } from "~/utils/downloadFile";
+import type { CommentWithUserType } from "~/utils/groupCommentsByUse";
+import groupCommentsByUser from "~/utils/groupCommentsByUse";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
-  console.log("INFO | request.tsx cientLoader(),", apiResponse);
+  console.log(`INFO | /request/${params.id} [MAIN]`, apiResponse);
 
   return apiResponse.data as RequestType & {
     version: VersionType;
-    commenters: CommenterType[];
+    comments: CommentWithUserType[];
   };
 }
 
@@ -54,17 +52,19 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
       <Header />
       <div className="flex gap-6 h-[55em]">
         <div className="flex flex-col gap-4 w-full">
-          <div className="flex flex-col border p-4 rounded-lg gap-4">
-            <div className="flex w-full justify-between items-center">
+          <div className="border rounded-lg">
+            <div className="flex w-full justify-between items-center p-4">
               <div className="flex flex-col">
                 <h1>{request.title}</h1>
+                <p className="text-muted-foreground">Request #{request.id}</p>
               </div>
               <div className="flex items-center gap-1">
                 <RequestTypeBadge type={request.type} />
                 <Badge>{formatEnum(request.status)}</Badge>
               </div>
             </div>
-            <div className="flex flex-col bg-secondary p-4 border rounded-lg">
+            <Separator />
+            <div className="flex flex-col bg-secondary p-4">
               <p className="text-muted-foreground">Reason</p>
               <p className="text-secondary-foreground">{request.reason}</p>
             </div>
@@ -72,8 +72,8 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
 
           {/* DEV-NOTE: Turn this into a component */}
           {version ? (
-            <div className="flex flex-col border p-4 rounded-lg gap-4">
-              <div className="flex justify-between">
+            <div className="border rounded-lg">
+              <div className="flex justify-between p-4">
                 <div className="flex gap-2 items-center">
                   <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-12">
                     <FileTypeBadge type={version.fileType} size={22} />
@@ -103,7 +103,7 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
                 </div>
               </div>
               <Separator />
-              <div className="grid grid-cols-4 gap-y-4">
+              <div className="grid grid-cols-4 gap-y-4 p-4">
                 <div>
                   <p className="text-muted-foreground">Originator</p>
                   <p>{version.originator ?? "--"}</p>
@@ -130,7 +130,12 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Approver</p>
-                  <p>{version.approver ?? "--"}</p>
+                  <p>
+                    {formatUserName(
+                      version.approver.firstName,
+                      version.approver.lastName,
+                    ) ?? "--"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Approved Date</p>
@@ -156,31 +161,25 @@ export default function showRequest({ loaderData }: Route.ComponentProps) {
           )}
           <div className="flex flex-col p-4 gap-4">
             <p className="text-muted-foreground">Comments</p>
-            {request.commenters.length > 0 ? (
+            {request.comments.length > 0 ? (
               <div className="px-4 border-l flex flex-col gap-6">
-                {request.commenters.map((commenter, index) => {
+                {groupCommentsByUser(request.comments).map((group, index) => {
+                  const { user, comments } = group;
+
                   return (
                     <Message key={index}>
-                      <MessageAvatar
-                        title={formatUserName(
-                          commenter.firstName,
-                          commenter.lastName,
-                        )}
-                      >
+                      <MessageAvatar>
                         <Avatar>
                           <AvatarImage />
                           <AvatarFallback>
-                            {avatarFallback(
-                              commenter.firstName,
-                              commenter.lastName,
-                            )}
+                            {avatarFallback(user.firstName, user.lastName)}
                           </AvatarFallback>
                         </Avatar>
                       </MessageAvatar>
                       <MessageContent className="gap-0">
-                        <MessageHeader>{commenter.role}</MessageHeader>
+                        <MessageHeader>{`${formatUserName(user.firstName, user.lastName)} (${formatEnum(user.role)})`}</MessageHeader>
                         <BubbleGroup>
-                          {commenter.comments.map((comment, commentIndex) => {
+                          {comments.map((comment, commentIndex) => {
                             return (
                               <Bubble variant={"muted"} key={commentIndex}>
                                 <BubbleContent>{comment.content}</BubbleContent>

@@ -19,7 +19,9 @@ import CreateUserSheet from "~/components/organisms/CreateUserSheet";
 import { useState } from "react";
 
 export async function clientLoader() {
-  const fetchedUsers = await apiFetch("/user");
+  const fetchedUsers = await apiFetch("/admin/user");
+
+  console.log("INFO | CLIENT LOADER [ADMIN]", fetchedUsers);
 
   return fetchedUsers.data as UserType[];
 }
@@ -39,9 +41,9 @@ export default function users({ loaderData }: Route.ComponentProps) {
       </div>
       <Separator />
       <div className="h-[50em]">
-        <UserListHeader />
         {users.length !== 0 ? (
-          <ul>
+          <ul className="flex flex-col gap-4">
+            <UserListHeader />
             <ScrollArea className="h-[50em]">
               {users.map((user, index) => (
                 <AdminUserListItem key={index} user={user} />

@@ -1,4 +1,3 @@
-import Header from "~/components/organisms/Header";
 import { Separator } from "~/components/ui/separator";
 import { apiFetch } from "~/utils/apiFetch";
 import type { Route } from "./+types/versions";
@@ -16,7 +15,9 @@ import VersionListHeader, {
 } from "~/components/organisms/VersionList";
 
 export async function clientLoader() {
-  const fetchedVersions = await apiFetch("/admin/version");
+  const fetchedVersions = await apiFetch("/version");
+
+  console.log("INFO | CLIENT LOADER [ADMIN]", fetchedVersions);
 
   return fetchedVersions.data as VersionType[];
 }
@@ -31,7 +32,7 @@ export default function versions({ loaderData }: Route.ComponentProps) {
       <Separator />
       <div className="h-[50em]">
         {versions.length !== 0 ? (
-          <ul>
+          <ul className="flex flex-col gap-4">
             <VersionListHeader />
             <ScrollArea className="h-[50em]">
               {versions.map((version, index) => (
@@ -45,7 +46,7 @@ export default function versions({ loaderData }: Route.ComponentProps) {
               <EmptyMedia variant={"icon"}>
                 <PackageOpen />
               </EmptyMedia>
-              <EmptyTitle>No users to display</EmptyTitle>
+              <EmptyTitle>No versions to display</EmptyTitle>
             </EmptyHeader>
           </Empty>
         )}

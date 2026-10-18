@@ -13,9 +13,9 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "~/components/ui/empty";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import avatarFallback from "~/utils/avatarFallback";
 import { useNavigate } from "react-router";
+import { formatDateTime } from "~/utils/formatDateTime";
+import { formatDate } from "~/utils/formatDate";
 
 export type UserRequestsType = {
   id: number;
@@ -86,12 +86,6 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
       <div className="border p-4 rounded-lg flex flex-col gap-4">
         <div className="flex justify-between">
           <div className="flex gap-2 items-center">
-            {/* <Avatar size="lg">
-              <AvatarImage src="" />
-              <AvatarFallback>
-                {avatarFallback(user.firstName, user.lastName)}
-              </AvatarFallback>
-            </Avatar> */}
             <div className="flex justify-center items-center rounded-sm bg-gray-200 aspect-square h-14">
               <UserRound />
             </div>
@@ -122,7 +116,7 @@ export default function showUser({ loaderData }: Route.ComponentProps) {
           </div>
           <div>
             <p className="text-muted-foreground">Created At</p>
-            <p>{`${months[dateCreated.getMonth()]} ${dateCreated.getDay()}, ${dateCreated.getFullYear()}`}</p>
+            <p>{user.createdAt}</p>
           </div>
         </div>
       </div>

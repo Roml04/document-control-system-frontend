@@ -1,6 +1,7 @@
 import OnlyOfficeEditor from "~/components/organisms/OnlyOfficeEditor";
 import type { Route } from "./+types/editor";
 import { apiFetch } from "~/utils/apiFetch";
+import { toast } from "sonner";
 
 export async function clientLoader({
   params,
@@ -19,6 +20,7 @@ export async function clientLoader({
 
   console.log("INFO | PARAMS ID", params.id);
   console.log("INFO | RESPONSE", apiResponse);
+
   return apiResponse as {
     config: Record<string, unknown>;
   };

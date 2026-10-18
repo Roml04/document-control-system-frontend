@@ -18,7 +18,7 @@ export default function LoadingButton({
 }: LoadingButtonPropType) {
   return (
     <Button type={type} disabled={isSpinning || disabled} {...props}>
-      {isSpinning && <Spinner />}
+      {isSpinning && <Spinner className="stroke-white" />}
       {isSpinning ? loadingDisplayText : displayText}
     </Button>
   );

@@ -1,5 +1,11 @@
 import Header from "~/components/organisms/Header";
-import { Field, FieldGroup, FieldLabel, FieldSet } from "~/components/ui/field";
+import {
+  Field,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+} from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import type { Route } from "./+types/editRequest";
 import { apiFetch } from "~/utils/apiFetch";
@@ -13,7 +19,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import formatEnum from "~/utils/formatEnum";
-import { REQUESTSTATUS } from "~/constants/enums";
+import { REQUESTSTATUS, REQUESTTYPE } from "~/constants/enums";
 import { formatUserName } from "~/utils/formatUserName";
 import type { SubmitEventHandler } from "react";
 import LoadingButton from "~/components/primitives/LoadingButton";
@@ -85,7 +91,10 @@ export default function editRequest({ loaderData }: Route.ComponentProps) {
           isSpinning={false}
         />
       </div>
-      <h1>Editing '{request.title}'</h1>
+      <div className="flex flex-col">
+        <h1>Editing {request.title}</h1>
+        <p className="text-muted-foreground">Request #{request.id}</p>
+      </div>
       <ScrollArea className="h-[50em]">
         <div className="flex flex-col gap-4">
           <FieldSet className="border rounded-lg p-4">
@@ -115,14 +124,34 @@ export default function editRequest({ loaderData }: Route.ComponentProps) {
                   </SelectTrigger>
                   <SelectContent position="popper">
                     <SelectGroup>
-                      {requestStatuses.map((status, index) => (
-                        <SelectItem key={index} value={status}>
-                          {formatEnum(status)}
-                        </SelectItem>
-                      ))}
+                      {requestStatuses.map((status, index) => {
+                        if (
+                          request.type === REQUESTTYPE.DELETE &&
+                          (status === REQUESTSTATUS.MANAGERSAPPROVAL ||
+                            status === REQUESTSTATUS.ORIGINATOREDIT)
+                        )
+                          return;
+
+                        return (
+                          <SelectItem key={index} value={status}>
+                            {formatEnum(status)}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
+                {[REQUESTSTATUS.APPROVED, REQUESTSTATUS.DENIED].includes(
+                  request.status,
+                ) && (
+                  <FieldDescription>
+                    This request has already reached the{" "}
+                    <span className="font-semibold">{request.status}</span>{" "}
+                    status. Changing its status will only update the request
+                    itself and will not undo the publication or rejection of its
+                    associated file and version.
+                  </FieldDescription>
+                )}
               </Field>
               <Field>
                 <FieldLabel>Author</FieldLabel>

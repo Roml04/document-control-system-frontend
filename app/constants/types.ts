@@ -25,10 +25,9 @@ export type RequestType = {
   title: string;
   reason: string;
   status: REQUESTSTATUS;
-  user: UserType | null;
-  version: VersionType | null;
+  user: UserType;
+  version: VersionType;
   wasEdited: boolean;
-  commenters: CommenterType[];
 };
 
 export type VersionType = {
@@ -41,21 +40,13 @@ export type VersionType = {
   revisionDetails: string;
   uploadDate: string;
   revisionDate: string;
-  approver: string;
+  approver: Pick<UserType, "id" | "firstName" | "lastName">;
   approvedDate: string;
   status: VERSIONSTATUS;
   fileName: string;
   filePath: string;
   fileId: number;
   requestId: number;
-};
-
-export type CommenterType = {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  role: string;
-  comments: CommentType[];
 };
 
 export type CommentType = {

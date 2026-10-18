@@ -24,7 +24,7 @@ import {
 import { Bubble, BubbleContent, BubbleGroup } from "~/components/ui/bubble";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { toast } from "sonner";
-import type { CommentType, RequestType, VersionType } from "~/constants/types";
+import type { RequestType, VersionType } from "~/constants/types";
 import avatarFallback from "~/utils/avatarFallback";
 import { formatUserName } from "~/utils/formatUserName";
 import {
@@ -37,13 +37,17 @@ import FileTypeBadge from "~/components/primitives/FileTypeBadge";
 import RequestTypeBadge from "~/components/primitives/RequestTypeBadge";
 import { downloadFile } from "~/utils/downloadFile";
 import { Spinner } from "~/components/ui/spinner";
+import { allowedRoles } from "~/utils/allowedRoles";
+import groupCommentsByUser, {
+  type CommentWithUserType,
+} from "~/utils/groupCommentsByUse";
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
   const apiResponse = await apiFetch(`/request/${params.id}`);
 
   return apiResponse.data as RequestType & {
     version: VersionType;
-    comment: CommentType[];
+    comments: CommentWithUserType[];
   };
 }
 
@@ -83,14 +87,19 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
         return;
       }
 
-      const apiResponse = await apiFetch(`/request/${request.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          isApproved: isApproved,
-          comment: comment,
-          requestId: requestId,
-        }),
-      });
+      const apiResponse = await apiFetch(
+        allowedRoles(["sysadmin"])
+          ? `/admin/request/${request.id}/approval`
+          : `/request/${request.id}/approval`,
+        {
+          method: "PATCH",
+          body: JSON.stringify({
+            isApproved: isApproved,
+            comment: comment,
+            requestId: requestId,
+          }),
+        },
+      );
 
       if (!apiResponse.ok) {
         toast.error("Failed to submit review", {
@@ -106,7 +115,7 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
         position: "top-center",
       });
 
-      navigate("/requests");
+      navigate(allowedRoles(["sysadmin"]) ? "/admin/requests" : "/requests");
     } catch (error) {
       toast.error("An error occurred", {
         position: "top-center",
@@ -130,47 +139,54 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
         </Button>
       </header>
       <div className="flex gap-6 h-[55em]">
-        <div className="flex flex-col gap-2 w-3/5">
-          <div className="flex w-full justify-between items-center py-2">
-            <div className="flex flex-col">
-              <h1>{request.title}</h1>
-              <p className="text-muted-foreground"></p>
-            </div>
-            <div className="flex items-center gap-1">
-              <RequestTypeBadge type={request.type} />
-              <Badge>{formatEnum(request.status)}</Badge>
-            </div>
-          </div>
-
-          {/* FILE COMPONENT */}
-          <div className="p-4 border rounded-lg items-center flex justify-between">
-            <div className="flex items-center gap-2">
-              <FileTypeBadge type={request.version.fileType} />
+        <div className="flex flex-col gap-4 w-3/5">
+          {/* REQUEST DETAILS */}
+          <div className="border rounded-lg">
+            <div className="flex p-4 w-full justify-between items-center">
               <div className="flex flex-col">
-                <h3>{request.version.fileTitle}</h3>
-                <p>{request.version.fileType}</p>
+                <h1>{request.title}</h1>
+                <p className="text-muted-foreground">Request #{request.id}</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <RequestTypeBadge type={request.type} />
+                <Badge>{formatEnum(request.status)}</Badge>
               </div>
             </div>
-            <div className="flex gap-1">
-              <NavLink
-                to={`/onlyoffice/${request.version.id}?mode=view`}
-                target="_blank"
-              >
-                <Button variant={"ghost"}>Open in editor</Button>
-              </NavLink>
-              <Button
-                variant={"ghost"}
-                size={"icon"}
-                onClick={() =>
-                  downloadFile(request.version.id, request.version.fileName)
-                }
-              >
-                <Download />
-              </Button>
+            <Separator />
+            <div className="p-4 bg-secondary">
+              <p className="text-muted-foreground">Reason</p>
+              <p className="text-secondary-foreground">{request.reason}</p>
             </div>
           </div>
-
+          {/* VERSION DETAILS */}
           <div className="border rounded-lg">
+            <div className="p-4 items-center flex justify-between">
+              <div className="flex items-center gap-2">
+                <FileTypeBadge type={request.version.fileType} />
+                <div className="flex flex-col">
+                  <h3>{request.version.fileTitle}</h3>
+                  <p>{request.version.fileType}</p>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <NavLink
+                  to={`/onlyoffice/${request.version.id}?mode=view`}
+                  target="_blank"
+                >
+                  <Button variant={"ghost"}>Open in editor</Button>
+                </NavLink>
+                <Button
+                  variant={"ghost"}
+                  size={"icon"}
+                  onClick={() =>
+                    downloadFile(request.version.id, request.version.fileName)
+                  }
+                >
+                  <Download />
+                </Button>
+              </div>
+            </div>
+            <Separator />
             <div className="grid grid-cols-4 gap-y-4 p-4">
               <div>
                 <p className="text-muted-foreground">Originator</p>
@@ -198,48 +214,40 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
               </div>
               <div>
                 <p className="text-muted-foreground">Approver</p>
-                <p>{request.version.approver ?? "--"}</p>
+                <p>
+                  {formatUserName(
+                    request.version.approver.firstName,
+                    request.version.approver.lastName,
+                  ) ?? "--"}
+                </p>
               </div>
               <div>
                 <p className="text-muted-foreground">Approved Date</p>
                 <p>{request.version.approvedDate ?? "--"}</p>
               </div>
             </div>
-            <Separator />
-            <div className="flex flex-col p-4">
-              <div className="flex flex-col bg-secondary p-4 border rounded-lg">
-                <p className="text-muted-foreground">Reason</p>
-                <p className="text-secondary-foreground">{request.reason}</p>
-              </div>
-            </div>
           </div>
           <div className="flex flex-col p-4 gap-4">
             <p className="text-muted-foreground">Comments</p>
-            {request.commenters.length > 0 ? (
+            {request.comments.length > 0 ? (
               <div className="px-4 border-l flex flex-col gap-6">
-                {request.commenters.map((commenter, index) => {
+                {groupCommentsByUser(request.comments).map((group, index) => {
+                  const { user, comments } = group;
+
                   return (
                     <Message key={index}>
-                      <MessageAvatar
-                        title={formatUserName(
-                          commenter.firstName,
-                          commenter.lastName,
-                        )}
-                      >
+                      <MessageAvatar>
                         <Avatar>
                           <AvatarImage />
                           <AvatarFallback>
-                            {avatarFallback(
-                              commenter.firstName,
-                              commenter.lastName,
-                            )}
+                            {avatarFallback(user.firstName, user.lastName)}
                           </AvatarFallback>
                         </Avatar>
                       </MessageAvatar>
                       <MessageContent className="gap-0">
-                        <MessageHeader>{commenter.role}</MessageHeader>
+                        <MessageHeader>{`${formatUserName(user.firstName, user.lastName)} (${formatEnum(user.role)})`}</MessageHeader>
                         <BubbleGroup>
-                          {commenter.comments.map((comment, commentIndex) => {
+                          {comments.map((comment, commentIndex) => {
                             return (
                               <Bubble variant={"muted"} key={commentIndex}>
                                 <BubbleContent>{comment.content}</BubbleContent>
@@ -307,7 +315,9 @@ export default function reviewRequest({ loaderData }: Route.ComponentProps) {
                     }}
                     disabled={isSpinning}
                   >
-                    {isSpinning && isDenySpinning && <Spinner />}
+                    {isSpinning && isDenySpinning && (
+                      <Spinner className="stroke-destructive" />
+                    )}
                     Deny
                   </Button>
                 </div>
