@@ -22,7 +22,6 @@ enum ACTION {
 type RegisterStateType = {
   firstName: string;
   lastName: string;
-  department: string;
   email: string;
   password: string;
 };
@@ -38,7 +37,6 @@ export default function register() {
   const registerInitialState = {
     firstName: "",
     lastName: "",
-    department: "",
     email: "",
     password: "",
   };
@@ -77,7 +75,6 @@ export default function register() {
       body: JSON.stringify({
         firstName: registerState.firstName,
         lastName: registerState.lastName,
-        department: registerState.department,
         email: registerState.email,
         password: registerState.password,
       }),
@@ -151,22 +148,6 @@ export default function register() {
                   />
                 </Field>
               </div>
-              <Field>
-                <FieldLabel htmlFor="department">Department</FieldLabel>
-                <Input
-                  id="department"
-                  type="text"
-                  placeholder="Enter your department..."
-                  value={registerState.department}
-                  onChange={(e) => {
-                    registerDispatch({
-                      type: ACTION.SETSTATE,
-                      payload: { department: e.target.value },
-                    });
-                  }}
-                  required
-                />
-              </Field>
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <Input

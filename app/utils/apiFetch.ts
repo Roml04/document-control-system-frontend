@@ -1,6 +1,6 @@
 import { useSessionStore } from "../../stores/sessionStore";
 
-export const BASE_URL = "http://document-control-system-backend.test/api";
+export const BASE_URL = `${import.meta.env.VITE_API_URL}`;
 
 export const defaultHeaders: HeadersInit = {
   "Content-Type": "application/json",
@@ -14,7 +14,6 @@ export async function apiFetch(endpoint: string, options: RequestInit = {}) {
 
   const response = await fetch(`${BASE_URL}${endpoint}`, {
     headers: {
-      // ...defaultHeaders,
       ...(isFormData ? {} : { "Content-Type": "application/json" }),
       Accept: "application/json",
       ...(token && { Authorization: `Bearer ${token}` }),

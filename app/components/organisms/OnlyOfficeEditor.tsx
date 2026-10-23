@@ -7,7 +7,12 @@ export default function OnlyOfficeEditor({ config }: OnlyOfficeEditorPropType) {
   useEffect(() => {
     const script = document.createElement("script");
 
-    script.src = "http://localhost/web-apps/apps/api/documents/api.js";
+    const host = window.location.hostname;
+    const protocol = window.location.protocol;
+
+    const onlyOfficeUrl = `${protocol}//${host}:8082`;
+
+    script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`;
 
     script.onload = () => {
       new (window as any).DocsAPI.DocEditor("placeholder", config);

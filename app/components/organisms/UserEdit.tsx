@@ -154,7 +154,9 @@ export default function UserEditDialogForm({
                   <FieldLabel>Role</FieldLabel>
                   <Select
                     name="role"
-                    defaultValue={user.role}
+                    defaultValue={
+                      user.role === USERROLE.SYSADMIN ? undefined : user.role
+                    }
                     disabled={user.role === USERROLE.SYSADMIN}
                   >
                     <SelectTrigger>
@@ -163,11 +165,17 @@ export default function UserEditDialogForm({
                     <SelectContent position="popper">
                       <SelectGroup>
                         <SelectLabel>Roles</SelectLabel>
-                        {Object.values(USERROLE).map((role, index) => (
-                          <SelectItem key={index} value={role}>
-                            {formatEnum(role)}
-                          </SelectItem>
-                        ))}
+                        {Object.values(USERROLE).map((role, index) => {
+                          if (role === USERROLE.SYSADMIN) {
+                            return;
+                          }
+
+                          return (
+                            <SelectItem key={index} value={role}>
+                              {formatEnum(role)}
+                            </SelectItem>
+                          );
+                        })}
                       </SelectGroup>
                     </SelectContent>
                   </Select>
